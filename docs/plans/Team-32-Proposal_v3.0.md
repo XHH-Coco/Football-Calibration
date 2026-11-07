@@ -8,7 +8,7 @@ Date: 2026-11-08 · Supersedes the submitted 2026-10-30 version as the internal 
 | Team | Team 32 (5 members; names and UIDs as on the submitted PDF) |
 | Submitted version | `Team-32-Proposal.pdf`, 2026-10-30 (2-point deliverable, unchanged) |
 | This version | **v3.0**, 2026-11-08 — same research question, corrected hypotheses, controlled ladder |
-| Companion documents | `08_小组分工实施方案_v1.3.md` (execution), `data_interface.md` v1.2 (contracts), five role cards |
+| Companion documents | `08_小组分工实施方案_v1.3.md` (r2 execution revision), `data_interface.md` v1.3 (contracts), five role cards |
 | Status | Approved as the single execution blueprint; no parallel naming or hypothesis sets remain |
 
 ---
@@ -81,6 +81,8 @@ The ladder is built so that the two steps used for attribution change **exactly 
 
 **B4 → B5a** changes only the model class (both feature whitelist and sample weights are locked and signed off); **B5a → B5b** changes only the information set. These are the only two rungs that support an interpretable attribution claim: B1→B2 changes both estimation principle and covariates, and B2→B3 changes both model and information, so B0–B3 are reported without causal interpretation. *Correction to the submitted version:* its M4 arm was trained on M2's richer feature set but compared against M3, so the claimed "difference is information, not model class" did not follow; B5a/B5b fix this. The goal-based multinomial-logit features of the submitted M2 are retained inside B5b's full feature set.
 
+**Implementation note (D1, 2026-11-08).** Both boosting arms are fitted with `sklearn.ensemble.HistGradientBoostingClassifier` from the already-locked scikit-learn 1.9.1 (`loss='log_loss'`, `early_stopping=True`, `sample_weight` passed explicitly); no third-party boosting library is added and the dependency set stays at eight packages. The controlled comparison locks the *implementation, weights and hyperparameters*, not a particular vendor, so this choice leaves C1/C2 unchanged. Because `predict_proba` follows the estimator's internal `classes_` order, every arm is re-ordered to `p_home, p_draw, p_away` before writing predictions, with an assertion (see `data_interface.md` §1.1).
+
 ### Mapping to the submitted proposal
 
 | Submitted (2026-10-30) | This version | Note |
@@ -99,7 +101,7 @@ Model identifiers, filenames (`preds_B0.csv` … `preds_B6.csv`, `preds_B6r.csv`
 
 ## 5. Evaluation
 
-**Protocol.** Expanding-window rolling origin by season: for target season *s* and league ℓ, every model is fitted on matches in ℓ strictly before *s* and predicts every match of *s*. Hyperparameters (ξ, ρ, boosting settings) and both B6r recalibration parameters are selected by an inner expanding-window validation that sees only pre-*s* data; each outer block is evaluated exactly once.
+**Protocol.** Expanding-window rolling origin by season: for target season *s* and league ℓ, every model is fitted on matches in ℓ strictly before *s* and predicts every match of *s*. Hyperparameters (ξ, ρ, boosting settings) and both B6r recalibration parameters are selected by an inner expanding-window validation that sees only pre-*s* data (for B6r, only training matches with complete `PSCH/PSCD/PSCA` are usable, since closing prices begin in 2012/13); each outer block is evaluated exactly once.
 
 **Inference.** All claims are paired per-match differences on the same matches. Intervals are cluster-bootstrap over the **48 (league, season) blocks** (10,000 resamples) with cluster-robust standard errors as a cross-check; individual matches are never the resampling unit. We report the estimated **design effect** alongside every interval, since at 48 clusters the detectable difference is governed by within-block correlation rather than by the 16,733 matches. Per-league and per-season breakdowns, the matchday-window sweep, and the appendix A1 home-advantage analysis are declared descriptive in advance so that no result is promoted after the fact on a favourable subset.
 
@@ -163,6 +165,7 @@ Model identifiers, filenames (`preds_B0.csv` … `preds_B6.csv`, `preds_B6r.csv`
 | 9 | 原 v1.2 的 H1（结构 vs 灵活）降为**受控比较 C1/C2**，H2a/H2b 降为描述性误差分析与稳健性，H3（主场优势）降为**附录 A1** | 一个项目只保留一条主线；空场季 n=1 且混杂严重，不做因果主张 |
 | 10 | 课程工具改挂主线：样条 / 局部平滑用于 H1 可靠性曲线与 H3 matchday 曲线 | W5/W7 直接服务主推断，而非挂在一个偏题的假设上 |
 | 11 | 数据事实订正：132 CSV / 46,507 场 / 48 块 16,733 场 / B6 有效 n=16,730 | 与 `configs/raw_manifest.csv` 实测一致 |
+| 12 | **D1 实现口径**：B5a/B5b 用 sklearn 1.9.1 内置 HGB，零新增依赖；补两条静默错误契约（内部标签重排断言、B6r train 段拟合样本边界） | 分工方案 v1.3 曾写死 LightGBM 却未登记依赖；B2 内部标签与全局 `y` 方向相反；`PSCH` 自 2012/13 才有 |
 
 **报告里必须有的两段**
 

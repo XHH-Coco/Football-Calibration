@@ -8,11 +8,11 @@
 | 课程 | DSC5001C63 Statistical Machine Learning I（Semester A 2026/27，Instructor: Kangning Cui） |
 | 团队 | Team 32（5 人） |
 | 选题 | *Do football betting markets know more than a model can learn? Auditing the closing line for calibration and information* |
-| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` v1.2；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
+| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` v1.3；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.0 · 2026-11-08** |
+| 本文档版本 | **v2.1 · 2026-11-08** |
 
 ---
 
@@ -25,7 +25,7 @@ cd Football-Calibration
 
 | # | 做什么 | 详见 |
 |---|---|---|
-| 1 | 准备 **Python 3.14.7 或 3.14.10**（本机用 conda 环境 `DSC5001_Project`），按 §5.2 装齐 8 个已锁定依赖 | §5.1 |
+| 1 | 准备 **Python 3.14.7 或 3.14.10**（本机用 conda 环境 `DSC5001_Project`），按 §5.2 装齐 **8 个**已锁定依赖（**B5a/B5b 用 sklearn 内置 HGB，不新增第三方 GBM 库**，见 §5.2 D1） | §5.1 |
 | 2 | **无需下载数据集**：`data/raw/` 的 132 个原始 CSV 已随仓库提供；确认文件齐全并跑一次 SHA256 校验 | §3.4 |
 | 3 | 若使用 Agent / AI 编码工具，先补全 `.gitignore` 再提交任何代码 | §4.2 |
 
@@ -92,7 +92,7 @@ Football-Calibration/
 │   │   ├── Team-32-Proposal_v3.0.md     #     ★ 唯一执行蓝本（H1–H4 + B↔M 映射 + Revision notes）
 │   │   ├── 08_小组分工实施方案_v1.3.md  #     ★ 当前唯一分工方案（v1.2 已归档至 old_docs/）
 │   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（决策项已全部闭环）
-│   │   ├── data_interface.md        #     v1.2：统一预测 schema、9 arm 命名、防泄漏红线
+│   │   ├── data_interface.md        #     v1.3：统一预测 schema、标签重排、B6r 拟合边界、防泄漏红线
 │   │   ├── CHANGELOG_structure.md   #     目录结构变更记录
 │   │   └── roles/                   #     五份组员分工卡（可单独分发）
 │   │       ├── README.md            #       索引 + 交接时点 + 跨人红线
@@ -289,7 +289,7 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 | 阶梯 | B4→B5a 只换模型、B5a→B5b 只换信息（C1/C2）；B1→B2、B2→B3 不做归因 | v1.3 §0.3 |
 | 降级内容 | 原 H1「结构 vs 灵活」→ C1/C2；原 H2a/H2b → 描述性误差分析与稳健性；原 H3 主场优势 → **附录 A1**（不做因果主张） | v1.3 §0.4 |
 | 阈值 | **唯一等价边际 ±0.02 nats**；H4 用 90% 区间上界 < 25% | v3.0 §2 / §5 |
-| 防泄漏新增 | B6r 两参数只在 train 段拟合；`is_promoted_*` / `matchday` 只由季前名单与赛程构造 | `data_interface.md` §2 |
+| 防泄漏新增 | B6r 两参数只在 train 段**且 `PSCH` 三列齐全**的比赛上拟合（`PSCH` 自 2012/13 才有），每折 `n_fit` 记日志；`is_promoted_*` / `matchday` 只由季前名单与赛程构造 | `data_interface.md` §2 |
 | 数据窗口 | 下载 132 CSV / 46,507 场；评估窗 1718–2425 = 48 块 / 16,733 场；B6 有效 n = 16,730（N1 1718 缺 3 场，drop 不回填） | §3.1 / v1.3 §5.5 |
 | 报告要求 | B↔M 映射表 + *Evolution of the proposal* 段（100–150 字）；给 instructor 的简短报备并入 U2 确认信 | v3.0 Revision notes |
 
@@ -305,7 +305,7 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 
 > **判定规则**：入库的是**原始输入 + 契约**，不入库的是**可由代码重建的派生物**。派生物若各人不一致，应靠 `build_panel.py` 与断言查出来，而不是靠传同一个文件掩盖差异。
 
-**`y` 编码与类别顺序**（详见 `data_interface.md` §1.1）：`FTR` 的 `H/D/A` → `y = 0/1/2` 直接写进 `panel.parquet`，概率列恒为 `p_home, p_draw, p_away` 且 **`p_home` 在第一列**，`build_panel.py` 内写成断言。此口径已预置，**M1 不必等 M2 在 11/09 给口径**，M2 于接口冻结时签字确认即可。
+**`y` 编码与类别顺序**（详见 `data_interface.md` §1.1）：`FTR` 的 `H/D/A` → `y = 0/1/2` 直接写进 `panel.parquet`，概率列恒为 `p_home, p_draw, p_away` 且 **`p_home` 在第一列**，`build_panel.py` 内写成断言。此口径已预置，**M1 不必等 M2 在 11/09 给口径**，M2 于接口冻结时签字确认即可。 **模型内部标签顺序自由**（B2 有序 logit 常用 客胜=0 / 平=1 / 主胜=2，HGB 按 `classes_`），但**落盘前必须重排成 `p_home,p_draw,p_away` 并写断言**；详见 `data_interface.md` §1.1（v1.3 新增）。
 
 ---
 
@@ -378,7 +378,7 @@ pip install -r appendix/requirements.txt
 | pytest | `9.2.0` | 第三方包 | 泄漏测试与场次断言（T1.3-a / T1.6） | 2026-11-07 | M1 |
 | matplotlib | `3.11.2` | 第三方包 | 覆盖率矩阵图与报告成品图（T1.4 / M5） | 2026-11-07 | M1 |
 | scipy | `1.18.1` | 第三方包 | 去抽水、Dixon–Coles 极大似然优化、统计检验（M2 / M3） | 2026-11-07 | M1 |
-| scikit-learn | `1.9.1` | 第三方包 | 指标实现交叉核对、GBM / 对照模型（M2 / M4） | 2026-11-07 | M1 |
+| scikit-learn | `1.9.1` | 第三方包 | 指标实现交叉核对；**`HistGradientBoostingClassifier` 为 B5a / B5b 的 GBM 实现（D1，零新增依赖）**（M2 / M4） | 2026-11-07 | M1 |
 | statsmodels | `0.15.0` | 第三方包 | 有序 logit B2、市场校准斜率与截距、H3 固定效应回归（M2 / M3 / M5） | 2026-11-07 | M1 |
 
 登记格式要求：
@@ -388,6 +388,9 @@ pip install -r appendix/requirements.txt
 - `appendix/requirements.txt` 必须与本表的**第三方包行逐行一致**（Python 行是运行时，不写入该文件），`run_all.sh` 的冷启动复现以该文件为准；
 - 装包后确认该包在 Python 3.14.x 下可正常 `import`；
 - 本表只登记**直接依赖**；间接依赖由 pip 解析，T1.7 复现包另附一份 `pip freeze` 全量快照备查。
+> **D1 决策（2026-11-08，README v2.1）**：B5a / B5b 的梯度提升统一用 **scikit-learn 1.9.1 内置的 `HistGradientBoostingClassifier`**（`loss='log_loss'`、`early_stopping=True`、必须传 `sample_weight`），**不引入 LightGBM / XGBoost / CatBoost，依赖总数保持 8 个**。
+> 原稿参数 `num_leaves` / `n_estimators` / `objective='multiclass'` 对应改为 `max_leaf_nodes` / `max_iter` / `loss='log_loss'`，见分工方案 v1.3 §3.4 D1 决策。
+> 理由：C1/C2 锁的是「同一实现 + 同一权重 + 同一超参」而非某个特定库；Python 3.14 较新，第三方 GBM 会带来额外间接依赖并污染 T1.7 的冷启动复现。
 
 ### 5.3 复现包
 
@@ -418,6 +421,7 @@ pip install -r appendix/requirements.txt
 | v1.8 | 2026-11-07 | **契约文件口径统一（非目录变更）**：§2.2 与 `configs/README.md` 中的 `feature_whitelist.csv` 统一为 **`feature_whitelist_b5a.csv`**（与 §2.1 结构树、分工方案 v1.2 T4.5 / §5.2、M4 分工卡一致），`configs/README.md` 补明四列 `feature / source / allowed / sample_weight_rule` 与「M4 产出、M3 会签」；`splits.json` 冻结时点由 `configs/README.md` 的 11/10 `data-v1.0` 改为 **11/09 接口冻结**（11/10 标签仅作复核），与 `roles/README.md`、M1 分工卡一致。同步 `docs/plans/CHANGELOG_structure.md` |
 | v1.9 | 2026-11-07 | **开工前口径全部落地**：① 新增 **§3.6 可再生派生物的交付约定**——`panel.parquet` 明确不入库，11/08 靠全组各自跑 `src/build_panel.py` 生成；`configs/` 契约与 `data/missing.csv` 入库；② `y` 编码 / 类别顺序按 `data_interface.md` §1.1 预置（`H/D/A→0/1/2`、`p_home` 第一列、写成断言），M1 不等 11/09；③ 新建 `data/missing.csv`（仅表头 = 0 缺失留痕），`.gitignore` 升 **v1.2** 放行该文件并同步 §4.1；④ `configs/README.md`、M1–M4 分工卡同步交付方式；⑤ `09_评审 §6` 把已闭环的「市场基准列」改为已定；⑥ `08_分工方案 §4.2` 新增 **§4.2-a 未决事项登记表**（U1/U2 搁置、U3 命名另案），同步 `roles/README.md` 与 M5 分工卡 |
 | v2.0 | 2026-11-08 | **假设体系与执行蓝本统一**：新增 `docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本，修 5 处实质缺陷：H1 曲线方向、M4/M3 归因、H1 预注册判定、B6r 防泄漏与 H4 区间、H3 联合估计证伪条件；含 B↔M 映射与 evolution 段）；分工方案 `v1.2` → **`v1.3`**（旧版归档 `old_docs/`），假设换 H1–H4、命名统一 B0–B6 + B6r、原 H1 降 C1/C2、主场优势降附录 A1、M1 补 `is_promoted_*`/`matchday`、M2 补 T2.10–T2.13、工时 M2 52h / M3 30h（总量 206h 不变）；五份 M 分工卡升 v1.1、`data_interface.md` 升 v1.2、`configs/README.md` 与 `roles/README.md` 同步、`09_评审 §6` 决策项全部闭环；§1 / §2.1 / §2.2 / **§3.5 整节重写** / §5.2 / §6 / §7 同步。**`.gitignore` 不变（仍 v1.2）** |
+| v2.1 | 2026-11-08 | **D1 定案 + 两处契约补丁（零新增依赖）**：① B5a/B5b 的 GBM 改用 scikit-learn 1.9.1 内置 `HistGradientBoostingClassifier`，全仓清除 `LightGBM` / `num_leaves` / `n_estimators` 口径，§0 与 §5.2 明确依赖仍为 8 个；② `data_interface.md` 升 **v1.3**：§1.1 增加「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例、§2 增加 B6r 拟合样本边界（`PSCH` 自 2012/13 才有，只用 train 段三列齐全比赛，每折 `n_fit` 记日志）；③ 分工方案 `v1.3-r2`、M2/M4 分工卡升 v1.2、Proposal v3.0 补实现注记、`results_table_template.md` 与 `CHANGELOG_structure.md` 同步。**`.gitignore` 不变（仍 v1.2），`requirements.txt` 不变（仍 8 行）** |
 
 ---
 
