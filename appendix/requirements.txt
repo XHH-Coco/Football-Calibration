@@ -1,0 +1,23 @@
+# Football-Calibration / 依赖锁定清单
+# 本文件必须与根目录 README §5.2「依赖版本登记表」的第三方包行逐行一致。
+# 运行时由环境保证：Python 3.14.x（3.14.7 / 3.14.10 均可；
+# 本机 conda 环境 DSC5001_Project = Python 3.14.10）。运行时不写在本文件中。
+#
+# 规则：
+#   1. 每安装一个包，写一行 `包名==x.y.z`（精确到补丁号），禁止 `>=` / `~=` / 「最新版」；
+#   2. 同时在 README §5.2 追加一行（组件 / 精确版本 / 用途 / 登记日期 / 登记人）；
+#   3. 升级版本时新增一行并注明替换了哪个版本，不覆盖历史；
+#   4. `run_all.sh` 的冷启动复现以本文件为准；本文件只锁直接依赖，
+#      间接依赖的全量快照在 T1.7 复现包中另附 `pip freeze` 备查。
+#
+# 安装：pip install -r appendix/requirements.txt
+# 登记日期：2026-11-07 · 登记人：M1 · 实测环境：Python 3.14.10 / conda DSC5001_Project
+#
+pandas==3.1.1
+numpy==2.5.4
+pyarrow==26.0.1
+pytest==9.2.0
+matplotlib==3.11.2
+scipy==1.18.1
+scikit-learn==1.9.1
+statsmodels==0.15.0

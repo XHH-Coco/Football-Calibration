@@ -1,0 +1,10 @@
+# 原始 CSV 快照按字节入库，禁止 Git 做任何换行符转换。
+#
+# football-data.co.uk 的 CSV 是 CRLF + UTF-8 BOM。若某台机器设了 core.autocrlf=true，
+# Git 会在 checkout 时改写换行符，文件字节随之变化，configs/raw_manifest.csv 里
+# 132 行 SHA256 就会全部失配（且报错很难定位）。`-text` 表示按字节原样存取，
+# 不做 EOL 规范化，但仍保留文本 diff 能力。
+#
+# 这 132 个文件已入库（约 14 MB），**不要删除本规则，也不要改用 LFS**。
+# 详见根目录 README §3.4。
+data/raw/*.csv -text
