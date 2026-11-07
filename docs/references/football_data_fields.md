@@ -1,7 +1,8 @@
 # football-data.co.uk 字段速查
 
-> 版本 v1.1 · 2026-11-07 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
+> 版本 v1.2 · 2026-11-08 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
 > **仓库已含 132 个原始 CSV 快照（`data/raw/`，已入库），clone 即用、无需重新下载**；本节 URL 仅用于快照更新 / 补漏，完整下载命令见根目录 README §3.2，字节级校验见 §3.4。
+> **命名口径（v1.2）**：市场基准 arm 为 `B6`，重校准市场为 `B6r`；提交版 Proposal 里的 `MK` / `MK*` 是同一物的旧名，映射表见 `docs/plans/Team-32-Proposal_v3.0.md` §4 末。`M0`–`M4` 一律不再作模型名。
 
 ## 1. 下载 URL
 
@@ -36,9 +37,9 @@ https://www.football-data.co.uk/mmz4281/{season}/{div}.csv
 
 | 用途 | 列名 | 备注 |
 |---|---|---|
-| **市场基准（主）** | `PSCH` / `PSCD` / `PSCA` | Pinnacle **收盘**赔率，本项目 `MK` 的输入 |
+| **市场基准（主）** | `PSCH` / `PSCD` / `PSCA` | Pinnacle **收盘**赔率，本项目 `B6` 的唯一输入；`B6r` 由 `B6` 的概率重校准得到，不另读赔率列 |
 | 稳健性基准 | `MaxCH` / `MaxCD` / `MaxCA` | 市场最高收盘价，2019/20 起可得，几乎无抽水 |
-| 参考（勿误用） | `PSH` / `PSD` / `PSA` | Pinnacle **非收盘**赔率，不能当 `MK` |
+| 参考（勿误用） | `PSH` / `PSD` / `PSA` | Pinnacle **非收盘**赔率，不能当 `B6` |
 | 其他收盘 | `B365CH/CD/CA`、`AvgCH/CD/CA`、`BFECH/CD/CA` | 可选交叉核对 |
 | 去抽水对照 | `MaxH/D/A`、`AvgH/D/A` | 非收盘的市场最大 / 平均 |
 

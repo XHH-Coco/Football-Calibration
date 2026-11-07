@@ -8,11 +8,11 @@
 | 课程 | DSC5001C63 Statistical Machine Learning I（Semester A 2026/27，Instructor: Kangning Cui） |
 | 团队 | Team 32（5 人） |
 | 选题 | *Do football betting markets know more than a model can learn? Auditing the closing line for calibration and information* |
-| 依据文档 | `docs/plans/Team-32-Proposal.pdf`、`docs/plans/08_小组分工实施方案_v1.2.md`（唯一在库版本）、`docs/plans/09_分工方案评审_v1.0.md` |
+| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` v1.2；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v1.9 · 2026-11-07** |
+| 本文档版本 | **v2.0 · 2026-11-08** |
 
 ---
 
@@ -37,11 +37,11 @@ cd Football-Calibration
 
 足球只是实验场，真正的问题是**「预测概率能不能信」**。保险定价、信贷审批、医疗辅助决策靠的都是概率而非类别标签，一个分类还行但概率乱给的模型在这些场景里是危险的。
 
-本项目把博彩公司的**收盘赔率**当作最灵敏的测量仪器而不是对手：去抽水后的市场概率是公开可得的三分类预测里最强的一个，我们审计它是否校准（RQ1），并问一个只用赛前信息的透明模型能否追上它、差距集中在哪、差距来自信息优势还是可修复的校准缺陷（RQ2）。模型阶梯 `M0` 先验 → `M1` Elo+有序 logit → `M2` 多项 logit → `M3` Dixon–Coles（主炮）→ `M4` 梯度提升，外加市场基准 `MK` 与重校准市场 `MK*`，相邻台阶只改一个因素。
+本项目把博彩公司的**收盘赔率**当作最灵敏的测量仪器而不是对手：去抽水后的市场概率是公开可得的三分类预测里最强的一个，我们审计它是否校准（RQ1），并问一个只用赛前信息的透明模型能否追上它、差距集中在哪、差距来自信息优势还是可修复的校准缺陷（RQ2）。对外假设统一为 **H1–H4**（市场校准 / 模型追不上 / 差距局部化 / 信息而非校准），详见 `Team-32-Proposal_v3.0.md` §2。模型阶梯统一用 **`B0` 先验 → `B1` Elo → `B2` 有序 logit → `B3` 独立 Poisson → `B4` Dixon–Coles（主炮）→ `B5a` 同信息 GBM → `B5b` 全特征 GBM → `B6` 市场 → `B6r` 重校准市场**，共 9 个 arm；其中 B4→B5a 只换模型、B5a→B5b 只换信息，是仅有的两级单因素对照（记为 C1/C2，不占假设编号）。`M1`–`M5` 只指成员，提交版 Proposal 的 `M0`–`M4`/`MK`/`MK*` 映射表见 v3.0 §4 末。
 
-评估协议：**expanding-window rolling origin**，8 个目标赛季 × 6 联赛 = **48 个块**、16,733 场评估比赛，每块只评估一次；主指标 **log loss**，辅以 Brier / RPS、可靠性曲线、校准斜率与截距、ECE；所有区间用 **48 块簇 bootstrap（10,000 次）**。**不使用 accuracy。** 负结果同样是设计内的成功结论，等价性阈值等判定规则在跑数前写死，事后不得修改。
+评估协议：**expanding-window rolling origin**，8 个目标赛季 × 6 联赛 = **48 个块**、16,733 场评估比赛，每块只评估一次；主指标 **log loss**，辅以 Brier / RPS、可靠性曲线、校准斜率与截距、ECE；所有区间用 **48 块簇 bootstrap（10,000 次）**并附 **design effect**。**不使用 accuracy。全项目唯一等价边际 ±0.02 nats**（提交版曾用 ±0.01，48 簇下不可分辨，已统一）；H4 用 90% 区间上界 < 25% 判定。负结果同样是设计内的成功结论，判定规则在跑数前写死，事后不得修改。
 
-> 本课工具落点：W3 Bootstrap（簇重采样区间）、W5 样条 / GAM（趋势平滑）、W7 局部平滑（校准曲线）。接口与防泄漏红线见 `docs/plans/data_interface.md`。
+> 本课工具落点：W3 Bootstrap（簇重采样区间 + design effect）、W5 样条 / GAM 与 W7 局部平滑（**主推断**：H1 可靠性曲线、H3 轮次 sweep；附录 A1 的 γ 趋势为描述性补充）。接口与防泄漏红线见 `docs/plans/data_interface.md`。
 
 ---
 
@@ -49,7 +49,7 @@ cd Football-Calibration
 
 > **本文件（§2.1 + §2.2）是目录结构的唯一书面说明。后续任何目录改动，必须同步修改这里（§2.4）。**
 
-### 2.1 当前项目文件结构（v1.6 / 2026-11-07）
+### 2.1 当前项目文件结构（**v2.0 / 2026-11-08**）
 
 ```
 Football-Calibration/
@@ -71,7 +71,7 @@ Football-Calibration/
 │   └── .gitkeep
 │
 ├── src/                             # 全部可复用 Python 源码
-│   ├── models/                      #   M0–M4 各模型实现
+│   ├── models/                      #   B0–B6 + B6r 各 arm 实现
 │   ├── eval/                        #   harness / metrics / devig / bootstrap
 │   └── .gitkeep
 │
@@ -88,10 +88,11 @@ Football-Calibration/
 │
 ├── docs/                            # 模板、参考、方案类文件（入库）
 │   ├── plans/                       #   方案 / 约定 / 变更记录（只放当前版本，历史版本归档于仓库外 old_docs/）
-│   │   ├── Team-32-Proposal.pdf
-│   │   ├── 08_小组分工实施方案_v1.2.md    #     ★ 当前唯一分工方案（数值已用 132 个 CSV 实测校正）
-│   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（v1.2 的修订依据）
-│   │   ├── data_interface.md        #     统一预测 schema 与防泄漏红线
+│   │   ├── Team-32-Proposal.pdf         #     2026-10-30 提交凭据（保留不改）
+│   │   ├── Team-32-Proposal_v3.0.md     #     ★ 唯一执行蓝本（H1–H4 + B↔M 映射 + Revision notes）
+│   │   ├── 08_小组分工实施方案_v1.3.md  #     ★ 当前唯一分工方案（v1.2 已归档至 old_docs/）
+│   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（决策项已全部闭环）
+│   │   ├── data_interface.md        #     v1.2：统一预测 schema、9 arm 命名、防泄漏红线
 │   │   ├── CHANGELOG_structure.md   #     目录结构变更记录
 │   │   └── roles/                   #     五份组员分工卡（可单独分发）
 │   │       ├── README.md            #       索引 + 交接时点 + 跨人红线
@@ -126,8 +127,8 @@ Football-Calibration/
 **说明**
 
 - 当前为空的目录都放了一个空的 `.gitkeep` 占位文件，保证 `clone` 后结构完整；目录里出现第一个正式文件后可删除对应 `.gitkeep`（删了也要按 §2.4 同步本文件）。**`data/raw/` 已有 132 个正式文件，其 `.gitkeep` 已删除**；结构树中该目录的 132 个 CSV 不逐个列出，完整清单见 `configs/raw_manifest.csv`。
-- **版本文件只留最新一份**：`docs/`（含 `docs/plans/`、数据集剖析报告等）中同一份文档只保留当前版本（文件名带版本号）。被取代的旧版移入项目根目录 `old_docs/`（仓库外，不入库、不进 Git 历史），保留原文件名以便追查。目前已归档：`08_小组分工实施方案_v1.0.md`、`08_小组分工实施方案_v1.1.md`、`data_profile_v1.0.html`。**v1.1 中的数值（约 45,000 场 / 17,000 场 / B0 ≈ 1.03–1.05 / B365 基准）已作废，不要再引用。**
-- 上表只列出**当前已存在**的文件。`src/` 下的脚本、`configs/` 下的 `splits.json` / `team_alias.csv` / `feature_whitelist_b5a.csv`、`appendix/` 下的 `run_all.sh` / `MANIFEST.md` 等由各组员按分工方案产出后再补进结构树。**路径口径以 `08_小组分工实施方案_v1.2.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
+- **版本文件只留最新一份**：`docs/`（含 `docs/plans/`、数据集剖析报告等）中同一份文档只保留当前版本（文件名带版本号）。被取代的旧版移入项目根目录 `old_docs/`（仓库外，不入库、不进 Git 历史），保留原文件名以便追查。目前已归档：`08_小组分工实施方案_v1.0.md`、`v1.1.md`、**`v1.2.md`**、`data_profile_v1.0.html`。**例外**：`Team-32-Proposal.pdf` 是 10/30 已提交的计分凭据，v3.0 以新增 Markdown 形式并存，不覆盖 PDF。**v1.1 中的数值（约 45,000 场 / 17,000 场 / B0 ≈ 1.03–1.05 / B365 基准）已作废，不要再引用。**
+- 上表只列出**当前已存在**的文件。`src/` 下的脚本、`configs/` 下的 `splits.json` / `team_alias.csv` / `feature_whitelist_b5a.csv`、`appendix/` 下的 `run_all.sh` / `MANIFEST.md` 等由各组员按分工方案产出后再补进结构树。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
 
 ### 2.2 目录职责表
 
@@ -139,7 +140,7 @@ Football-Calibration/
 | `tests/` | pytest 单测，尤其 `test_leakage.py` | — | ✅ | M1 / M2 |
 | `results/` | 可重跑重建的机器可读中间数值：预测 CSV、收敛表、参数轨迹 | 已排版、会被报告引用的成品 | ✅（默认） | M2 / M3 / M4 |
 | `analysis/` | H1–H4、消融的 notebook | 成品图 / 成品表 | ✅ | M2 / M3 / M4 / M5 |
-| `docs/` | **模板、参考文件、方案类文件**：Proposal、分工方案（v1.2 为当前权威）、方案评审、`plans/roles/` 五份组员分工卡、接口约定、结构变更记录、各类模板、字段速查、数据集剖析报告（HTML） | 代码、数据、实验结果 | ✅ | M5 |
+| `docs/` | **模板、参考文件、方案类文件**：Proposal v3.0（唯一蓝本）+ 提交版 PDF、分工方案 v1.3（当前权威）、方案评审、`plans/roles/` 五份组员分工卡、接口约定、结构变更记录、各类模板、字段速查、数据集剖析报告（HTML） | 代码、数据、实验结果 | ✅ | M5 |
 | `products/` | **产物类文件**：实验生成的图片、成品表格、Poster、Report、Slides、录像 | 中间数值、临时草稿 | ✅（大文件除外） | M5 |
 | `appendix/` | 复现包脚本与清单 | 生成好的 `appendix.zip` | ✅ | M1 |
 
@@ -279,18 +280,20 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 
 ### 3.5 ⚠️ 两份依据文档的口径差异（待组内确认）
 
-`docs/plans/` 里的 Proposal 与分工方案并不完全一致，下表为比对结果。**v1.2 已消除其中三项，仅剩「模型命名 / 假设编号」待组内确认。**
+> **2026-11-08 起口径已统一，本节不再是待办清单。** 组内确认「Proposal 并非不能改，有缺陷可以改」，按「假设体系用提交版 H1–H4、实验设计用分工方案的 B0–B6」合并成单一蓝本：`Team-32-Proposal_v3.0.md` + `08_小组分工实施方案_v1.3.md`。U3 闭环，接口冻结不再被命名问题阻塞。
 
-| 项目 | `Team-32-Proposal.pdf`（2026-10-30，正式提交版） | `08_小组分工实施方案_v1.2.md`（2026-11-07，在库唯一版本） |
+| 项目 | 定稿口径 | 依据 |
 |---|---|---|
-| 数据窗口 | 2016/17–2024/25，18,865 场 / 48 块 / 54 个 CSV | **已对齐**：下载 2003/04–2024/25 共 132 个 CSV（实测 46,507 场），评估窗与 Proposal 相同，48 块 / 16,733 场 |
-| 市场基准 | Pinnacle **收盘** `PSCH/PSCD/PSCA` + `MaxCH` 稳健性 | **已对齐**：v1.2 §5.5 落定为 `PSCH/PSCD/PSCA`，`B365*`（非收盘）不再作基准，`MaxCH` 仅作稳健性 |
-| 模型命名 | `M0`–`M4` + `MK` / `MK*` | `B0`–`B6`（**仍待 11/09 统一**） |
-| 假设 | H1 冷门–热门偏差；H2 模型追不上市场；H3 差距局部化；H4 信息而非校准 | H1 结构 vs 灵活；H2a 平局过度自信；H2b 与市场差距；H3 主场优势衰退（**编号待统一**） |
+| 研究问题 / 假设 | **RQ1/RQ2 + H1–H4**（市场校准、模型追不上、差距局部化、信息而非校准） | v3.0 §1–§2 |
+| 模型命名 | **`B0`–`B6` + `B6r`** 共 9 个 arm；`M1`–`M5` 只指成员；`preds_{B0..B6,B6r}.csv`、`model` 列同值 | v3.0 §4 / `data_interface.md` §1 |
+| 阶梯 | B4→B5a 只换模型、B5a→B5b 只换信息（C1/C2）；B1→B2、B2→B3 不做归因 | v1.3 §0.3 |
+| 降级内容 | 原 H1「结构 vs 灵活」→ C1/C2；原 H2a/H2b → 描述性误差分析与稳健性；原 H3 主场优势 → **附录 A1**（不做因果主张） | v1.3 §0.4 |
+| 阈值 | **唯一等价边际 ±0.02 nats**；H4 用 90% 区间上界 < 25% | v3.0 §2 / §5 |
+| 防泄漏新增 | B6r 两参数只在 train 段拟合；`is_promoted_*` / `matchday` 只由季前名单与赛程构造 | `data_interface.md` §2 |
+| 数据窗口 | 下载 132 CSV / 46,507 场；评估窗 1718–2425 = 48 块 / 16,733 场；B6 有效 n = 16,730（N1 1718 缺 3 场，drop 不回填） | §3.1 / v1.3 §5.5 |
+| 报告要求 | B↔M 映射表 + *Evolution of the proposal* 段（100–150 字）；给 instructor 的简短报备并入 U2 确认信 | v3.0 Revision notes |
 
-> **当前口径判定（2026-11-07 更新）**：**下载范围**按分工方案 T1.1 执行，已全量下载 22 季 × 6 联赛 = **132 个 CSV**；**评估与提交口径**一律以 `Team-32-Proposal.pdf` 为准，即评估窗固定最近 8 季 × 6 联赛 = **48 块 / 16,733 场**，MK 基准用 `PSCH/PSCD/PSCA` 收盘赔率。分工方案 T1.5 的评估窗与 Proposal 一致，两者并不冲突：主口径外的 14 季只进入各折的 `train`，不产生 test 块、不进主推断、不计入 bootstrap 簇。仍待 11/09 确认的**只剩模型命名 / 假设编号**（`B0`–`B6` vs `M0`–`M4`/`MK`）。市场基准列已在 v1.2 §5.5 按 `PSCH` 落定：48 块中 45 块满格，仅 N1 2017/18 缺 3 场，B6 有效 n = 16,730（drop，不回填）。
-
-> **执行状态（2026-11-07）**：已按 T1.1 下载 **132/132** 个 CSV 到 `data/raw/`（0 缺失），生成 `configs/raw_manifest.csv`（**132 行 SHA256**，逐行校验通过），总量 **46,507 场 / 13.68 MB**。剖析报告在库只有 `docs/data_profile_v1.1.html`（132 文件全量，T1.1 交付口径）；主口径 54 文件的 `data_profile_v1.0.html` 已归档至 `old_docs/`（仓库外）。两版评估窗同为 48 块 / 16,733 场，与 Proposal、分工方案均吻合。进入评估窗的 `(联赛, 赛季)` 块须同时满足：① 含完整 `PSCH/PSCD/PSCA`；② 该赛季 6 联赛文件齐全；③ 无需为该块单独引入新的市场基准定义；不满足者只作训练历史。**2026-11-07 起这 132 个 CSV 已随仓库入库，组员 clone 后直接可用，无需自行下载（§3.1 / §3.4）。**
+> **为什么要改 Proposal 而不是写 deviation 说明**：提交版 §4 的 M4 用 M2 的信息集却与 M3 做归因（违反讲义「一次只改一个因素」），H1 把可靠性曲线方向写反，MK\* 的 in-sample 边界未落到 train 段；这些是实质设计缺陷，不是命名差异。Proposal 只占 2 分且已于 11/01 截止，17 分的报告不应被它绑住；v3.0 保留 RQ1/RQ2 与 H1–H4 主线未变，属计划迭代而非换题。**提交版 PDF 不覆盖**，作为提交凭据保留。
 
 ### 3.6 可再生派生物的交付约定（2026-11-07 定）
 
@@ -376,7 +379,7 @@ pip install -r appendix/requirements.txt
 | matplotlib | `3.11.2` | 第三方包 | 覆盖率矩阵图与报告成品图（T1.4 / M5） | 2026-11-07 | M1 |
 | scipy | `1.18.1` | 第三方包 | 去抽水、Dixon–Coles 极大似然优化、统计检验（M2 / M3） | 2026-11-07 | M1 |
 | scikit-learn | `1.9.1` | 第三方包 | 指标实现交叉核对、GBM / 对照模型（M2 / M4） | 2026-11-07 | M1 |
-| statsmodels | `0.15.0` | 第三方包 | 有序 logit B2、校准斜率与截距（M3 / M5） | 2026-11-07 | M1 |
+| statsmodels | `0.15.0` | 第三方包 | 有序 logit B2、市场校准斜率与截距、H3 固定效应回归（M2 / M3 / M5） | 2026-11-07 | M1 |
 
 登记格式要求：
 
@@ -397,7 +400,8 @@ pip install -r appendix/requirements.txt
 - 每次合并走 PR，至少 1 人 review，跨工作包优先（分工方案 §4.4）；
 - 冻结标签：`data-v1.0`(11/10)、`harness-v1.0`(11/13)、`code-v1.0`(11/24)、`report-v1.0`(11/28)；
 - 统一预测文件 schema 与防泄漏红线见 `docs/plans/data_interface.md`，术语口径与图表清单见 `docs/templates/figure_list_template.md`；
-- 负结果即成功；等价性阈值等判定规则在跑数前写死，不得事后修改。
+- 负结果即成功；**唯一等价边际 ±0.02 nats** 等判定规则在跑数前写死，不得事后修改；
+- 模型命名、假设编号、阶梯口径以 `Team-32-Proposal_v3.0.md` + `08_小组分工实施方案_v1.3.md` 为唯一依据，任何新文档不得再引入 `M0`–`M4` / `MK` 作为模型名。
 
 ## 7. 修订记录
 
@@ -413,6 +417,7 @@ pip install -r appendix/requirements.txt
 | v1.7 | 2026-11-07 | Python 运行时由固定 `3.14.7` 放宽为 `3.14.x`（3.14.7 / 3.14.10 均可），登记本机 conda 环境 `DSC5001_Project`；§5.2 登记 8 个直接依赖精确版本（pandas 3.1.1 / numpy 2.5.4 / pyarrow 26.0.1 / pytest 9.2.0 / matplotlib 3.11.2 / scipy 1.18.1 / scikit-learn 1.9.1 / statsmodels 0.15.0），同步 `appendix/requirements.txt`；**明确 T1.1 已交付、无需 `src/download.py`**，复现包从已入库 raw 起跑、不联网重下（重建入口 §3.2）；同步 M1 分工卡与 `08_分工方案_v1.2 §3.1` 的 T1.1 行 |
 | v1.8 | 2026-11-07 | **契约文件口径统一（非目录变更）**：§2.2 与 `configs/README.md` 中的 `feature_whitelist.csv` 统一为 **`feature_whitelist_b5a.csv`**（与 §2.1 结构树、分工方案 v1.2 T4.5 / §5.2、M4 分工卡一致），`configs/README.md` 补明四列 `feature / source / allowed / sample_weight_rule` 与「M4 产出、M3 会签」；`splits.json` 冻结时点由 `configs/README.md` 的 11/10 `data-v1.0` 改为 **11/09 接口冻结**（11/10 标签仅作复核），与 `roles/README.md`、M1 分工卡一致。同步 `docs/plans/CHANGELOG_structure.md` |
 | v1.9 | 2026-11-07 | **开工前口径全部落地**：① 新增 **§3.6 可再生派生物的交付约定**——`panel.parquet` 明确不入库，11/08 靠全组各自跑 `src/build_panel.py` 生成；`configs/` 契约与 `data/missing.csv` 入库；② `y` 编码 / 类别顺序按 `data_interface.md` §1.1 预置（`H/D/A→0/1/2`、`p_home` 第一列、写成断言），M1 不等 11/09；③ 新建 `data/missing.csv`（仅表头 = 0 缺失留痕），`.gitignore` 升 **v1.2** 放行该文件并同步 §4.1；④ `configs/README.md`、M1–M4 分工卡同步交付方式；⑤ `09_评审 §6` 把已闭环的「市场基准列」改为已定；⑥ `08_分工方案 §4.2` 新增 **§4.2-a 未决事项登记表**（U1/U2 搁置、U3 命名另案），同步 `roles/README.md` 与 M5 分工卡 |
+| v2.0 | 2026-11-08 | **假设体系与执行蓝本统一**：新增 `docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本，修 5 处实质缺陷：H1 曲线方向、M4/M3 归因、H1 预注册判定、B6r 防泄漏与 H4 区间、H3 联合估计证伪条件；含 B↔M 映射与 evolution 段）；分工方案 `v1.2` → **`v1.3`**（旧版归档 `old_docs/`），假设换 H1–H4、命名统一 B0–B6 + B6r、原 H1 降 C1/C2、主场优势降附录 A1、M1 补 `is_promoted_*`/`matchday`、M2 补 T2.10–T2.13、工时 M2 52h / M3 30h（总量 206h 不变）；五份 M 分工卡升 v1.1、`data_interface.md` 升 v1.2、`configs/README.md` 与 `roles/README.md` 同步、`09_评审 §6` 决策项全部闭环；§1 / §2.1 / §2.2 / **§3.5 整节重写** / §5.2 / §6 / §7 同步。**`.gitignore` 不变（仍 v1.2）** |
 
 ---
 
