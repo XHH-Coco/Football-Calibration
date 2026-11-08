@@ -57,7 +57,7 @@ If an interval is wider than the margin we report the estimate descriptively and
 - **Source.** football-data.co.uk — publicly downloadable, no registration and no API key. One CSV per league-season, match-level.
 - **Snapshot.** All **132** files (six leagues × 22 seasons, 2003/04–2024/25) are committed to the repository with a 132-row SHA256 manifest; **46,507 matches** in total. Team members clone rather than re-download, so no source-site drift is possible. *Correction:* the submitted version described only a 9-season, 18,865-match window; the extra 14 seasons enter training history only and produce no test blocks.
 - **Evaluation window.** Eight target seasons 2017/18–2024/25 × 6 leagues = **48 (league, season) blocks, 16,733 matches**, each evaluated exactly once.
-- **Benchmark.** Pinnacle closing prices `PSCH/PSCD/PSCA` (de-vigged by proportional, Shin and power methods). Coverage is complete in 45 of 48 blocks; the Eredivisie 2017/18 block lacks 3 matches, which are dropped, not imputed, giving **B6 n = 16,730**. `PSH/PSD/PSA` are pre-closing, `B365*` is another bookmaker, and `MaxCH` (from 2019/20) is a robustness benchmark only.
+- **Benchmark.** Pinnacle closing prices `PSCH/PSCD/PSCA` (de-vigged by proportional, Shin and power methods). Coverage is complete in 45 of 48 blocks; the other three blocks lack 5 matches in total (Eredivisie 2017/18: 3, La Liga 2017/18: 1, Bundesliga 2018/19: 1), which are dropped, not imputed, giving **B6 n = 16,728**. `PSH/PSD/PSA` are pre-closing, `B365*` is another bookmaker, and `MaxCH` (from 2019/20) is a robustness benchmark only.
 - **Target.** Three-class outcome `FTR` H/D/A → `y = 0/1/2`; probability column order is fixed as `p_home, p_draw, p_away` and asserted in code.
 - **Known challenges.** Chronological dependence (random splits leak the future); non-stationary team identities from promotion/relegation; two curtailed 2019/20 seasons; intrinsic noise bounding top-1 accuracy near 50% (accuracy is not used); heterogeneous team-name spelling, harmonised via a committed alias table.
 
@@ -164,8 +164,9 @@ Model identifiers, filenames (`preds_B0.csv` … `preds_B6.csv`, `preds_B6r.csv`
 | 8 | **补 H3 的数据契约**：`is_promoted_*` 与 `matchday` 由季前名单 / 赛程构造，写进 `panel.parquet` | H3 原本在分工方案里没有对应列，做不出来 |
 | 9 | 原 v1.2 的 H1（结构 vs 灵活）降为**受控比较 C1/C2**，H2a/H2b 降为描述性误差分析与稳健性，H3（主场优势）降为**附录 A1** | 一个项目只保留一条主线；空场季 n=1 且混杂严重，不做因果主张 |
 | 10 | 课程工具改挂主线：样条 / 局部平滑用于 H1 可靠性曲线与 H3 matchday 曲线 | W5/W7 直接服务主推断，而非挂在一个偏题的假设上 |
-| 11 | 数据事实订正：132 CSV / 46,507 场 / 48 块 16,733 场 / B6 有效 n=16,730 | 与 `configs/raw_manifest.csv` 实测一致 |
+| 11 | 数据事实订正：132 CSV / 46,507 场 / 48 块 16,733 场 / B6 有效 n=16,728 | 与 `configs/raw_manifest.csv` 实测一致 |
 | 12 | **D1 实现口径**：B5a/B5b 用 sklearn 1.9.1 内置 HGB，零新增依赖；补两条静默错误契约（内部标签重排断言、B6r train 段拟合样本边界） | 分工方案 v1.3 曾写死 LightGBM 却未登记依赖；B2 内部标签与全局 `y` 方向相反；`PSCH` 自 2012/13 才有 |
+| 13 | **数据事实再订正（11/08 全窗复测）**：三列收盘赔率缺失由「N1 1718 的 3 场」改为「3 块共 5 场」，B6 / B6r 有效 n 由 16,730 改为 **16,728**；补 `match_id` 与 ISO 日期契约 | 初测漏计 `1718_SP1` 与 `1819_D1` 各 1 场，会让 B6 行数断言与 H4 分母错 |
 
 **报告里必须有的两段**
 

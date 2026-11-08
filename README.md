@@ -12,7 +12,7 @@
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.1 · 2026-11-08** |
+| 本文档版本 | **v2.2 · 2026-11-08** |
 
 ---
 
@@ -92,8 +92,9 @@ Football-Calibration/
 │   │   ├── Team-32-Proposal_v3.0.md     #     ★ 唯一执行蓝本（H1–H4 + B↔M 映射 + Revision notes）
 │   │   ├── 08_小组分工实施方案_v1.3.md  #     ★ 当前唯一分工方案（v1.2 已归档至 old_docs/）
 │   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（决策项已全部闭环）
-│   │   ├── data_interface.md        #     v1.3：统一预测 schema、标签重排、B6r 拟合边界、防泄漏红线
+│   │   ├── data_interface.md        #     v1.4：统一预测 schema、match_id / ISO 日期、标签重排、防泄漏红线
 │   │   ├── CHANGELOG_structure.md   #     目录结构变更记录
+│   │   ├── CHANGELOG_data.md        #     数据变更日志（11/10 由 M1 创建，T1.10）
 │   │   └── roles/                   #     五份组员分工卡（可单独分发）
 │   │       ├── README.md            #       索引 + 交接时点 + 跨人红线
 │   │       ├── M1_数据工程与复现.md
@@ -128,7 +129,7 @@ Football-Calibration/
 
 - 当前为空的目录都放了一个空的 `.gitkeep` 占位文件，保证 `clone` 后结构完整；目录里出现第一个正式文件后可删除对应 `.gitkeep`（删了也要按 §2.4 同步本文件）。**`data/raw/` 已有 132 个正式文件，其 `.gitkeep` 已删除**；结构树中该目录的 132 个 CSV 不逐个列出，完整清单见 `configs/raw_manifest.csv`。
 - **版本文件只留最新一份**：`docs/`（含 `docs/plans/`、数据集剖析报告等）中同一份文档只保留当前版本（文件名带版本号）。被取代的旧版移入项目根目录 `old_docs/`（仓库外，不入库、不进 Git 历史），保留原文件名以便追查。目前已归档：`08_小组分工实施方案_v1.0.md`、`v1.1.md`、**`v1.2.md`**、`data_profile_v1.0.html`。**例外**：`Team-32-Proposal.pdf` 是 10/30 已提交的计分凭据，v3.0 以新增 Markdown 形式并存，不覆盖 PDF。**v1.1 中的数值（约 45,000 场 / 17,000 场 / B0 ≈ 1.03–1.05 / B365 基准）已作废，不要再引用。**
-- 上表只列出**当前已存在**的文件。`src/` 下的脚本、`configs/` 下的 `splits.json` / `team_alias.csv` / `feature_whitelist_b5a.csv`、`appendix/` 下的 `run_all.sh` / `MANIFEST.md` 等由各组员按分工方案产出后再补进结构树。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
+- 上表只列出**当前已存在**的文件；唯一例外是 `docs/plans/CHANGELOG_data.md`，已标注 11/10 由 M1 的 T1.10 创建，创建后无需再改结构树。`src/` 下的脚本、`configs/` 下的 `splits.json` / `team_alias.csv` / `feature_whitelist_b5a.csv`、`appendix/` 下的 `run_all.sh` / `MANIFEST.md` 等由各组员按分工方案产出后再补进结构树。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
 
 ### 2.2 目录职责表
 
@@ -244,8 +245,11 @@ foreach ($s in $seasons) {
 |---|---|
 | 编码 | 老文件常见 `latin-1` / `cp1252`，较新文件可能带 UTF-8 BOM；先试 `utf-8-sig`，报错再回退 `latin-1`，抽查 `Saint-Étienne` 等队名。132 文件实测仅 `0405_E0.csv` 为 `cp1252`，其余 131 个为 UTF-8 族 |
 | BOM | 部分文件首列是 `\ufeffDiv`（如 2425 的非英超联赛），读取时显式去掉 |
-| 日期 | 老文件 `dd/mm/yy`、新文件 `dd/mm/yyyy` 混用；`pd.to_datetime(..., dayfirst=True, format='mixed')` 并抽查，警惕 `2024` 被解析成 `2024-01-01` |
-| 列名随赛季变化 | 2016/17 为 65 列、2019/20 起约 106 列、2024/25 达 119–120 列（随联赛不同）；**按列名取数，绝不按位置取** |
+| 日期 | 老文件 `dd/mm/yy`、新文件 `dd/mm/yyyy` 混用（**单文件内不混合**：73 个文件两位年、29 个四位年）；`pd.to_datetime(..., dayfirst=True, format='mixed')` 实测全库 0 NaT、范围 `2003-08-01 → 2025-05-25`。**落盘一律 ISO `YYYY-MM-DD`**，见 `data_interface.md` §1.0 |
+| 列名随赛季变化 | 2016/17 为 65 列、2019/20 起约 106 列、2024/25 达 119–120 列（随联赛不同）；**按列名取数，绝不按位置取**。表头另有 2 种变体（96 个无 `Time` 列、36 个有） |
+| **行字段数不齐（r3 实测）** | **11 个文件**行字段数多于表头（行末多余空字段），裸 `pd.read_csv` 直接抛 `ParserError: Expected N fields`。用 `csv.reader` 按表头列名取数并截断；**禁止 `on_bad_lines='skip'`**——`0304_F1.csv` 会一次静默丢 365 场真实比赛 |
+| **表头重复列名（r3 实测）** | **14 个文件**表头含重复列名（含空串 `''`），整表 `pd.concat` / `reindex` 会抛 `InvalidIndexError` / `ValueError`。只按白名单列构造 DataFrame，详见 M1 分工卡 T1.2-a 参考实现 |
+| **整列缺失与空白行（r3 实测）** | `PSCH/PSCD/PSCA` 在 **54 个文件**里是「列不存在」而非「值为空」（0304–1112 共 9 季 × 6），须按白名单补 NaN；另有 **7 个文件共 11 行全空白**，显式 drop 后 `46,518 → 46,507` |
 | 收盘 vs 非收盘 | 无 `C` 的是开市后采集的赔率，带 `C` 的才是收盘。基准必须用 `PSCH/PSCD/PSCA`，**不能用 `PSH/PSD/PSA`**，否则会系统性缩小「模型 vs 市场」的差距 |
 | 队名 | `Man United` / `Manchester Utd` 等同义写法，先按 `configs/team_alias.csv` 统一再做 Elo |
 | 覆盖率 | 实测荷甲 **2017/18 前**（0304–1617 共 14 季）无射门列，1718 起齐备；西甲 / 意甲 / 法甲 0304、0405 两季亦缺。法甲 2019/20 仅 279 场、荷甲 2019/20 仅 232 场（赛季腰斩）。如实保留，不插补、不删赛季 |
@@ -290,7 +294,7 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 | 降级内容 | 原 H1「结构 vs 灵活」→ C1/C2；原 H2a/H2b → 描述性误差分析与稳健性；原 H3 主场优势 → **附录 A1**（不做因果主张） | v1.3 §0.4 |
 | 阈值 | **唯一等价边际 ±0.02 nats**；H4 用 90% 区间上界 < 25% | v3.0 §2 / §5 |
 | 防泄漏新增 | B6r 两参数只在 train 段**且 `PSCH` 三列齐全**的比赛上拟合（`PSCH` 自 2012/13 才有），每折 `n_fit` 记日志；`is_promoted_*` / `matchday` 只由季前名单与赛程构造 | `data_interface.md` §2 |
-| 数据窗口 | 下载 132 CSV / 46,507 场；评估窗 1718–2425 = 48 块 / 16,733 场；B6 有效 n = 16,730（N1 1718 缺 3 场，drop 不回填） | §3.1 / v1.3 §5.5 |
+| 数据窗口 | 下载 132 CSV / 46,507 场；评估窗 1718–2425 = 48 块 / 16,733 场；B6 有效 n = 16,728（3 块共 5 场缺三列收盘赔率：`1718_SP1` 1 / `1718_N1` 3 / `1819_D1` 1，drop 不回填） | §3.1 / v1.3 §5.5 |
 | 报告要求 | B↔M 映射表 + *Evolution of the proposal* 段（100–150 字）；给 instructor 的简短报备并入 U2 确认信 | v3.0 Revision notes |
 
 > **为什么要改 Proposal 而不是写 deviation 说明**：提交版 §4 的 M4 用 M2 的信息集却与 M3 做归因（违反讲义「一次只改一个因素」），H1 把可靠性曲线方向写反，MK\* 的 in-sample 边界未落到 train 段；这些是实质设计缺陷，不是命名差异。Proposal 只占 2 分且已于 11/01 截止，17 分的报告不应被它绑住；v3.0 保留 RQ1/RQ2 与 H1–H4 主线未变，属计划迭代而非换题。**提交版 PDF 不覆盖**，作为提交凭据保留。
@@ -422,6 +426,7 @@ pip install -r appendix/requirements.txt
 | v1.9 | 2026-11-07 | **开工前口径全部落地**：① 新增 **§3.6 可再生派生物的交付约定**——`panel.parquet` 明确不入库，11/08 靠全组各自跑 `src/build_panel.py` 生成；`configs/` 契约与 `data/missing.csv` 入库；② `y` 编码 / 类别顺序按 `data_interface.md` §1.1 预置（`H/D/A→0/1/2`、`p_home` 第一列、写成断言），M1 不等 11/09；③ 新建 `data/missing.csv`（仅表头 = 0 缺失留痕），`.gitignore` 升 **v1.2** 放行该文件并同步 §4.1；④ `configs/README.md`、M1–M4 分工卡同步交付方式；⑤ `09_评审 §6` 把已闭环的「市场基准列」改为已定；⑥ `08_分工方案 §4.2` 新增 **§4.2-a 未决事项登记表**（U1/U2 搁置、U3 命名另案），同步 `roles/README.md` 与 M5 分工卡 |
 | v2.0 | 2026-11-08 | **假设体系与执行蓝本统一**：新增 `docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本，修 5 处实质缺陷：H1 曲线方向、M4/M3 归因、H1 预注册判定、B6r 防泄漏与 H4 区间、H3 联合估计证伪条件；含 B↔M 映射与 evolution 段）；分工方案 `v1.2` → **`v1.3`**（旧版归档 `old_docs/`），假设换 H1–H4、命名统一 B0–B6 + B6r、原 H1 降 C1/C2、主场优势降附录 A1、M1 补 `is_promoted_*`/`matchday`、M2 补 T2.10–T2.13、工时 M2 52h / M3 30h（总量 206h 不变）；五份 M 分工卡升 v1.1、`data_interface.md` 升 v1.2、`configs/README.md` 与 `roles/README.md` 同步、`09_评审 §6` 决策项全部闭环；§1 / §2.1 / §2.2 / **§3.5 整节重写** / §5.2 / §6 / §7 同步。**`.gitignore` 不变（仍 v1.2）** |
 | v2.1 | 2026-11-08 | **D1 定案 + 两处契约补丁（零新增依赖）**：① B5a/B5b 的 GBM 改用 scikit-learn 1.9.1 内置 `HistGradientBoostingClassifier`，全仓清除 `LightGBM` / `num_leaves` / `n_estimators` 口径，§0 与 §5.2 明确依赖仍为 8 个；② `data_interface.md` 升 **v1.3**：§1.1 增加「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例、§2 增加 B6r 拟合样本边界（`PSCH` 自 2012/13 才有，只用 train 段三列齐全比赛，每折 `n_fit` 记日志）；③ 分工方案 `v1.3-r2`、M2/M4 分工卡升 v1.2、Proposal v3.0 补实现注记、`results_table_template.md` 与 `CHANGELOG_structure.md` 同步。**`.gitignore` 不变（仍 v1.2），`requirements.txt` 不变（仍 8 行）** |
+| v2.2 | 2026-11-08 | **M1 开工前全量复核 132 CSV（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：① **数据事实订正**——评估窗三列收盘赔率缺 5 场（3 块：`1718_SP1` 1 / `1718_N1` 3 / `1819_D1` 1），B6 / B6r 有效 n 由 16,730 改为 **16,728**，全仓同步；② §3.3 补 4 个实测读取坑（11 个 ragged 文件 / 14 个重复表头文件 / 54 个缺 `PSCH` 列文件 / 11 行全空白，并给出 `csv.reader` 按名取列的处理口径）、日期改 ISO 并附全库 0 NaT 实测；③ `data_interface.md` 升 **v1.4**（新增 §1.0 `match_id` / ISO 日期 / `season` 契约，preds schema 增 `match_id` 列）；④ M1 分工卡升 **v1.2**（T1.2-a 稳健读取器 + 参考实现、T1.10 数据冻结、`n_train ≥ 4,284`、H3 两列 alias 优先与首季规则、覆盖率矩阵读 raw、Windows venv 注意）；⑤ 分工方案 `v1.3-r3`（§5.1 train 池限同联赛、§5.4 补 11/09 签字人）、`football_data_fields.md` v1.3、`configs/README.md`、`roles/README.md` v1.3、结果表模板、M2 卡、`09_评审` 数值订正警示同步；§2.1 结构树新增 `docs/plans/CHANGELOG_data.md` |
 
 ---
 

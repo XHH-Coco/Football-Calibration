@@ -39,6 +39,7 @@
 | **11/08** | 建模总表 | M1 → 全组 | `data/processed/panel.parquet` |
 | **11/09** | **接口冻结**：48 块切分 + 预测 schema（9 arm，含 B6r）+ B4 信息集清单 + H3 两列 | M1/M2/M3 → 全组 | `configs/splits.json`、`data_interface.md`、B4 输入清单 |
 | **11/10** | 图表清单 + 章节分工 | M5 → 全组 | `figure_list.md` |
+| **11/10** | **数据冻结** | M1 → 全组 | `data-v1.0` tag + `docs/plans/CHANGELOG_data.md` |
 | **11/10 前** | **复核两项搁置事项**：Proposal `meta` 占位符 / instructor 口径确认信 | M1 + M5 → 全组 | `08_小组分工实施方案_v1.3.md` §4.2-a 未决事项登记表（U1/U2 仍搁置，**U3 已闭环**） |
 | **11/13** | `harness-v1.0` 冻结；白名单签字；ξ/ρ 兜底决策 | M2/M3/M4 | — |
 | **11/17** | **G1 全链路通**：**9 个 arm** 都有 48 块预测 | 全员 | `results/preds/` |
@@ -54,6 +55,7 @@
 3. **重采样单位是 48 个块，不是 16,733 场比赛**。按场重采样会把区间压窄 3–5 倍，制造一堆假显著。
 4. **B6r 的两个重校准参数只能在 train 段拟合**；在 test 段拟合就是泄漏，H4 作废。`is_promoted_*` / `matchday` 只能由季前名单与赛程构造。
 5. **B5a/B5b 只用 sklearn 内置 HGB**（零新增依赖）；任何模型落盘前必须把内部标签重排成 `p_home,p_draw,p_away`；B6r 只能用 train 段 `PSCH` 三列齐全的比赛拟合。
+6. **`match_id` / ISO 日期 / `season` 格式以 `data_interface.md` §1.0 为准**：`panel` 与各 `preds_*.csv` 都带 `match_id` 列且逐字符一致，`date` 不得写回 raw 的 `dd/mm/yy`。M1 读 raw 必须走 T1.2-a 的 `csv.reader` 按名取列，禁止 `on_bad_lines='skip'`。
 
 ## 5. 固定节奏
 
@@ -66,4 +68,4 @@
 
 ---
 
-*索引 v1.2 · 2026-11-08 · 依据 `08_小组分工实施方案_v1.3.md`（r2 修订） / `Team-32-Proposal_v3.0.md`；**M2 / M4 分工卡为 v1.2**（D1 sklearn HGB + 两条契约补丁），M1 / M3 / M5 仍为 v1.1*
+*索引 v1.3 · 2026-11-08 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 / M2 / M4 分工卡为 v1.2**（M1 = T1.2-a 稳健读取器 + 契约补丁；M2 / M4 = D1 sklearn HGB），M3 / M5 仍为 v1.1*
