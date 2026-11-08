@@ -12,7 +12,7 @@
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.3 · 2026-11-08** |
+| 本文档版本 | **v2.4 · 2026-11-08** |
 
 ---
 
@@ -71,16 +71,18 @@ Football-Calibration/
 │   └── .gitkeep
 │
 ├── src/                             # 全部可复用 Python 源码
+│   ├── build_panel.py               #   ★ M1 / S1：read_raw() 稳健读取器（S2 / S3 后续追加）
 │   ├── models/                      #   B0–B6 + B6r 各 arm 实现
 │   ├── eval/                        #   harness / metrics / devig / bootstrap
 │   └── .gitkeep
 │
 ├── tests/                           # pytest 单测（含 test_leakage.py）
+│   ├── test_read_raw.py             #   ★ M1 / S1：read_raw() 验收（7 条）
 │   └── .gitkeep
 │
 ├── results/                         # 代码直接产出、可重跑重建的中间数值结果
 │   ├── preds/                       #   各模型 48 块预测 CSV（统一 schema）
-│   ├── logs/                        #   收敛表、参数轨迹、S0 自检记录（*.log 忽略）
+│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 自检记录（*.log 忽略）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -247,7 +249,7 @@ foreach ($s in $seasons) {
 | BOM | 部分文件首列是 `\ufeffDiv`（如 2425 的非英超联赛），读取时显式去掉 |
 | 日期 | 老文件 `dd/mm/yy`、新文件 `dd/mm/yyyy` 混用（**单文件内不混合**：73 个文件两位年、29 个四位年）；`pd.to_datetime(..., dayfirst=True, format='mixed')` 实测全库 0 NaT、范围 `2003-08-01 → 2025-05-25`。**落盘一律 ISO `YYYY-MM-DD`**，见 `data_interface.md` §1.0 |
 | 列名随赛季变化 | 2016/17 为 65 列、2019/20 起约 106 列、2024/25 达 119–120 列（随联赛不同）；**按列名取数，绝不按位置取**。表头另有 2 种变体（96 个无 `Time` 列、36 个有） |
-| **行字段数不齐（r3 实测）** | **11 个文件**行字段数多于表头（行末多余空字段），裸 `pd.read_csv` 直接抛 `ParserError: Expected N fields`。用 `csv.reader` 按表头列名取数并截断；**禁止 `on_bad_lines='skip'`**——`0304_F1.csv` 会一次静默丢 365 场真实比赛 |
+| **行长不齐（S1 实测订正）** | **11 个文件行长 ≠ 表头**：9 个含长行、8 个含短行、6 个兼有，全库共 **775 长行 + 1,331 短行**；`0304_F1` 表头 41 列、380 场有效行长度 39–52 列（365 行不齐：208 短 / 157 长）。裸 `pd.read_csv` 抛 `ParserError: Expected N fields`。用 `csv.reader` **按表头列名取数**（多余字段忽略、缺列补 NaN）；**禁止 `on_bad_lines='skip'`**（会静默丢 365 场）。`src/build_panel.py::read_raw()` 已落地，46,507 行 0 列错位 |
 | **表头重复列名（r3 实测）** | **14 个文件**表头含重复列名（含空串 `''`），整表 `pd.concat` / `reindex` 会抛 `InvalidIndexError` / `ValueError`。只按白名单列构造 DataFrame，详见 M1 分工卡 T1.2-a 参考实现 |
 | **整列缺失与空白行（r3 实测）** | `PSCH/PSCD/PSCA` 在 **54 个文件**里是「列不存在」而非「值为空」（0304–1112 共 9 季 × 6），须按白名单补 NaN；另有 **7 个文件共 11 行全空白**，显式 drop 后 `46,518 → 46,507` |
 | 收盘 vs 非收盘 | 无 `C` 的是开市后采集的赔率，带 `C` 的才是收盘。基准必须用 `PSCH/PSCD/PSCA`，**不能用 `PSH/PSD/PSA`**，否则会系统性缩小「模型 vs 市场」的差距 |
@@ -432,6 +434,7 @@ pip install -r appendix/requirements.txt
 | v2.1 | 2026-11-08 | **D1 定案 + 两处契约补丁（零新增依赖）**：① B5a/B5b 的 GBM 改用 scikit-learn 1.9.1 内置 `HistGradientBoostingClassifier`，全仓清除 `LightGBM` / `num_leaves` / `n_estimators` 口径，§0 与 §5.2 明确依赖仍为 8 个；② `data_interface.md` 升 **v1.3**：§1.1 增加「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例、§2 增加 B6r 拟合样本边界（`PSCH` 自 2012/13 才有，只用 train 段三列齐全比赛，每折 `n_fit` 记日志）；③ 分工方案 `v1.3-r2`、M2/M4 分工卡升 v1.2、Proposal v3.0 补实现注记、`results_table_template.md` 与 `CHANGELOG_structure.md` 同步。**`.gitignore` 不变（仍 v1.2），`requirements.txt` 不变（仍 8 行）** |
 | v2.2 | 2026-11-08 | **M1 开工前全量复核 132 CSV（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：① **数据事实订正**——评估窗三列收盘赔率缺 5 场（3 块：`1718_SP1` 1 / `1718_N1` 3 / `1819_D1` 1），B6 / B6r 有效 n 由 16,730 改为 **16,728**，全仓同步；② §3.3 补 4 个实测读取坑（11 个 ragged 文件 / 14 个重复表头文件 / 54 个缺 `PSCH` 列文件 / 11 行全空白，并给出 `csv.reader` 按名取列的处理口径）、日期改 ISO 并附全库 0 NaT 实测；③ `data_interface.md` 升 **v1.4**（新增 §1.0 `match_id` / ISO 日期 / `season` 契约，preds schema 增 `match_id` 列）；④ M1 分工卡升 **v1.2**（T1.2-a 稳健读取器 + 参考实现、T1.10 数据冻结、`n_train ≥ 4,284`、H3 两列 alias 优先与首季规则、覆盖率矩阵读 raw、Windows venv 注意）；⑤ 分工方案 `v1.3-r3`（§5.1 train 池限同联赛、§5.4 补 11/09 签字人）、`football_data_fields.md` v1.3、`configs/README.md`、`roles/README.md` v1.3、结果表模板、M2 卡、`09_评审` 数值订正警示同步；§2.1 结构树新增 `docs/plans/CHANGELOG_data.md` |
 | v2.3 | 2026-11-08 | **S0 环境与快照自检交付（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：新增入库产物 `results/logs/s0_selfcheck_2026-11-08.txt`（7 项 PASS 明细）；M1 分工卡升 **v1.3**（§3.1 S0 交付记录、§5 产物表、§6 验收项 1、§7 坑 8）、`roles/README.md` 升 **v1.4**（§1 交付状态速览）、`CHANGELOG_structure.md` 登记；README 同步 §0 / §2.1 / §3.4（S0 实测结论）/ §5.1（默认解释器提醒）/ §7。**S0 不新增正式脚本，下一步 S1 写 `read_raw()`** |
+| v2.4 | 2026-11-08 | **S1 稳健读取器交付 + 行长事实订正（新增 3 个入库文件，`requirements.txt` / `.gitignore` 均不变）**：① `src/build_panel.py`（`read_raw()` / `read_all()` / `selfcheck()`）、`tests/test_read_raw.py`（7 条）、`results/logs/s1_read_raw_2026-11-08.txt`（8/8 PASS）；② 订正全仓「11 个文件行字段数**多于**表头」为「11 个文件行长 **≠** 表头（9 长 / 8 短、775 长行 + 1,331 短行）」，`0304_F1` 由「365 行 50 列」改为「380 场有效行 39–52 列、365 行不齐」；③ M1 卡升 **v1.4**（§3.2 S1 交付记录、T1.2-a 标已交付、§5 产物表、§6 验收项 2a、§7 坑 6）、`roles/README.md` **v1.5**、`football_data_fields.md` **v1.4**、分工方案 §3.1 T1.2-a、`CHANGELOG_structure.md` 同步；④ §2.1 结构树补 `src/build_panel.py` 与 `tests/test_read_raw.py`、§3.3 坑表订正、§7 修订记录。**S1 仍未产出 `panel.parquet` / `team_alias.csv`，下一步 S2** |
 
 ---
 

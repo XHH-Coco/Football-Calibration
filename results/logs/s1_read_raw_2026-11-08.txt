@@ -1,0 +1,157 @@
+====================================================================================================
+S1 read_raw() 自检 · Football-Calibration / M1 · T1.2-a
+====================================================================================================
+执行时间 : 2026-11-08T20:31:30+08:00
+raw 目录 : D:\XHH\city-u-aifs\Statistical Machine Learning I\Project\Football-Calibration\data\raw
+Python   : 3.1.1 (pandas)
+
+file            rows blank short  long  hdr  dup  missOdds badCells  encoding
+----------------------------------------------------------------------------------------------------
+0304_D1.csv      306     0   179   112   59    4         3        0  utf-8-sig
+0304_E0.csv      380     0     0    45   57    0         3        0  utf-8-sig
+0304_F1.csv      380     0   208   157   41    1         3        0  utf-8-sig
+0304_I1.csv      306     0   112   112   45    0         3        0  utf-8-sig
+0304_N1.csv      306     0   291     0   52   18         3        0  utf-8-sig
+0304_SP1.csv     380     0     0     0   51    6         3        0  utf-8-sig
+0405_D1.csv      306     0     0     0   63    8         3        0  utf-8-sig
+0405_E0.csv      380     0     0    45   57    0         3        0  latin-1
+0405_F1.csv      380     0   365     0   51    8         3        0  utf-8-sig
+0405_I1.csv      380     0    64    80   49    4         3        0  utf-8-sig
+0405_N1.csv      306     0    48    80   47    4         3        0  utf-8-sig
+0405_SP1.csv     380     0    64   112   49    4         3        0  utf-8-sig
+0506_D1.csv      306     0     0     0   65    0         3        0  utf-8-sig
+0506_E0.csv      380     0     0     0   68    0         3        0  utf-8-sig
+0506_F1.csv      380     0     0     0   63    0         3        0  utf-8-sig
+0506_I1.csv      380     0     0     0   68    0         3        0  utf-8-sig
+0506_N1.csv      306     0     0     0   55    0         3        0  utf-8-sig
+0506_SP1.csv     380     0     0     0   67    0         3        0  utf-8-sig
+0607_D1.csv      306     0     0     0   67    0         3        0  utf-8-sig
+0607_E0.csv      380     0     0     0   68    0         3        0  utf-8-sig
+0607_F1.csv      380     0     0     0   65    0         3        0  utf-8-sig
+0607_I1.csv      380     0     0     0   68    0         3        0  utf-8-sig
+0607_N1.csv      306     0     0     0   55    0         3        0  utf-8-sig
+0607_SP1.csv     380     0     0     0   67    0         3        0  utf-8-sig
+0708_D1.csv      306     0     0     0   70    0         3        0  utf-8-sig
+0708_E0.csv      380     0     0     0   71    0         3        0  utf-8-sig
+0708_F1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0708_I1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0708_N1.csv      306     0     0    32   58    0         3        0  utf-8-sig
+0708_SP1.csv     380     0     0     0   70    0         3        0  utf-8-sig
+0809_D1.csv      306     0     0     0   70    0         3        0  utf-8-sig
+0809_E0.csv      380     0     0     0   71    0         3        0  utf-8-sig
+0809_F1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0809_I1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0809_N1.csv      306     0     0     0   58    0         3        0  utf-8-sig
+0809_SP1.csv     380     0     0     0   70    0         3        0  utf-8-sig
+0910_D1.csv      306     0     0     0   70    0         3        0  utf-8-sig
+0910_E0.csv      380     0     0     0   71    0         3        0  utf-8-sig
+0910_F1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0910_I1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+0910_N1.csv      306     0     0     0   58    0         3        0  utf-8-sig
+0910_SP1.csv     380     0     0     0   70    0         3        0  utf-8-sig
+1011_D1.csv      306     0     0     0   73    2         3        0  utf-8-sig
+1011_E0.csv      380     0     0     0   71    0         3        0  utf-8-sig
+1011_F1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+1011_I1.csv      380     0     0     0   73    2         3        0  utf-8-sig
+1011_N1.csv      306     0     0     0   61    2         3        0  utf-8-sig
+1011_SP1.csv     380     0     0     0   70    0         3        0  utf-8-sig
+1112_D1.csv      306     0     0     0   73    2         3        0  utf-8-sig
+1112_E0.csv      380     0     0     0   71    0         3        0  utf-8-sig
+1112_F1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+1112_I1.csv      380     0     0     0   70    0         3        0  utf-8-sig
+1112_N1.csv      306     0     0     0   61    2         3        0  utf-8-sig
+1112_SP1.csv     380     0     0     0   70    0         3        0  utf-8-sig
+1213_D1.csv      306     0     0     0   73    0         0        0  utf-8-sig
+1213_E0.csv      380     0     0     0   74    0         0        0  utf-8-sig
+1213_F1.csv      380     0     0     0   73    0         0        0  utf-8-sig
+1213_I1.csv      380     3     0     0   73    0         0        0  utf-8-sig
+1213_N1.csv      306     3     0     0   61    0         0        0  utf-8-sig
+1213_SP1.csv     380     0     0     0   73    0         0        0  utf-8-sig
+1314_D1.csv      306     0     0     0   67    0         0        0  utf-8-sig
+1314_E0.csv      380     0     0     0   68    0         0        0  utf-8-sig
+1314_F1.csv      380     1     0     0   67    0         0        0  utf-8-sig
+1314_I1.csv      380     0     0     0   67    0         0        0  utf-8-sig
+1314_N1.csv      306     0     0     0   55    0         0        0  utf-8-sig
+1314_SP1.csv     380     0     0     0   67    0         0        0  utf-8-sig
+1415_D1.csv      306     0     0     0   67    0         0        0  utf-8-sig
+1415_E0.csv      380     1     0     0   68    0         0        0  utf-8-sig
+1415_F1.csv      380     0     0     0   67    0         0        0  utf-8-sig
+1415_I1.csv      380     1     0     0   67    0         0        0  utf-8-sig
+1415_N1.csv      306     0     0     0   55    0         0        0  utf-8-sig
+1415_SP1.csv     380     0     0     0   67    0         0        0  utf-8-sig
+1516_D1.csv      306     0     0     0   64    0         0        0  utf-8-sig
+1516_E0.csv      380     0     0     0   65    0         0        0  utf-8-sig
+1516_F1.csv      380     1     0     0   64    0         0        0  utf-8-sig
+1516_I1.csv      380     1     0     0   64    0         0        0  utf-8-sig
+1516_N1.csv      306     0     0     0   52    0         0        0  utf-8-sig
+1516_SP1.csv     380     0     0     0   64    0         0        0  utf-8-sig
+1617_D1.csv      306     0     0     0   64    0         0        0  utf-8-sig
+1617_E0.csv      380     0     0     0   65    0         0        0  utf-8-sig
+1617_F1.csv      380     0     0     0   64    0         0        0  utf-8-sig
+1617_I1.csv      380     0     0     0   64    0         0        0  utf-8-sig
+1617_N1.csv      306     0     0     0   52    0         0        0  utf-8-sig
+1617_SP1.csv     380     0     0     0   64    0         0        0  utf-8-sig
+1718_D1.csv      306     0     0     0   64    0         0        0  utf-8-sig
+1718_E0.csv      380     0     0     0   65    0         0        0  utf-8-sig
+1718_F1.csv      380     0     0     0   64    0         0        0  utf-8-sig
+1718_I1.csv      380     0     0     0   64    0         0        0  utf-8-sig
+1718_N1.csv      306     0     0     0   64    0         0        0  utf-8-sig
+1718_SP1.csv     380     0     0     0   64    0         0        0  utf-8-sig
+1819_D1.csv      306     0     0     0   61    0         0        0  utf-8-sig
+1819_E0.csv      380     0     0     0   62    0         0        0  utf-8-sig
+1819_F1.csv      380     0     0     0   61    0         0        0  utf-8-sig
+1819_I1.csv      380     0     0     0   61    0         0        0  utf-8-sig
+1819_N1.csv      306     0     0     0   61    0         0        0  utf-8-sig
+1819_SP1.csv     380     0     0     0   61    0         0        0  utf-8-sig
+1920_D1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+1920_E0.csv      380     0     0     0  106    0         0        0  utf-8-sig
+1920_F1.csv      279     0     0     0  105    0         0        0  utf-8-sig
+1920_I1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+1920_N1.csv      232     0     0     0  105    0         0        0  utf-8-sig
+1920_SP1.csv     380     0     0     0  105    0         0        0  utf-8-sig
+2021_D1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2021_E0.csv      380     0     0     0  106    0         0        0  utf-8-sig
+2021_F1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2021_I1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2021_N1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2021_SP1.csv     380     0     0     0  105    0         0        0  utf-8-sig
+2122_D1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2122_E0.csv      380     0     0     0  106    0         0        0  utf-8-sig
+2122_F1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2122_I1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2122_N1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2122_SP1.csv     380     0     0     0  105    0         0        0  utf-8-sig
+2223_D1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2223_E0.csv      380     0     0     0  106    0         0        0  utf-8-sig
+2223_F1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2223_I1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2223_N1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2223_SP1.csv     380     0     0     0  105    0         0        0  utf-8-sig
+2324_D1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2324_E0.csv      380     0     0     0  106    0         0        0  utf-8-sig
+2324_F1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2324_I1.csv      380     0     0     0  105    0         0        0  utf-8-sig
+2324_N1.csv      306     0     0     0  105    0         0        0  utf-8-sig
+2324_SP1.csv     380     0     0     0  105    0         0        0  utf-8-sig
+2425_D1.csv      306     0     0     0  119    0         0        0  utf-8-sig
+2425_E0.csv      380     0     0     0  120    0         0        0  utf-8-sig
+2425_F1.csv      306     0     0     0  119    0         0        0  utf-8-sig
+2425_I1.csv      380     0     0     0  119    0         0        0  utf-8-sig
+2425_N1.csv      306     0     0     0  119    0         0        0  utf-8-sig
+2425_SP1.csv     380     0     0     0  119    0         0        0  utf-8-sig
+
+----------------------------------------------------------------------------------------------------
+[PASS] 132 个 CSV 全部读入且不抛异常  ->  files=132, frames=132
+[PASS] 行数守恒 46,518 − 11 = 46,507  ->  body=46518, blank=11, valid=46507
+[PASS] 白名单列名唯一且输出列恒定  ->  KEEP=19 列 + season
+[PASS] 重复表头 / 行长不齐 / 缺赔率列均被正确处理  ->  dupHeader=14, ragged=11, noOdds=54
+[PASS] 0304–1112 的收盘赔率列是 NaN 而非 KeyError  ->  前 9 季三列全 NaN
+[PASS] 按名取列无静默错位（FTR / 日期 / 比分 / Div）  ->  badCells=0；shortRows=1331, longRows=775
+[PASS] 编码回退仅 0405_E0.csv  ->  fallback=['0405_E0.csv']
+[PASS] season 格式 YYYY/YY  ->  例：2003/04 … 2024/25
+----------------------------------------------------------------------------------------------------
+汇总: 8/8 项 PASS  -> S1 通过，可进入 S2
+
+说明: 本步只产出读取器与自检日志，未写 panel.parquet / team_alias.csv / splits.json；
+      队名 alias 归一、日期转 ISO、y 编码、H3 两列、match_id 均留到 S2 / S3。
+复现: python src/build_panel.py --log <path>  |  pytest -q tests/test_read_raw.py
