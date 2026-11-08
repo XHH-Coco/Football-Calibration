@@ -1,7 +1,7 @@
 ====================================================================================================
 S1 read_raw() 自检 · Football-Calibration / M1 · T1.2-a
 ====================================================================================================
-执行时间 : 2026-11-08T20:31:30+08:00
+执行时间 : 2026-11-08T20:58:37+08:00
 raw 目录 : D:\XHH\city-u-aifs\Statistical Machine Learning I\Project\Football-Calibration\data\raw
 Python   : 3.1.1 (pandas)
 
@@ -146,12 +146,13 @@ file            rows blank short  long  hdr  dup  missOdds badCells  encoding
 [PASS] 白名单列名唯一且输出列恒定  ->  KEEP=19 列 + season
 [PASS] 重复表头 / 行长不齐 / 缺赔率列均被正确处理  ->  dupHeader=14, ragged=11, noOdds=54
 [PASS] 0304–1112 的收盘赔率列是 NaN 而非 KeyError  ->  前 9 季三列全 NaN
-[PASS] 按名取列无静默错位（FTR / 日期 / 比分 / Div）  ->  badCells=0；shortRows=1331, longRows=775
+[PASS] 按名取列无静默错位，且行尾溢出字段全空  ->  badCells=0；shortRows=1331, longRows=775, overflowCells=2895, overflowNonEmpty=0
 [PASS] 编码回退仅 0405_E0.csv  ->  fallback=['0405_E0.csv']
 [PASS] season 格式 YYYY/YY  ->  例：2003/04 … 2024/25
 ----------------------------------------------------------------------------------------------------
 汇总: 8/8 项 PASS  -> S1 通过，可进入 S2
 
 说明: 本步只产出读取器与自检日志，未写 panel.parquet / team_alias.csv / splits.json；
+      read_raw() 对「行尾溢出字段非空」零容忍（直接抛 ValueError），防止换数据时静默吞信息；
       队名 alias 归一、日期转 ISO、y 编码、H3 两列、match_id 均留到 S2 / S3。
 复现: python src/build_panel.py --log <path>  |  pytest -q tests/test_read_raw.py

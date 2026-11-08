@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd  # noqa: E402
+import pytest  # noqa: E402
 
 from src.build_panel import (  # noqa: E402
     KEEP,
@@ -81,3 +82,42 @@ def test_selfcheck_all_green():
     assert result["files"] == 132
     assert result["rows"] == 46_507
     assert result["bad_cells"] == 0, "短行错位会让 FTR / 日期 / 比分出现非法值"
+    assert result["overflow_cells"] > 0, "必须真的覆盖到长行，否则断言形同虚设"
+    assert result["nonempty_overflow"] == 0, "行尾溢出出现非空值 = 可能静默丢信息"
+
+
+def test_overflow_cells_are_empty_in_every_raw_file():
+    """r2 补强：全库 132 文件的行尾溢出必须 100% 为空（实测 2,895 格）。"""
+    total_overflow = 0
+    for path in sorted(RAW_DIR.glob("*.csv")):
+        attrs = read_raw(path).attrs
+        assert attrs["n_nonempty_overflow"] == 0, path.name
+        total_overflow += attrs["n_overflow_cells"]
+    assert total_overflow > 0
+
+
+def test_nonempty_overflow_raises(tmp_path):
+    """构造 4 格数据行 + 3 列表头，且溢出格非空 —— 必须当场拒绝。"""
+    fake = tmp_path / "2425_E0.csv"
+    fake.write_text(
+        "Div,Date,HomeTeam\n"
+        "E0,16/08/24,Arsenal,LEAKED_VALUE\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="非空"):
+        read_raw(fake)
+
+
+def test_empty_overflow_is_accepted(tmp_path):
+    """对照组：同样多出的格子若是空的，应正常读入且不丢行。"""
+    fake = tmp_path / "2425_E0.csv"
+    fake.write_text(
+        "Div,Date,HomeTeam\n"
+        "E0,16/08/24,Arsenal,,\n",
+        encoding="utf-8",
+    )
+    frame = read_raw(fake)
+    assert len(frame) == 1
+    assert frame.attrs["n_overflow_cells"] == 2
+    assert frame.attrs["n_nonempty_overflow"] == 0
+    assert frame.loc[0, "HomeTeam"] == "Arsenal"

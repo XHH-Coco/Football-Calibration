@@ -22,6 +22,11 @@
 因此对每行校验 ``FTR ∈ {H,D,A}`` / 日期可解析 / 比分非空 / ``Div`` 非空：
 全库 46,507 行 0 异常，证明没有发生列错位（详见 S1 自检日志）。
 
+2026-11-08 r2 补强：行尾超出表头的字段**没有列名**，按名取列永远取不到，
+所以「忽略」必须附带一个前提——它们得是空的。实测 775 条长行的 2,895 个
+溢出格 100% 为 ``''``；现把该前提写成硬断言：一旦出现非空值立即抛
+``ValueError``，避免源站改版 / 整行错位时静默吞掉真实信息。
+
 运行
 ----
     python src/build_panel.py --log results/logs/s1_read_raw_2026-11-08.txt
@@ -95,6 +100,19 @@ def read_raw(path: str | Path) -> pd.DataFrame:
     if dup_whitelist:
         raise ValueError(f"{path.name}: 白名单列在表头重复：{dup_whitelist}")
 
+    # 行尾溢出字段没有列名，按名取列必然取不到；必须确认它们全为空，
+    # 否则「忽略」会在源站改版 / 整行错位时静默吞掉真实信息。
+    overflow_cells = [
+        cell for r in records if len(r) > len(header)
+        for cell in r[len(header):]
+    ]
+    n_nonempty_overflow = sum(1 for cell in overflow_cells if cell.strip())
+    if n_nonempty_overflow:
+        raise ValueError(
+            f"{path.name}: 行尾超出表头的 {n_nonempty_overflow} 个字段非空，"
+            "可能是列错位或源站格式变化；禁止静默忽略"
+        )
+
     index = {c: (header.index(c) if c in header else None) for c in KEEP}
     data: dict[str, list] = {}
     for col in KEEP:
@@ -125,6 +143,8 @@ def read_raw(path: str | Path) -> pd.DataFrame:
         n_rows=len(records),
         n_short_rows=sum(len(r) < len(header) for r in records),
         n_long_rows=sum(len(r) > len(header) for r in records),
+        n_overflow_cells=len(overflow_cells),
+        n_nonempty_overflow=n_nonempty_overflow,
         n_duplicate_header_cols=len(header) - len(set(header)),
         duplicate_whitelist_cols=dup_whitelist,
         missing_whitelist_cols=tuple(c for c in KEEP if c not in header),
@@ -181,6 +201,7 @@ def selfcheck(raw_dir: str | Path | None = None,
     emit("-" * 100)
 
     total_blank = total_short = total_long = total_body = total_bad = 0
+    total_overflow = total_overflow_nonempty = 0
     fallback, ragged, no_odds, dup_header = [], [], [], []
     for p in files:
         f = read_raw(p)
@@ -192,6 +213,8 @@ def selfcheck(raw_dir: str | Path | None = None,
         total_short += a["n_short_rows"]
         total_long += a["n_long_rows"]
         total_bad += bad
+        total_overflow += a["n_overflow_cells"]
+        total_overflow_nonempty += a["n_nonempty_overflow"]
         if a["encoding"] != "utf-8-sig":
             fallback.append(p.name)
         if a["n_short_rows"] or a["n_long_rows"]:
@@ -222,8 +245,10 @@ def selfcheck(raw_dir: str | Path | None = None,
         ("0304–1112 的收盘赔率列是 NaN 而非 KeyError",
          bool(panel.loc[panel["season"] <= "2011/12", list(ODDS_COLS)].isna().all().all()),
          "前 9 季三列全 NaN"),
-        ("按名取列无静默错位（FTR / 日期 / 比分 / Div）", total_bad == 0,
-         f"badCells={total_bad}；shortRows={total_short}, longRows={total_long}"),
+        ("按名取列无静默错位，且行尾溢出字段全空",
+         total_bad == 0 and total_overflow_nonempty == 0,
+         f"badCells={total_bad}；shortRows={total_short}, longRows={total_long}, "
+         f"overflowCells={total_overflow}, overflowNonEmpty={total_overflow_nonempty}"),
         ("编码回退仅 0405_E0.csv", fallback == ["0405_E0.csv"], f"fallback={fallback}"),
         ("season 格式 YYYY/YY", bool(panel["season"].str.match(r"^\d{4}/\d{2}$").all()),
          f"例：{sorted(panel['season'].unique())[0]} … {sorted(panel['season'].unique())[-1]}"),
@@ -239,6 +264,7 @@ def selfcheck(raw_dir: str | Path | None = None,
          f"{'  -> S1 通过，可进入 S2' if passed == len(checks) else '  -> 存在 FAIL，禁止进入 S2'}")
     emit("")
     emit("说明: 本步只产出读取器与自检日志，未写 panel.parquet / team_alias.csv / splits.json；")
+    emit("      read_raw() 对「行尾溢出字段非空」零容忍（直接抛 ValueError），防止换数据时静默吞信息；")
     emit("      队名 alias 归一、日期转 ISO、y 编码、H3 两列、match_id 均留到 S2 / S3。")
     emit("复现: python src/build_panel.py --log <path>  |  pytest -q tests/test_read_raw.py")
 
@@ -248,7 +274,9 @@ def selfcheck(raw_dir: str | Path | None = None,
         lp.write_text("\n".join(out) + "\n", encoding="utf-8")
         print(f"\n自检日志已写入: {lp}")
     return {"passed": passed, "total": len(checks), "rows": len(panel),
-            "files": len(files), "bad_cells": total_bad}
+            "files": len(files), "bad_cells": total_bad,
+            "overflow_cells": total_overflow,
+            "nonempty_overflow": total_overflow_nonempty}
 
 
 if __name__ == "__main__":
