@@ -1,0 +1,31 @@
+========================================================================
+S0 环境与快照自检 · Football-Calibration / M1
+========================================================================
+执行时间 : 2026-11-08T20:16:50+08:00
+工作目录 : D:\XHH\city-u-aifs\Statistical Machine Learning I\Project\Football-Calibration
+解释器   : D:\Miniconda3\envs\DSC5001_Project\python.exe
+Python   : 3.14.10
+
+[1] PASS Git 工作区 / 与 origin/main 同步  ->  ## main...origin/main; status --short = 空; HEAD...origin/main = 0/0
+[2] PASS data/raw 文件数 / 总字节 / 入库数  ->  132 个 CSV, 14,341,191 字节, git 跟踪 132 个
+[3] PASS configs/raw_manifest.csv SHA256 逐行校验  ->  132 行, mismatch = 0, 文件名差集 = 0
+[4] PASS data/missing.csv 0 缺失留痕  ->  1 行(含表头), 数据行 = 0
+[5] PASS 2425_E0.csv 可读性 / 列名 / 日期 / 收盘赔率  ->  shape=(380, 120), PSCH 缺失率=0.0000, Date 2024-08-16 -> 2025-05-25, 0 NaT, 关键列齐全=True
+[6] PASS 8 个锁定依赖 import + 版本比对  ->  requirements 8 行, 版本不符 0 项
+      - pandas         3.1.1
+      - numpy          2.5.4
+      - pyarrow        26.0.1
+      - pytest         9.2.0
+      - matplotlib     3.11.2
+      - scipy          1.18.1
+      - scikit-learn   1.9.1
+      - statsmodels    0.15.0
+[7] PASS .gitattributes 保护 raw CSV 字节  ->  规则 = True, core.autocrlf = true
+
+------------------------------------------------------------------------
+汇总: 7/7 项 PASS  -> S0 通过，可进入 S1
+------------------------------------------------------------------------
+环境备注: 命令行默认 python 为 WorkBuddy 内置 3.13.14 且未安装项目依赖；
+          M1 开发须先 conda activate DSC5001_Project，或直接用绝对路径解释器。
+复现命令: git status --short; ls data/raw/*.csv | wc -l; README §3.4 的 SHA256 校验段;
+          pd.read_csv('data/raw/2425_E0.csv', encoding='utf-8-sig')

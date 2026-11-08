@@ -12,7 +12,7 @@
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.2 · 2026-11-08** |
+| 本文档版本 | **v2.3 · 2026-11-08** |
 
 ---
 
@@ -26,7 +26,7 @@ cd Football-Calibration
 | # | 做什么 | 详见 |
 |---|---|---|
 | 1 | 准备 **Python 3.14.7 或 3.14.10**（本机用 conda 环境 `DSC5001_Project`），按 §5.2 装齐 **8 个**已锁定依赖（**B5a/B5b 用 sklearn 内置 HGB，不新增第三方 GBM 库**，见 §5.2 D1） | §5.1 |
-| 2 | **无需下载数据集**：`data/raw/` 的 132 个原始 CSV 已随仓库提供；确认文件齐全并跑一次 SHA256 校验 | §3.4 |
+| 2 | **无需下载数据集**：`data/raw/` 的 132 个原始 CSV 已随仓库提供；确认文件齐全并跑一次 SHA256 校验（**S0 自检已于 11/08 实测通过，7/7 PASS，见 §3.4 与 `results/logs/s0_selfcheck_2026-11-08.txt`**） | §3.4 |
 | 3 | 若使用 Agent / AI 编码工具，先补全 `.gitignore` 再提交任何代码 | §4.2 |
 
 > 提交前自检：`git status` 里 `data/raw/*.csv` 应无改动；`data/interim/`、`data/processed/`、`data/external/` 下不应出现待提交文件；也不应出现 `CHARGED/`、`.workbuddy/`、`scripts/` 或任何 agent 生成物。
@@ -80,7 +80,7 @@ Football-Calibration/
 │
 ├── results/                         # 代码直接产出、可重跑重建的中间数值结果
 │   ├── preds/                       #   各模型 48 块预测 CSV（统一 schema）
-│   ├── logs/                        #   收敛表、参数轨迹（*.log 忽略）
+│   ├── logs/                        #   收敛表、参数轨迹、S0 自检记录（*.log 忽略）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -282,6 +282,8 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 
 校验不通过时，先查 `git config core.autocrlf` 与本地编辑器是否改写了换行符；确实需要更新快照时走 PR 并同步 manifest，**不要擅自更新 manifest 或私自覆盖已入库的 CSV**。
 
+> ✅ **S0 实测（2026-11-08 20:16，M1）**：上述校验连同 Git 状态、132 文件数与总字节、`data/missing.csv`、`2425_E0.csv` 抽样、Python / 8 个依赖版本、`.gitattributes` 共 **7 项全部 PASS**；本机 `core.autocrlf=true`，因 `-text` 规则 SHA256 仍 0 失配，正说明该规则不可删。逐项明细与环境快照见 `results/logs/s0_selfcheck_2026-11-08.txt`，交付状态见 `docs/plans/roles/M1_数据工程与复现.md` §3.1。
+
 ### 3.5 ⚠️ 两份依据文档的口径差异（待组内确认）
 
 > **2026-11-08 起口径已统一，本节不再是待办清单。** 组内确认「Proposal 并非不能改，有缺陷可以改」，按「假设体系用提交版 H1–H4、实验设计用分工方案的 B0–B6」合并成单一蓝本：`Team-32-Proposal_v3.0.md` + `08_小组分工实施方案_v1.3.md`。U3 闭环，接口冻结不再被命名问题阻塞。
@@ -368,6 +370,8 @@ pip install -r appendix/requirements.txt
 ```
 
 > ✅ **兼容性已实测（2026-11-07）**：Python 3.14.10 下 §5.2 全部 8 个直接依赖均有 `cp314` wheel，安装后均可正常 `import`。仍按原规则：**不要私自更换 Python 版本**；确需变更先组内确认，再同步 §5.2 与 `appendix/requirements.txt`。
+>
+> ⚠️ **S0 实测提醒（2026-11-08）**：本机命令行默认 `python` 指向 WorkBuddy 内置 **3.13.14**，且未安装项目依赖，直接 `python src/build_panel.py` 或 `pytest -q` 会报 `ModuleNotFoundError`——这不是依赖没装好，而是用错了解释器。开跑前先 `conda activate DSC5001_Project`，并用 `python -c "import sys; print(sys.executable)"` 确认路径为 `D:\Miniconda3\envs\DSC5001_Project\python.exe`。
 
 ### 5.2 依赖版本登记表（唯一权威清单）
 
@@ -427,6 +431,7 @@ pip install -r appendix/requirements.txt
 | v2.0 | 2026-11-08 | **假设体系与执行蓝本统一**：新增 `docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本，修 5 处实质缺陷：H1 曲线方向、M4/M3 归因、H1 预注册判定、B6r 防泄漏与 H4 区间、H3 联合估计证伪条件；含 B↔M 映射与 evolution 段）；分工方案 `v1.2` → **`v1.3`**（旧版归档 `old_docs/`），假设换 H1–H4、命名统一 B0–B6 + B6r、原 H1 降 C1/C2、主场优势降附录 A1、M1 补 `is_promoted_*`/`matchday`、M2 补 T2.10–T2.13、工时 M2 52h / M3 30h（总量 206h 不变）；五份 M 分工卡升 v1.1、`data_interface.md` 升 v1.2、`configs/README.md` 与 `roles/README.md` 同步、`09_评审 §6` 决策项全部闭环；§1 / §2.1 / §2.2 / **§3.5 整节重写** / §5.2 / §6 / §7 同步。**`.gitignore` 不变（仍 v1.2）** |
 | v2.1 | 2026-11-08 | **D1 定案 + 两处契约补丁（零新增依赖）**：① B5a/B5b 的 GBM 改用 scikit-learn 1.9.1 内置 `HistGradientBoostingClassifier`，全仓清除 `LightGBM` / `num_leaves` / `n_estimators` 口径，§0 与 §5.2 明确依赖仍为 8 个；② `data_interface.md` 升 **v1.3**：§1.1 增加「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例、§2 增加 B6r 拟合样本边界（`PSCH` 自 2012/13 才有，只用 train 段三列齐全比赛，每折 `n_fit` 记日志）；③ 分工方案 `v1.3-r2`、M2/M4 分工卡升 v1.2、Proposal v3.0 补实现注记、`results_table_template.md` 与 `CHANGELOG_structure.md` 同步。**`.gitignore` 不变（仍 v1.2），`requirements.txt` 不变（仍 8 行）** |
 | v2.2 | 2026-11-08 | **M1 开工前全量复核 132 CSV（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：① **数据事实订正**——评估窗三列收盘赔率缺 5 场（3 块：`1718_SP1` 1 / `1718_N1` 3 / `1819_D1` 1），B6 / B6r 有效 n 由 16,730 改为 **16,728**，全仓同步；② §3.3 补 4 个实测读取坑（11 个 ragged 文件 / 14 个重复表头文件 / 54 个缺 `PSCH` 列文件 / 11 行全空白，并给出 `csv.reader` 按名取列的处理口径）、日期改 ISO 并附全库 0 NaT 实测；③ `data_interface.md` 升 **v1.4**（新增 §1.0 `match_id` / ISO 日期 / `season` 契约，preds schema 增 `match_id` 列）；④ M1 分工卡升 **v1.2**（T1.2-a 稳健读取器 + 参考实现、T1.10 数据冻结、`n_train ≥ 4,284`、H3 两列 alias 优先与首季规则、覆盖率矩阵读 raw、Windows venv 注意）；⑤ 分工方案 `v1.3-r3`（§5.1 train 池限同联赛、§5.4 补 11/09 签字人）、`football_data_fields.md` v1.3、`configs/README.md`、`roles/README.md` v1.3、结果表模板、M2 卡、`09_评审` 数值订正警示同步；§2.1 结构树新增 `docs/plans/CHANGELOG_data.md` |
+| v2.3 | 2026-11-08 | **S0 环境与快照自检交付（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：新增入库产物 `results/logs/s0_selfcheck_2026-11-08.txt`（7 项 PASS 明细）；M1 分工卡升 **v1.3**（§3.1 S0 交付记录、§5 产物表、§6 验收项 1、§7 坑 8）、`roles/README.md` 升 **v1.4**（§1 交付状态速览）、`CHANGELOG_structure.md` 登记；README 同步 §0 / §2.1 / §3.4（S0 实测结论）/ §5.1（默认解释器提醒）/ §7。**S0 不新增正式脚本，下一步 S1 写 `read_raw()`** |
 
 ---
 
