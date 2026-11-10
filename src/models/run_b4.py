@@ -26,35 +26,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.eval.harness import PRED_COLS, check_pred, pred_frame  # noqa: E402
 from src.models.b3_poisson import fit as fit_b3  # noqa: E402
 from src.models.b3_poisson import load_panel, predict_proba  # noqa: E402
 from src.models.b4_dixon_coles import XI_GRID, log_loss  # noqa: E402
 from src.models.tune_b4 import tune_block  # noqa: E402
 from src.splits import EXPECTED_EVAL_ROWS, load_splits, resolve_split  # noqa: E402
-
-PRED_COLS = ["match_id", "league", "season", "date", "home", "away",
-             "model", "p_home", "p_draw", "p_away", "y"]
-
-
-def _pred_frame(test: pd.DataFrame, proba: np.ndarray, model: str) -> pd.DataFrame:
-    df = test[["match_id", "league", "season", "date", "home", "away", "y"]].copy()
-    df["model"] = model
-    df["p_home"] = proba[:, 0]
-    df["p_draw"] = proba[:, 1]
-    df["p_away"] = proba[:, 2]
-    return df[PRED_COLS]
-
-
-def check_pred(df: pd.DataFrame, expected_rows: int) -> None:
-    s = df[["p_home", "p_draw", "p_away"]].to_numpy().sum(axis=1)
-    if len(df) != expected_rows:
-        raise ValueError(f"预测行数 {len(df)} ≠ {expected_rows}")
-    if not np.allclose(s, 1.0, atol=1e-9):
-        raise ValueError(f"三概率和偏离 1：max|Σp−1| = {np.abs(s - 1).max():.3e}")
-    if not df["match_id"].is_unique or df["match_id"].isna().any():
-        raise ValueError("match_id 必须非空且唯一")
-    if not set(df["y"].unique()) <= {0, 1, 2}:
-        raise ValueError("y 越界")
 
 
 def paired_summary(d: pd.DataFrame) -> pd.DataFrame:
@@ -103,8 +80,8 @@ def run(blocks: list[dict] | None = None, panel: pd.DataFrame | None = None,
 
         p3 = predict_proba(m_b3, test)
         p4 = predict_proba(m_b4, test)
-        f3 = _pred_frame(test, p3, "B3")
-        f4 = _pred_frame(test, p4, "B4")
+        f3 = pred_frame(test, p3, "B3")
+        f4 = pred_frame(test, p4, "B4")
         check_pred(f3, block["n_test"])
         check_pred(f4, block["n_test"])
 
