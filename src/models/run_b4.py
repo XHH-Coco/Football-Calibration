@@ -180,7 +180,9 @@ def main(argv: list[str] | None = None) -> int:
           f"B4 {int((~conv['b4_converged']).sum())}（阈值 ≤ 2）")
     xi_counts = conv["xi"].value_counts().sort_index()
     print("ξ 分布：" + "  ".join(f"{k}:{v}" for k, v in xi_counts.items()))
-    inner = int(xi_counts.iloc[1:-1].sum()) if len(xi_counts) > 2 else 0
+    # 「中间 4 个值」按网格端点定义，不按本批观测到的最小/最大值 ——
+    # 某一端没有折选中时，按观测值取首尾会把内侧相邻值误判成端点（26 vs 33）。
+    inner = int((~conv["xi"].isin([XI_GRID[0], XI_GRID[-1]])).sum())
     print(f"落在网格中间 4 个值的折数 {inner}/{len(conv)}"
           f"（验收要求 ≥ 90% = {int(np.ceil(0.9 * len(conv)))}）")
     print("ρ 分布：" + "  ".join(f"{k}:{v}" for k, v in conv["rho"].value_counts().sort_index().items()))

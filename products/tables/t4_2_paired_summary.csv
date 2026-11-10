@@ -1,0 +1,2 @@
+n_folds,n_sig_vs_neighbour,n_sig_vs_best_other,median_abs_dll_vs_neighbour,median_se_vs_neighbour,median_abs_t_vs_neighbour,max_abs_t_vs_best_other
+48,5,0,0.00141,0.003449,0.423654,1.001759
