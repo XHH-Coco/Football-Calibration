@@ -4,7 +4,8 @@
 #
 # 起点：**已随 Git 入库的 132 个 data/raw/*.csv**，全程不联网、不重下、不装包。
 # 终点：data/processed/panel.parquet（不入库）+ configs/splits.json（入库契约）
-#       + 覆盖率矩阵 CSV / 热力图 PNG + 全量 pytest 全绿。
+#       + 覆盖率矩阵 CSV / 热力图 PNG + M2 的 B6/B6r 预测、table_main/market_gap、
+#         fig07 与 H1–H4 判定日志 + 全量 pytest 全绿。
 #
 # 用法：
 #   bash appendix/run_all.sh            # 完整跑一遍
@@ -55,6 +56,7 @@ if [[ "${1:-}" == "--check" ]]; then
     echo "  $PY src/build_panel.py --stage s3"
     echo "  $PY src/build_panel.py --stage s4"
     echo "  $PY src/coverage.py"
+    echo "  $PY -m src.eval.run_m2"
     echo "  $PY -m pytest -q tests/"
     exit 0
 fi
@@ -79,13 +81,16 @@ mkdir -p "$REPO_ROOT/results/logs"
     echo "--- [3/5] S4: configs/splits.json (48 blocks, tracked contract) ---"
     "$PY" src/build_panel.py --stage s4
 
-    echo "--- [4/5] S5: coverage matrix CSV + heatmap PNG ---"
+    echo "--- [4/6] S5: coverage matrix CSV + heatmap PNG ---"
     "$PY" src/coverage.py
 
-    echo "--- [5/5] full pytest ---"
+    echo "--- [5/6] M2: B6/B6r + market_gap + table_main + H1-H4 ---"
+    "$PY" -m src.eval.run_m2
+
+    echo "--- [6/6] full pytest ---"
     "$PY" -m pytest -q tests/
 
-    echo "=== DONE: panel / splits / coverage rebuilt from tracked raw CSV only ==="
+    echo "=== DONE: panel / splits / coverage + M2 predictions, tables, H1-H4 rebuilt from tracked raw CSV only ==="
 } 2>&1 | tee "$LOG"
 
 # pipefail 已开：上面任一步失败，这里都会以非零码退出

@@ -1,7 +1,7 @@
 ==============================================================================
-[0] B6 去抽水（proportional 主基准）
+[0] B6 去抽水（proportional 主基准 + power/shin 全 schema 互检）
     preds_B6.csv  16,728 行
-[1] B6r（H4 工具，train-only）
+[1] B6r（H4 工具，train-only 两参数重校准）
     preds_B6r.csv  16,728 行
 [2] H2 市场差距（三法 × 可用臂）
 arm        devig  delta_ll      lo90     hi90  delta_brier  n_paired
@@ -14,7 +14,7 @@ arm        devig  delta_ll      lo90     hi90  delta_brier  n_paired
 B6r proportional -0.000061 -0.000397 0.000276    -0.000020     16728
 B6r        power  0.000075 -0.000200 0.000350     0.000054     16728
 B6r         shin  0.000090 -0.000189 0.000369     0.000058     16728
-[3] 主推断表 table_main.csv
+[3] 主推断表 table_main.csv（9 行 + deff）
 arm  n_matches  log_loss  ll_lo90  ll_hi90     deff  delta_vs_B6  n_paired_vs_B6       note
  B0        NaN       NaN      NaN      NaN      NaN          NaN             NaN pending_M4
  B1        NaN       NaN      NaN      NaN      NaN          NaN             NaN pending_M4
@@ -29,7 +29,7 @@ B6r    16728.0  0.958475 0.950891 0.966099 1.461678    -0.000061         16728.0
     proportional slope 1.0864  [90% 1.0472, 1.1244]
     power        slope 1.0305  [90% 0.9938, 1.0659]
     shin         slope 1.0515  [90% 1.0144, 1.0882]
-    尾箱偏差(prop, 3类低箱) [0.0124 0.0067 0.0016]  高箱 [ 0.0018 -0.0103 -0.0221]
+    尾箱偏差(prop) 低箱 [0.0124 0.0067 0.0016]  高箱 [ 0.0018 -0.0103 -0.0221]
     H1 主判据：支持  （比例法斜率区间下界 > 1（under-dispersed））
     H1 次判据：支持排序  （|Δ|=0.0198, 90% [0.0130, 0.0263]）
 [5] H2 判定（B4 vs B6）

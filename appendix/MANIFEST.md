@@ -1,8 +1,10 @@
 # 源码附录 · 复现清单 MANIFEST
 
-> 版本 **v1.0 · 2026-11-10**（M1 / T1.7 / S5）· 维护人 M1
-> 对应 `docs/plans/08_小组分工实施方案_v1.3.md` §3.1 T1.7、根目录 README §5.3
-> **一句话**：`data/raw/` 的 132 个 CSV 已随 Git 入库，复现包从这里起跑，全程不联网。
+> 版本 **v1.1 · 2026-11-11**（M1 / T1.7 / S5 + M2 复现）· 维护人 M1（M2 段落 M2）
+> 对应 `docs/plans/08_小组分工实施方案_v1.3.md` §3.1 T1.7 / §3.2、根目录 README §5.3
+> **一句话**：`data/raw/` 的 132 个 CSV 已随 Git 入库，复现包从这里起跑，全程不联网；
+> v1.1 起 `run_all.sh` / `run_all.ps1` 追加 M2 一步（`python -m src.eval.run_m2`），
+> 把 B6/B6r、`table_main.csv`、`market_gap.csv`、`fig07` 与 H1–H4 判定一并重建。
 
 ---
 
@@ -45,6 +47,8 @@ bash appendix/run_all.sh
 
 **跑完长这样**：`data/processed/panel.parquet`（46,507 × 22，**不入库**）重新生成；
 `configs/splits.json`（48 块，入库契约）字节不变；覆盖率 CSV / PNG 重新生成；
+M2 的 `preds_B6.csv` / `preds_B6r.csv`（各 16,728 行）、`table_main.csv`（9 行）、
+`market_gap.csv`、`fig07_market_gap.png` 与 `m2_decisions_<date>.txt` 一并重建；
 `pytest -q tests/` 全绿；S3 / S4 / S5 各自自检 12/12 PASS。
 整体 stdout 在 `results/logs/repro_run.log`（`*.log` 已被忽略，不污染仓库）。
 
@@ -74,6 +78,14 @@ bash appendix/run_all.sh
 | `MaxCH` 自 **2019/20**；N1 射门 4 列自 **2017/18** | `results/coverage_matrix.csv`、`products/figures/fig_data_coverage.png` | `python src/coverage.py`；逐格见 CSV |
 | **1 场**评估窗缺射门（`2425_D1` Union Berlin–Bochum） | `src/coverage.py` / `tests/test_coverage.py::test_07` | `pytest -q tests/test_coverage.py::test_07_eval_window_shot_gap_is_exactly_one_match` |
 | 自检 12/12（S3 / S4 / S5 各自）+ 全量 pytest 全绿 | `s3_selfcheck()` / `s4_selfcheck()` / `coverage_selfcheck()` | `pytest -q tests/`；逐项见 `results/logs/s*.txt` |
+| **M2**：B6 有效 n = 16,728（比例法，三法互差 >0.05 的场次 = 0） | `src/eval/devig.py::build_b6()` | `python -m src.eval.run_m2`；`pytest -q tests/test_devig.py` |
+| **M2**：B6r 16,728（train-only 两参数重校准，每折 `n_fit` 记日志） | `src/eval/recalibrate.py::run_b6r()` | `python -m src.eval.run_m2`；`results/logs/b6r_n_fit.csv` |
+| **M2**：主推断表 9 行 + deff；B3 0.9986 / B4 0.9939 / B6 0.9585 / B6r 0.9585 | `src/eval/table_main.py::build_table_main()` | `python -m src.eval.run_m2`；`pytest -q tests/test_table_main.py` |
+| **M2**：H1 比例法斜率 1.086（90% CI 1.047–1.124，under-dispersed 支持） | `src/eval/calibration.py::h1_pipeline()` | `python -m src.eval.run_m2`；`pytest -q tests/test_calibration.py` |
+| **M2**：H2 B4−B6 = 0.0353 nats（95% CI 0.030–0.041，判据 a/b 均支持） | `src/eval/market_gap.py` + `src/eval/bootstrap.py` | `python -m src.eval.run_m2`；`results/market_gap.csv` |
+| **M2**：H3 只作描述（early 系数 −0.0108，与假设方向相反） | `src/eval/localisation.py::h3_coefficients()` | `python -m src.eval.run_m2`；`pytest -q tests/test_localisation.py` |
+| **M2**：H4 重校准相对变化 0.0017（90% 上界 < 25%，信息而非校准） | `src/eval/recalibrate.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`pytest -q tests/test_recalibrate.py` |
+| **M2**：H1–H4/C1 判定规则在代码里（阈值 `EQUIV_MARGIN=0.02` 等） | `src/eval/decisions.py` | `pytest -q tests/test_decisions.py` |
 
 ---
 

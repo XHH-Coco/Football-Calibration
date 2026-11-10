@@ -52,6 +52,7 @@ if ($Check) {
     Write-Output "  $Python src/build_panel.py --stage s3"
     Write-Output "  $Python src/build_panel.py --stage s4"
     Write-Output "  $Python src/coverage.py"
+    Write-Output "  $Python -m src.eval.run_m2"
     Write-Output "  $Python -m pytest -q tests/"
     exit 0
 }
@@ -70,10 +71,11 @@ Write-Output "REPO_ROOT=$RepoRoot"
 Write-Output "PYTHON=$Python"
 Write-Output "N_RAW=$Nraw"
 
-Invoke-Step "[1/5] seed" @("appendix/seed.py")
-Invoke-Step "[2/5] S3 panel.parquet" @("src/build_panel.py", "--stage", "s3")
-Invoke-Step "[3/5] S4 splits.json" @("src/build_panel.py", "--stage", "s4")
-Invoke-Step "[4/5] S5 coverage" @("src/coverage.py")
-Invoke-Step "[5/5] full pytest" @("-m", "pytest", "-q", "tests/")
+Invoke-Step "[1/6] seed" @("appendix/seed.py")
+Invoke-Step "[2/6] S3 panel.parquet" @("src/build_panel.py", "--stage", "s3")
+Invoke-Step "[3/6] S4 splits.json" @("src/build_panel.py", "--stage", "s4")
+Invoke-Step "[4/6] S5 coverage" @("src/coverage.py")
+Invoke-Step "[5/6] M2 eval + H1-H4" @("-m", "src.eval.run_m2")
+Invoke-Step "[6/6] full pytest" @("-m", "pytest", "-q", "tests/")
 
-Write-Output "=== DONE: panel / splits / coverage rebuilt from tracked raw CSV only ==="
+Write-Output "=== DONE: panel / splits / coverage + M2 predictions, tables, H1-H4 rebuilt from tracked raw CSV only ==="

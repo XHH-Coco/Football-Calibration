@@ -12,7 +12,7 @@
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v3.1 · 2026-11-11**（M2 评估框架与 H1–H4 判定落地：`src/eval/` 十模块 + 预测 B6/B6r + `table_main.csv` + 四个 notebook；M1 数据底座 S0–S5 与 `data-v1.0` 仍封版） |
+| 本文档版本 | **v3.2 · 2026-11-11**（M2 复现入口入库：`src/eval/run_m2.py` + `run_all.{sh,ps1}` 接 M2 一步；M1 数据底座 S0–S5 与 `data-v1.0` 仍封版） |
 
 ---
 
@@ -78,7 +78,7 @@ Football-Calibration/
 │   ├── coverage.py                  #   ★ M1 / S5 / T1.4：直接读 raw 的覆盖率矩阵 + 热力图（12/12 自检）
 │   ├── handover.py                  #   ★ M1 / S5：收尾自检（S1–S4 回归 + 全量 pytest + 产物 / 文档契约，不加工数据）
 │   ├── models/                      #   B0–B6 + B6r 各 arm 实现
-│   ├── eval/                        #   ★ M2：harness / metrics / devig / bootstrap / decisions / calibration / recalibrate / market_gap / table_main / localisation
+│   ├── eval/                        #   ★ M2：harness / metrics / devig / bootstrap / decisions / calibration / recalibrate / market_gap / table_main / localisation / run_m2（一键复现入口）
 │   └── .gitkeep
 │
 ├── tests/                           # pytest 单测（17 个文件）
@@ -455,7 +455,7 @@ pip install -r appendix/requirements.txt
 
 `appendix/` 存放**六份**文件：`requirements.txt`（恒 8 行，与 §5.2 逐行一致）、`seed.py`、`run_all.sh`（Git Bash，含 `--check`）、`run_all.ps1`（Windows PowerShell 5.1）、`MANIFEST.md`（「数字 → 脚本 → 命令」三列倒查表 + 数据来源 / 红线）、`pip_freeze_2026-11-10.txt`（本机间接依赖快照，仅备查）。由 M1 维护；**已在 S5 交付（2026-11-10）**。
 
-冷启动：`python -m venv .venv` → `.venv/Scripts/python.exe -m pip install -r appendix/requirements.txt`（Windows）→ `bash appendix/run_all.sh`。起点是已入库的 `data/raw/`，**禁止联网重下**；本机用 conda 解释器完整实测通过（S3/S4/S5 各 12/12、95 passed、`splits.json` 重跑字节相同），干净 venv 的复核由 M2 在 G3 前完成。`tests/test_repro.py`（10 条）把「8 行依赖 / §5.2 一致 / 不联网 / 三列清单 / `--check` 冒烟」写成自动断言。
+冷启动：`python -m venv .venv` → `.venv/Scripts/python.exe -m pip install -r appendix/requirements.txt`（Windows）→ `bash appendix/run_all.sh`。起点是已入库的 `data/raw/`，**禁止联网重下**；本机用 conda 解释器完整实测通过（S3/S4/S5 各 12/12、95 passed、`splits.json` 重跑字节相同），干净 venv 的复核由 M2 在 G3 前完成。**v3.2 起 `run_all.sh` / `run_all.ps1` 追加 M2 一步（`python -m src.eval.run_m2`，从已入库 `preds_B4.csv` + 重跑的 panel/splits 重建 B6/B6r、`table_main.csv`、`market_gap.csv`、`fig07` 与 H1–H4 判定日志）**。`tests/test_repro.py`（10 条）把「8 行依赖 / §5.2 一致 / 不联网 / 三列清单 / `--check` 冒烟」写成自动断言。
 
 ---
 
@@ -494,6 +494,7 @@ pip install -r appendix/requirements.txt
 | v2.9 | 2026-11-10 | **S5 收尾包交付（M1 数据底座 S0–S5 全部封版；`requirements.txt` / `.gitignore` 均未改）**：① 新增 `src/coverage.py`（T1.4，直接读 raw 的覆盖率矩阵 132×18 / 19,917 B + `products/figures/fig_data_coverage.png` 242,435 B，自检 12/12）、`src/handover.py`（收尾自检 12/12）与 `src/build_panel.py --stage s5`；② 新增四个测试文件 `test_leakage.py`（T1.6 五条泄漏断言集中，6 条）/ `test_h3_features.py`（T1.9，7 条）/ `test_coverage.py`（14 条）/ `test_repro.py`（10 条），全量 **95 passed**；③ `appendix/` 新增 `seed.py` / `run_all.sh` / `run_all.ps1` / `MANIFEST.md` / `pip_freeze_2026-11-10.txt`，一键复现从已入库 raw 起跑、不联网，本机实测通过；④ 新建 `docs/plans/CHANGELOG_data.md` 并打 **`data-v1.0`** tag；⑤ **实测订正**：评估窗射门列并非 100%（`2425_D1` Union Berlin–Bochum 缺 6 列，覆盖率 0.999940），分工方案 / 字段速查 / M1 卡 / 本文件 §3.3 同步修订；⑥ §2.1 结构树与说明、§3.3 / §3.6 / §5.3 / §6 / §7 更新，M1 卡升 v1.9、roles 索引升 v2.0、契约升 v1.7、字段速查升 v1.9。**剩余仅 T1.8 录像（M5）、11/09 接口冻结的 M2 主签 + M3/M4 会签、G3 干净 venv 复核，以及搁置的 U1/U2** |
 | v3.0 | 2026-11-11 | **新增 M2 评估框架规格（非目录变更之外的文档同步，`requirements.txt` / `.gitignore` 均不变）**：① 新增 `docs/plans/m2_harness_spec.md`（v1.0）——`src/eval/` 六个模块的函数签名契约、pooled-vs-fold 聚合口径、48 块簇 bootstrap 精确算法、`table_main.csv` 9 行列定义、H1–H4 / C1 预注册判定规则与措辞模板、签字区，11/13 `harness-v1.0` 冻结；② §2.1 结构树、顶部版本号、§7 同步。**不含任何代码**。 |
 | v3.1 | 2026-11-11 | **M2 评估框架与 H1–H4 判定落地（新增 10 个源码模块 / 9 个测试文件 / 4 个 notebook / 多个产物，未新增目录；`requirements.txt` 恒 8 行、`.gitignore` 未动）**：① `src/eval/` 补齐 `metrics / devig / bootstrap / harness / decisions / calibration / recalibrate / market_gap / table_main / localisation`（schema 唯一真相源上提至 `harness.py`，`run_b4.py` 改 import）；② 预测 `results/preds/preds_B6.csv`（16,728，比例法）、`preds_B6r.csv`（16,728，train-only 两参数重校准）+ `results/logs/b6r_n_fit.csv` / `b6_devig_{power,shin,disagreement}.csv` / `m2_decisions_*.txt`；③ 产物 `results/table_main.csv`（9 行 + deff）、`results/market_gap.csv`、`products/figures/fig07_market_gap.png`；④ 四个执行过的 notebook `analysis/{h1_market,h3_localisation,h4_information,c1_model_class}.ipynb`；⑤ 新增 9 个测试文件，全量 **176 passed**（另 7 个 `tmp_path` 用例在本机沙箱受限环境下报错，正常 shell 下通过）。**H1/H2/H4 判据支持、H3 只作描述（early 系数为负，与假设方向相反，如实保留）；C1 待 M4 的 B5a**。§2.1 结构树与 §7 同步。 |
+| v3.2 | 2026-11-11 | **M2 复现入口入库（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：① 新增 `src/eval/run_m2.py`（`python -m src.eval.run_m2` 一键重建 B6/B6r、`table_main.csv`、`market_gap.csv`、`fig07` 与 H1–H4 判定日志，不依赖被忽略的 `scripts/`）；② `appendix/run_all.sh` / `run_all.ps1` 追加 M2 一步并升为 6 步，`appendix/MANIFEST.md` 升 v1.1 并补 M2 倒查行；③ `docs/plans/roles/README.md` §1 回填 M2 交付状态（索引 v2.1）；④ §2.1 结构树 / §5.3 / 顶部版本号 / §7 同步。 |
 
 ---
 
