@@ -1,9 +1,10 @@
 # 数据接口约定（统一预测文件 schema 与防泄漏红线）
 
-> 版本 **v1.5** · 2026-11-10 · 摘录自 `08_小组分工实施方案_v1.3.md`（r3 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
+> 版本 **v1.6** · 2026-11-10 · 摘录自 `08_小组分工实施方案_v1.3.md`（r3 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
 > **v1.2 → v1.3**：① §1.1 补「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例；② §2 补 B6r 的 train 段拟合样本边界（`PSCH` 自 2012/13 才有）；③ §2 对照一致性行补 sklearn HGB 的 `classes_` 重排；④ §5 H4 判定备注同步。D1 决策落地为零新增依赖。
 > **v1.3 → v1.4（M1 开工复核）**：① 新增 **§1.0 `match_id` / ISO 日期 / `season` 格式**契约，§1 schema 增加 `match_id` 列；② `preds_*.csv` 的 `date` 由「原始字段」改为 **ISO `YYYY-MM-DD`**；③ B6 有效样本数按全窗复测订正为 **16,728**（3 块共 5 场缺三列收盘赔率）。
 > **v1.4 → v1.5（S3 落地状态登记，契约本身不变）**：`panel.parquet` 已于 2026-11-10 由 `python src/build_panel.py --stage s3` 产出，§1.0 补「实现状态」一段，明确 **22 列清单、`date` 为 ISO 字符串、`match_id` 46,507 行唯一、产物不入库、panel 保留赛后列不等于允许入模**。判定规则、阈值、B0–B6r 口径**一字未改**；同步 README 顶部与 Proposal v3.0 头部的 companion 版本号。
+> **v1.5 → v1.6（S4 落地状态登记，契约本身不变）**：`configs/splits.json`（48 块）已于 2026-11-10 由 `python src/build_panel.py --stage s4` 产出并**入库**；§1.0 补「48 块切分实现状态」，§2 切分红线补实现落点，§3 评估协议补簇定义。**判定规则、阈值、±0.02 nats、H1–H4 / C1/C2 口径一字未改**；同步 README / M1 卡 / roles 索引 / 字段速查 / configs/README / Proposal 头部。
 > ✅ **命名已定稿（U3 闭环）**：模型标识、文件名与 `model` 列一律用 **`B0`–`B6` + `B6r`** 共 9 个 arm；`M1`–`M5` 只指成员。对外假设编号用 Proposal 的 **H1–H4**；原「结构 vs 灵活」降为受控比较 **C1/C2**，主场优势降为**附录 A1**。B↔M 映射表见 `Team-32-Proposal_v3.0.md` §4 末。
 > **市场基准列已定：只读收盘价 `PSCH/PSCD/PSCA`**（见 v1.3 §5.5）；`PSH/PSD/PSA` 为开盘价、`B365*` 为别家非收盘价，均不作基准。
 
@@ -39,6 +40,9 @@
 > 三条落地口径：① **`date` 存 ISO 字符串，不存 `datetime64`**——`preds_*.csv` 是字符串，时间戳会让 `match_id` 内连接整片对不上；② `match_id` 46,507 行唯一，重复即抛 `ValueError`（**禁止 dedup**，会静默少比赛）；③ `MaxCH/MaxCD/MaxCA` **不进 panel**，覆盖率矩阵按 T1.4 直接读 raw。
 > ⚠️ **panel 保留 `FTR` / 比分 / 射门仅供 `y` 审计与误差分析，不等于允许入模**；赔率列除 B6 / B6r 外同样不得入模（§2）。各 arm 的特征白名单 + `configs/splits.json`（S4）才是防泄漏的落点。逐项断言见 `tests/test_panel_counts.py`、`results/logs/s3_panel_2026-11-10.txt` 与 M1 分工卡 §3.4。
 
+> ✅ **实现状态（S4 · 2026-11-10，12/12 PASS + 全量 58 项 pytest 全绿）**：`configs/splits.json` 已由 `python src/build_panel.py --stage s4` 产出，**48 块 / 14,946 B、入库**（与不入库的 `panel.parquet` 正好相反）。顶层 `schema_version=1.0` + `rule` + `n_blocks / n_test_total / n_train_min` + `blocks`；每块字段 `block_id, league, season, test_start, test_end, train_start, train_end, n_train, n_test, n_new_team`，`season` 为 `YYYY/YY`、四个日期为 ISO。
+> 三条落地口径：① **train = 同联赛且 `date < test_start`**（严格更早、跨季累积）；逐块断言它与「`season` 严格更早」得到同一批 `match_id`、train 中目标季及之后 0 场、`train_end < test_start`、train∩test 空；② M2 harness **统一调 `src.splits.resolve_split(panel, block)`** 取 `(train_df, test_df)`，JSON 里的 `n_train` / `n_test` 只用于校验——手工把 `test_start` 往后挪会当场抛 `ValueError`，不会悄悄多给模型比赛；③ 契约固定字段顺序、UTF-8 / LF、无时间戳，重跑 sha256 不变，`tests/test_splits.py` 断言「磁盘契约 == 脚本重生成」。`n_test` 合计 16,733、`n_train ≥ 4,284`、`n_new_team ≤ 3`（历史累积口径，实测最大 2；**与 S2 的 `is_promoted_*`「上一季名单」不是同一个数**）。逐项见 `tests/test_splits.py`、`results/logs/s4_splits_2026-11-10.txt` 与 M1 分工卡 §3.5。改切分口径须走 PR + **M2 主签 / M3·M4 会签**。
+
 ### 1.1 `y` 编码与类别顺序（M1 在 `build_panel.py` 里定死）
 
 | 项 | 约定 |
@@ -73,7 +77,7 @@
 
 | 红线 | 具体要求 |
 |---|---|
-| 切分 | 目标赛季为 test，只用**严格更早**的比赛训练 |
+| 切分 | 目标赛季为 test，只用**严格更早**的比赛训练；**train 池限同联赛且 `date < test_start`**，由 `configs/splits.json`（S4 已交付、入库）定死，M2 harness 统一走 `src.splits.resolve_split(panel, block)`，禁止按行号 / 全库随机另切一遍 |
 | 特征 | 滚动特征只能用 t 之前的比赛（至少 shift 一场）；Elo 只能逐场顺序更新；禁止全样本标准化 |
 | 调参 | ξ、ρ、树深、学习率只在训练窗内的 expanding 子窗选 |
 | 先验基线 | 只用严格更早比赛的历史频率，禁止当季信息 |
@@ -86,7 +90,7 @@
 
 ## 3. 评估协议摘要
 
-- Expanding-window rolling origin：8 个目标赛季 × 6 联赛 = **48 块**，每块只评估一次。
+- Expanding-window rolling origin：8 个目标赛季 × 6 联赛 = **48 块**，每块只评估一次；**块的定义与 train/test 边界以 `configs/splits.json` 为唯一依据**（S4 已交付），48 块 test 并集恰 16,733 场、0 漏 0 重。
 - 主指标 **log loss**；辅指标 Brier score / RPS；校准用可靠性曲线、校准斜率与截距、ECE、偏差-预测概率图。**不用 accuracy**。全项目**唯一等价边际 ±0.02 nats**；H4 用 90% 区间上界 < 25% 判定。
 - 不确定度：以 **(联赛, 赛季) 块**为重采样单位做簇 bootstrap（10,000 次），cluster-robust SE 交叉核对；**绝不按「比赛」重采样**；每个区间附 **design effect**。
 - 负结果即成功；等价性阈值等判定规则必须在跑数之前写死，不得事后修改。

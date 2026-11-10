@@ -6,8 +6,10 @@
               队名归一、ISO 日期、``y`` 编码、``is_promoted_*`` 与 ``matchday``；
   S3（已交付） ``make_match_id()`` / ``build_panel()`` / ``write_panel()`` /
               ``s3_selfcheck()``：22 列建模总表 + ``data/processed/panel.parquet``；
-  S4（未做）   ``splits.json``（48 块切分）。
-**S1 / S2 仍不落盘**：只有 S3 的 ``write_panel()`` 会写数据文件，且产出不入库。
+  S4（已交付） ``src/splits.py``：48 块 rolling-origin 切分 → ``configs/splits.json``
+              （**入库契约**）；本文件只提供 ``--stage s4`` 统一入口。
+**S1 / S2 仍不落盘**：S3 的 ``write_panel()`` 写不入库的数据文件，
+S4 的 ``write_splits()`` 写**入库**的 KB 级纯文本契约。
 
 为什么不能用裸 ``pd.read_csv``（2026-11-08 全库 132 文件实测）
 ------------------------------------------------------------------
@@ -37,10 +39,13 @@
     python src/build_panel.py --log results/logs/s1_read_raw_2026-11-08.txt   # S1 自检
     python src/build_panel.py --stage s2 --log results/logs/s2_clean_2026-11-10.txt
     python src/build_panel.py --stage s3 --log results/logs/s3_panel_2026-11-10.txt
+    python src/build_panel.py --stage s4 --log results/logs/s4_splits_2026-11-10.txt
     pytest -q tests/
 
 ``--stage s3`` 默认把建模总表写到 ``data/processed/panel.parquet``（**不入库**，
 README §3.6）；全组各自跑同一脚本得到同一张表，契约是「同一脚本 → 同一张表」。
+``--stage s4`` 转到 ``src/splits.py``，把 48 块切分写到 ``configs/splits.json``
+（**入库**，随 Git 分发）。
 """
 
 from __future__ import annotations
@@ -48,6 +53,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -743,7 +749,8 @@ def s2_selfcheck(log_path: str | Path | None = None,
 # S3 / T1.3 + T1.3-a —— 建模总表：match_id + 22 列窄表 + panel.parquet
 #
 # 边界：本步**第一次落盘**，且只落一个数据文件 data/processed/panel.parquet。
-#      splits.json（48 块切分）留 S4；覆盖率矩阵 / 泄漏测试 / 复现包属后续 T 任务。
+#      splits.json（48 块切分）不属于本步，由 S4 的 src/splits.py 交付（2026-11-10 已完成）；
+#      覆盖率矩阵 / 泄漏测试 / 复现包属后续 T 任务。
 # 契约：data_interface.md §1.0 / §1.1 —— match_id 逐字符一致、date 为 ISO 字符串、
 #      season 为 YYYY/YY、y = FTR.map(H=0,D=1,A=2)。
 #
@@ -1057,24 +1064,35 @@ def s3_selfcheck(log_path: str | Path | None = None,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(
-        description="M1 / build_panel.py：S1 读取器自检（默认）/ S2 字段统一 / S3 建模总表")
-    ap.add_argument("--stage", choices=["s1", "s2", "s3"], default="s1",
-                    help="s1 = read_raw() 自检（默认）；s2 = 字段统一；s3 = 拼总表并落盘")
+        description="M1 / build_panel.py：S1 读取器自检（默认）/ S2 字段统一 / "
+                    "S3 建模总表 / S4 48 块切分")
+    ap.add_argument("--stage", choices=["s1", "s2", "s3", "s4"], default="s1",
+                    help="s1 = read_raw() 自检（默认）；s2 = 字段统一；"
+                         "s3 = 拼总表并落盘；s4 = 生成 configs/splits.json")
     ap.add_argument("--build-alias", action="store_true",
                     help="从 data/raw/ 重新生成 configs/team_alias.csv（S2 产物）")
     ap.add_argument("--raw-dir", default=None, help="原始 CSV 目录（默认 data/raw/）")
     ap.add_argument("--out", default=None,
-                    help="s3 主表落盘路径（默认 data/processed/panel.parquet，不入库）")
+                    help="s3 主表（默认 data/processed/panel.parquet，不入库）/ "
+                         "s4 切分契约（默认 configs/splits.json，入库）的落盘路径")
     ap.add_argument("--log", default=None,
                     help=("自检日志路径（默认不落盘）；建议 "
                           f"s1: results/logs/s1_read_raw_{date.today()}.txt / "
                           f"s2: results/logs/s2_clean_{date.today()}.txt / "
-                          f"s3: results/logs/s3_panel_{date.today()}.txt"))
+                          f"s3: results/logs/s3_panel_{date.today()}.txt / "
+                          f"s4: results/logs/s4_splits_{date.today()}.txt"))
     args = ap.parse_args()
     if args.build_alias:
         rows = build_team_alias(args.raw_dir, ALIAS_PATH)
         print(f"configs/team_alias.csv 已生成：{len(rows)} 行")
-    if args.stage == "s3":
+    if args.stage == "s4":
+        # 延迟导入：splits.py 反过来 import 本文件，放到分支里避免循环。
+        # 直接 ``python src/build_panel.py`` 时 sys.path[0] 是 src/，需补仓库根。
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
+        from src.splits import SPLITS_PATH as S4_PATH, s4_selfcheck
+        summary = s4_selfcheck(args.log, args.out or str(S4_PATH))
+    elif args.stage == "s3":
         summary = s3_selfcheck(args.log, args.raw_dir, args.out or str(PANEL_PATH))
     elif args.stage == "s2":
         summary = s2_selfcheck(args.log, args.raw_dir)

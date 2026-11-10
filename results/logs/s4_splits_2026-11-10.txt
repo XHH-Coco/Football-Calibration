@@ -1,0 +1,50 @@
+====================================================================================================
+S4 切分契约自检 · Football-Calibration / M1 · T1.5
+====================================================================================================
+执行时间 : 2026-11-10T14:28:13+08:00
+解释器   : Python / pandas 3.1.1
+输入     : data/raw/*.csv → build_panel() → 46,507 行 × 22 列
+切分规则 : test = league == block.league AND season == block.season（该块全部比赛）
+           train = league == block.league AND date < block.test_start （ISO 字符串比较；同联赛、严格更早、跨季累积）
+等价复核 : 逐块断言「date < test_start」与「season 严格更早」得到同一批 match_id
+输出     : 48 块 / n_test 合计 16,733；产物 已写入 configs/splits.json (14,946 B)
+
+逐联赛 8 季 n_train 范围（expanding window，跨季累积）：
+  D1    4,284 →  6,426 场；n_test 合计 2,448
+  E0    5,320 →  7,980 场；n_test 合计 3,040
+  F1    5,320 →  7,805 场；n_test 合计 2,791
+  I1    5,246 →  7,906 场；n_test 合计 3,040
+  N1    4,284 →  6,352 场；n_test 合计 2,374
+  SP1   5,320 →  7,980 场；n_test 合计 3,040
+
+最紧的 3 块（train 最少）：
+  D1|2017/18   train=4,284 test=306 train_end=2017-05-20 test_start=2017-08-18 n_new_team=0
+  N1|2017/18   train=4,284 test=306 train_end=2017-05-14 test_start=2017-08-11 n_new_team=0
+  D1|2018/19   train=4,590 test=306 train_end=2018-05-12 test_start=2018-08-24 n_new_team=0
+
+示例块（首 / 末）：
+  D1|2017/18 | 2017-08-18→2018-05-12 | train 2003-08-01→2017-05-20 | n_train=4284 n_test=306 n_new_team=0
+  SP1|2024/25 | 2024-08-15→2025-05-25 | train 2003-08-30→2024-05-26 | n_train=7980 n_test=380 n_new_team=0
+
+----------------------------------------------------------------------------------------------------
+[PASS] 48 块 = 6 联赛 × 8 季；block_id 唯一、season 为 YYYY/YY  ->  blocks=48, unique=48
+[PASS] test_start / test_end 为 ISO 且与 panel 逐块 min/max 一致；train_end < test_start  ->  bounds_ok=True
+[PASS] n_test 逐块等于 panel 计数；合计 16,733；逐联赛合计全对  ->  total=16,733
+[PASS] 48 块 test 两两不重叠，且并集恰为评估窗 16,733 场（0 漏 0 重）  ->  sumSizes=16,733, union=16,733
+[PASS] 防泄漏：train 中目标季及之后 0 场；train∩test 空；train 限同联赛  ->  future=0, overlap=0, crossLeague=0, equivMismatch=0
+[PASS] 两种口径等价：date < test_start 与 season 严格更早得到同一批 match_id  ->  mismatch=0
+[PASS] train 严格早于：48 块 train_end < test_start，且无跨季日期重叠  ->  maxTrainEnd=2024-06-02
+[PASS] n_train ≥ 4,284；最小值恰好在 1718_D1 / 1718_N1  ->  min=4,284, blocks=[('D1', '2017/18'), ('N1', '2017/18')]
+[PASS] n_new_team ≤ 3（历史累积口径；实测最大 2）  ->  max=2, 非零块=20
+[PASS] JSON round-trip 相等 + 两次生成逐字节相同 + 无时间戳字段  ->  identical=True
+[PASS] 入库规则：configs/splits.json 不被忽略；panel.parquet 仍被忽略  ->  splitsIgnored=False, panelIgnored=True
+[PASS] 落盘后读回与契约相等，48 块按 resolve_split() 复算行数全对  ->  disk_ok=True, written=14,946 B
+----------------------------------------------------------------------------------------------------
+汇总: 12/12 项 PASS  -> S4 通过，M1 数据底座 S0–S4 全部交付
+
+边界: S4 只交付切分契约；T1.4 覆盖率矩阵 / T1.6 独立泄漏测试 / T1.7 复现包 /
+      T1.10 data-v1.0 冻结 tag 仍属后续任务。11/09 接口冻结需 M2 主签 + M3/M4 会签。
+      splits.json 是入库契约（KB 级纯文本）；panel.parquet 仍不入库，全组各自 --stage s3 生成。
+      簇 bootstrap 的重采样单位是这 48 块，绝不是 16,733 场比赛；每个区间附 design effect。
+复现: python src/build_panel.py --stage s4 --log results/logs/s4_splits_<date>.txt
+      pytest -q tests/test_splits.py

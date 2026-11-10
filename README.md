@@ -8,11 +8,11 @@
 | 课程 | DSC5001C63 Statistical Machine Learning I（Semester A 2026/27，Instructor: Kangning Cui） |
 | 团队 | Team 32（5 人） |
 | 选题 | *Do football betting markets know more than a model can learn? Auditing the closing line for calibration and information* |
-| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` **v1.5**；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
+| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` **v1.6**；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.7 · 2026-11-10** |
+| 本文档版本 | **v2.8 · 2026-11-10** |
 
 ---
 
@@ -39,7 +39,7 @@ cd Football-Calibration
 
 本项目把博彩公司的**收盘赔率**当作最灵敏的测量仪器而不是对手：去抽水后的市场概率是公开可得的三分类预测里最强的一个，我们审计它是否校准（RQ1），并问一个只用赛前信息的透明模型能否追上它、差距集中在哪、差距来自信息优势还是可修复的校准缺陷（RQ2）。对外假设统一为 **H1–H4**（市场校准 / 模型追不上 / 差距局部化 / 信息而非校准），详见 `Team-32-Proposal_v3.0.md` §2。模型阶梯统一用 **`B0` 先验 → `B1` Elo → `B2` 有序 logit → `B3` 独立 Poisson → `B4` Dixon–Coles（主炮）→ `B5a` 同信息 GBM → `B5b` 全特征 GBM → `B6` 市场 → `B6r` 重校准市场**，共 9 个 arm；其中 B4→B5a 只换模型、B5a→B5b 只换信息，是仅有的两级单因素对照（记为 C1/C2，不占假设编号）。`M1`–`M5` 只指成员，提交版 Proposal 的 `M0`–`M4`/`MK`/`MK*` 映射表见 v3.0 §4 末。
 
-评估协议：**expanding-window rolling origin**，8 个目标赛季 × 6 联赛 = **48 个块**、16,733 场评估比赛，每块只评估一次；主指标 **log loss**，辅以 Brier / RPS、可靠性曲线、校准斜率与截距、ECE；所有区间用 **48 块簇 bootstrap（10,000 次）**并附 **design effect**。**不使用 accuracy。全项目唯一等价边际 ±0.02 nats**（提交版曾用 ±0.01，48 簇下不可分辨，已统一）；H4 用 90% 区间上界 < 25% 判定。负结果同样是设计内的成功结论，判定规则在跑数前写死，事后不得修改。
+评估协议：**expanding-window rolling origin**，8 个目标赛季 × 6 联赛 = **48 个块**、16,733 场评估比赛，每块只评估一次；主指标 **log loss**，辅以 Brier / RPS、可靠性曲线、校准斜率与截距、ECE；所有区间用 **48 块簇 bootstrap（10,000 次）**并附 **design effect**。**不使用 accuracy。全项目唯一等价边际 ±0.02 nats**（提交版曾用 ±0.01，48 簇下不可分辨，已统一）；H4 用 90% 区间上界 < 25% 判定。负结果同样是设计内的成功结论，判定规则在跑数前写死，事后不得修改。**48 块怎么切已定稿并入库为 `configs/splits.json`（S4，2026-11-10）**：train = 同联赛 `date < test_start`，M2 harness 统一调 `src.splits.resolve_split(panel, block)`；该文件是全组唯一可 diff 的切分契约，改动须走 PR + M2 主签 / M3·M4 会签。
 
 > 本课工具落点：W3 Bootstrap（簇重采样区间 + design effect）、W5 样条 / GAM 与 W7 局部平滑（**主推断**：H1 可靠性曲线、H3 轮次 sweep；附录 A1 的 γ 趋势为描述性补充）。接口与防泄漏红线见 `docs/plans/data_interface.md`。
 
@@ -49,7 +49,7 @@ cd Football-Calibration
 
 > **本文件（§2.1 + §2.2）是目录结构的唯一书面说明。后续任何目录改动，必须同步修改这里（§2.4）。**
 
-### 2.1 当前项目文件结构（**v2.7 / 2026-11-10**）
+### 2.1 当前项目文件结构（**v2.8 / 2026-11-10**）
 
 ```
 Football-Calibration/
@@ -66,13 +66,15 @@ Football-Calibration/
 │   └── .gitkeep
 │
 ├── configs/                         # 小型、必须入库的契约与配置
-│   ├── README.md                    #   configs 的写入规则
+│   ├── README.md                    #   configs 的写入规则（含 alias / splits 判定说明）
 │   ├── raw_manifest.csv             #   132 个原始 CSV 的 URL / 字节数 / SHA256 / 下载时间（T1.1 冻结凭据）
 │   ├── team_alias.csv               #   ★ M1 / S2：243 行队名归一表（--build-alias 可重生成）
+│   ├── splits.json                  #   ★ M1 / S4：48 块 rolling-origin 切分契约（入库，--stage s4 可重生成）
 │   └── .gitkeep
 │
 ├── src/                             # 全部可复用 Python 源码
-│   ├── build_panel.py               #   ★ M1 / S1+S2+S3：稳健读取器 + 字段统一 + match_id / 22 列总表（--stage s3 一键落盘）
+│   ├── build_panel.py               #   ★ M1 / S1+S2+S3：稳健读取器 + 字段统一 + match_id / 22 列总表（--stage s3 一键落盘；--stage s4 转 splits.py）
+│   ├── splits.py                    #   ★ M1 / S4：48 块切分 + resolve_split() 供 M2 harness 调用（--stage s4 一键重生成）
 │   ├── models/                      #   B0–B6 + B6r 各 arm 实现
 │   ├── eval/                        #   harness / metrics / devig / bootstrap
 │   └── .gitkeep
@@ -81,11 +83,12 @@ Football-Calibration/
 │   ├── test_read_raw.py             #   ★ M1 / S1：read_raw() 验收（10 条，含 r2 溢出断言）
 │   ├── test_s2_clean.py             #   ★ M1 / S2：字段统一验收（15 条，含 T1.9 打乱不变性）
 │   ├── test_panel_counts.py         #   ★ M1 / S3：T1.3-a 场次核查 + 总表契约验收（15 条）
+│   ├── test_splits.py               #   ★ M1 / S4：48 块切分 + 泄漏断言 + 契约幂等 / 入库（18 条）
 │   └── .gitkeep
 │
 ├── results/                         # 代码直接产出、可重跑重建的中间数值结果
 │   ├── preds/                       #   各模型 48 块预测 CSV（统一 schema）
-│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 / S2 / S3 自检记录（*.log 忽略）
+│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 / S2 / S3 / S4 自检记录（*.log 忽略）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -97,7 +100,7 @@ Football-Calibration/
 │   │   ├── Team-32-Proposal_v3.0.md     #     ★ 唯一执行蓝本（H1–H4 + B↔M 映射 + Revision notes）
 │   │   ├── 08_小组分工实施方案_v1.3.md  #     ★ 当前唯一分工方案（v1.2 已归档至 old_docs/）
 │   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（决策项已全部闭环）
-│   │   ├── data_interface.md        #     v1.4：统一预测 schema、match_id / ISO 日期、标签重排、防泄漏红线
+│   │   ├── data_interface.md        #     v1.6：统一预测 schema、match_id / ISO 日期、标签重排、防泄漏红线、48 块切分口径
 │   │   ├── CHANGELOG_structure.md   #     目录结构变更记录
 │   │   ├── CHANGELOG_data.md        #     数据变更日志（11/10 由 M1 创建，T1.10）
 │   │   └── roles/                   #     五份组员分工卡（可单独分发）
@@ -134,7 +137,7 @@ Football-Calibration/
 
 - 当前为空的目录都放了一个空的 `.gitkeep` 占位文件，保证 `clone` 后结构完整；目录里出现第一个正式文件后可删除对应 `.gitkeep`（删了也要按 §2.4 同步本文件）。**`data/raw/` 已有 132 个正式文件，其 `.gitkeep` 已删除**；结构树中该目录的 132 个 CSV 不逐个列出，完整清单见 `configs/raw_manifest.csv`。
 - **版本文件只留最新一份**：`docs/`（含 `docs/plans/`、数据集剖析报告等）中同一份文档只保留当前版本（文件名带版本号）。被取代的旧版移入项目根目录 `old_docs/`（仓库外，不入库、不进 Git 历史），保留原文件名以便追查。目前已归档：`08_小组分工实施方案_v1.0.md`、`v1.1.md`、**`v1.2.md`**、`data_profile_v1.0.html`。**例外**：`Team-32-Proposal.pdf` 是 10/30 已提交的计分凭据，v3.0 以新增 Markdown 形式并存，不覆盖 PDF。**v1.1 中的数值（约 45,000 场 / 17,000 场 / B0 ≈ 1.03–1.05 / B365 基准）已作废，不要再引用。**
-- 上表只列出**当前已存在**的文件；唯一例外是 `docs/plans/CHANGELOG_data.md`，已标注 11/10 由 M1 的 T1.10 创建，创建后无需再改结构树。`src/` 下的脚本、`configs/` 下的 `splits.json` / `team_alias.csv` / `feature_whitelist_b5a.csv`、`appendix/` 下的 `run_all.sh` / `MANIFEST.md` 等由各组员按分工方案产出后再补进结构树。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
+- 上表只列出**当前已存在**的文件；唯一例外是 `docs/plans/CHANGELOG_data.md`，已标注 11/10 由 M1 的 T1.10 创建，创建后无需再改结构树。`src/build_panel.py` / `src/splits.py`、`configs/team_alias.csv` / `configs/splits.json` 与四份 `tests/test_*.py` 已按分工方案产出并补进结构树（S0–S4，2026-11-10）；`configs/feature_whitelist_b5a.csv`（M4）、`appendix/run_all.sh` / `MANIFEST.md`（M1）、`docs/plans/CHANGELOG_data.md`（T1.10）等仍待产出后再补。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
 
 ### 2.2 目录职责表
 
@@ -264,7 +267,9 @@ foreach ($s in $seasons) {
 
 > ✅ **S2 字段统一实测（2026-11-10）**：`src/build_panel.py::clean_panel()` 已把 46,507 行补成 `league` / `home` / `away` / ISO `date` / `y` + `is_promoted_home` / `is_promoted_away` / `matchday`（**S2 当时不落盘**；`match_id` 与 `panel.parquet` 已由下一段的 **S3** 交付）。日期 0 NaT、范围 `2003-08-01 → 2025-05-25`；`y` 分布 21,194 / 11,824 / 13,489；五元组 0 重复；**自检 13/13 PASS + 全量 25 项 pytest 全绿**。逐项见 `results/logs/s2_clean_2026-11-10.txt` 与 M1 卡 §3.3。两个易踩的口径：`matchday` 是「主队本季已完成场次 + 1（**含其客场出场**）」，只按 `home` 单列分组会漏算；升班马按「上一季名单」，与 T1.6 的「历史累积 train」口径不同。
 
-> ✅ **S3 建模总表实测（2026-11-10 13:31）**：`python src/build_panel.py --stage s3` 已产出 `data/processed/panel.parquet`——**46,507 行 × 22 列 / 1,028,001 B**，按 `league, season, date, home, away` 排序，`match_id` **46,507 行唯一**且可由 `data_interface.md` §1.0 的公式逐字符复算；`date` 是 ISO **字符串**（不是 `datetime64`，否则与 `preds_*.csv` 内连接会漂移），`season` 为 `YYYY/YY`。列序恒为 `match_id, league, season, date, home, away, FTR, y, FTHG, FTAG, HTHG, HTAG, HS, AS, HST, AST, PSCH, PSCD, PSCA, is_promoted_home, is_promoted_away, matchday`；**`Max*` 不进 panel**，覆盖率矩阵仍直接读 raw。**自检 12/12 PASS + 全量 40 项 pytest 全绿**，S1 8/8 与 S2 13/13 回归不变，逐项见 `results/logs/s3_panel_2026-11-10.txt` 与 M1 卡 §3.4。T1.3-a 场次核查用「n 队满额 `n×(n−1)`」规则逐块断言 132 块，只有 `F1 2019/20`=279 与 `N1 2019/20`=232 两个疫情腰斩例外；法甲 2023/24 起 18 队的 306 场不是缺赛。**注意**：panel 保留 `FTR` / 比分 / 射门仅供 `y` 审计与误差分析，**不等于允许入模**；赔率列除 B6/B6r 外同样不得入模（`data_interface.md` §2）。`configs/splits.json` 仍属 S4。
+> ✅ **S3 建模总表实测（2026-11-10 13:31）**：`python src/build_panel.py --stage s3` 已产出 `data/processed/panel.parquet`——**46,507 行 × 22 列 / 1,028,001 B**，按 `league, season, date, home, away` 排序，`match_id` **46,507 行唯一**且可由 `data_interface.md` §1.0 的公式逐字符复算；`date` 是 ISO **字符串**（不是 `datetime64`，否则与 `preds_*.csv` 内连接会漂移），`season` 为 `YYYY/YY`。列序恒为 `match_id, league, season, date, home, away, FTR, y, FTHG, FTAG, HTHG, HTAG, HS, AS, HST, AST, PSCH, PSCD, PSCA, is_promoted_home, is_promoted_away, matchday`；**`Max*` 不进 panel**，覆盖率矩阵仍直接读 raw。**自检 12/12 PASS + 全量 40 项 pytest 全绿**，S1 8/8 与 S2 13/13 回归不变，逐项见 `results/logs/s3_panel_2026-11-10.txt` 与 M1 卡 §3.4。T1.3-a 场次核查用「n 队满额 `n×(n−1)`」规则逐块断言 132 块，只有 `F1 2019/20`=279 与 `N1 2019/20`=232 两个疫情腰斩例外；法甲 2023/24 起 18 队的 306 场不是缺赛。**注意**：panel 保留 `FTR` / 比分 / 射门仅供 `y` 审计与误差分析，**不等于允许入模**；赔率列除 B6/B6r 外同样不得入模（`data_interface.md` §2）。48 块切分已由下一段的 **S4** 交付。
+
+> ✅ **S4 切分契约实测（2026-11-10 14:28）**：`python src/build_panel.py --stage s4` 已产出 **`configs/splits.json`（48 块 / 14,946 B，入库）**；实现在 `src/splits.py`，验收在 `tests/test_splits.py`（18 条）。规则写死在契约的 `rule` 段：**test = 该联赛该季全部比赛；train = 同联赛且 `date < test_start` 的所有比赛**（严格更早、跨季累积）。实测 48 块 test 两两不重叠且并集恰为评估窗 **16,733 场（0 漏 0 重）**；`n_train` 最小 **4,284**（`1718_D1` / `1718_N1`），train 中目标季及之后 **0 场**、`train_end < test_start` 全成立；`n_new_team ≤ 3`（历史累积口径，实测最大 2、20 块非零，**与 S2 的 `is_promoted_*`「上一季名单」不是同一个数**）。「按 date 过滤」与「按 season 严格更早过滤」逐块得到同一批 `match_id`，等价性已写成断言。**S4 自检 12/12 PASS + 全量 `pytest -q tests/` 58 passed**，S1 8/8 / S2 13/13 / S3 12/12 回归全绿，逐项见 `results/logs/s4_splits_2026-11-10.txt` 与 M1 卡 §3.5。契约固定字段顺序、UTF-8 / LF、无时间戳，重跑两次 sha256 相同；`test_on_disk_contract_matches_regenerated` 会比对「磁盘契约 == 脚本重生成」，手改一行即红。
 
 ### 3.4 一致性校验（clone 后建议跑一次）
 
@@ -315,12 +320,14 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 | 文件 | 是否入库 | 11/08 怎么交给 M2/M3/M4 | 判定规则 |
 |---|---|---|---|
 | `data/processed/panel.parquet`（**46,507 行 × 22 列**建模总表，S3 已交付） | ❌ **不入库**（`.gitignore` 全局 `*.parquet` + `/data/processed/*`） | **全组各自运行 `python src/build_panel.py --stage s3` 一键重跑生成**（可选 `--log results/logs/s3_panel_<date>.txt` 留痕）；群里发的副本仅供救急，不作权威版本 | 契约是「同一脚本 → 同一张表」，不是「传同一个二进制」；T1.7 干净环境复现也以脚本重跑为准。**不要为此放行 parquet** |
-| `configs/splits.json`、`configs/team_alias.csv`、`configs/feature_whitelist_b5a.csv` | ✅ 入库 | 随 Git 分发 | KB 级、纯文本、可 diff 的小契约（§2.2） |
+| `configs/splits.json`（**S4 已交付**）、`configs/team_alias.csv`（S2 已交付）、`configs/feature_whitelist_b5a.csv`（待 M4 产出） | ✅ 入库 | 随 Git 分发 | KB 级、纯文本、可 diff 的小契约（§2.2） |
 | `data/missing.csv` | ✅ 入库 | 随 Git 分发 | 只有表头 = 0 缺失的审计凭据（§3.2） |
 
 > **判定规则**：入库的是**原始输入 + 契约**，不入库的是**可由代码重建的派生物**。派生物若各人不一致，应靠 `build_panel.py` 与断言查出来，而不是靠传同一个文件掩盖差异。
 
-> ✅ **S3 已把这条约定变成可执行的**（2026-11-10）：`--stage s3` 从 132 个 raw 起跑，重新做 S1 读取 + S2 清洗 + `match_id`，裁成 22 列窄表并排序，再写 Parquet、读回逐元素比对；`tests/test_panel_counts.py` 还断言「同一 raw 两次 `build_panel()` 相等」与 `git check-ignore` 命中。全组拿到的不是「某人的二进制」，而是**同一脚本 + 12 项自检 + 15 条测试**。`data/processed/panel.parquet` 本机实测 1,028,001 B；**`configs/splits.json` 仍未产出（S4）**。
+> ✅ **S3 已把这条约定变成可执行的**（2026-11-10）：`--stage s3` 从 132 个 raw 起跑，重新做 S1 读取 + S2 清洗 + `match_id`，裁成 22 列窄表并排序，再写 Parquet、读回逐元素比对；`tests/test_panel_counts.py` 还断言「同一 raw 两次 `build_panel()` 相等」与 `git check-ignore` 命中。全组拿到的不是「某人的二进制」，而是**同一脚本 + 12 项自检 + 15 条测试**。`data/processed/panel.parquet` 本机实测 1,028,001 B。
+>
+> ✅ **S4 补上另一半（2026-11-10）**：`configs/splits.json` 是**相反**的一类——它小到可以逐字 review、又必须全组完全一致，所以**入库**。`--stage s4` 从 132 个 raw 重建 panel、按规则切 48 块、写 JSON 再读回比对；`tests/test_splits.py` 断言「磁盘契约 == 脚本重生成」、`git check-ignore` **不**命中该文件，且 48 块 test 并集恰为 16,733 场。序列化固定字段顺序、UTF-8 / LF、无时间戳，重跑 sha256 不变。**判定规则不变：原始输入 + 契约入库，可由代码重建的大派生物不入库。**
 
 **`y` 编码与类别顺序**（详见 `data_interface.md` §1.1）：`FTR` 的 `H/D/A` → `y = 0/1/2` 直接写进 `panel.parquet`，概率列恒为 `p_home, p_draw, p_away` 且 **`p_home` 在第一列**，`build_panel.py` 内写成断言。此口径已预置，**M1 不必等 M2 在 11/09 给口径**，M2 于接口冻结时签字确认即可。 **模型内部标签顺序自由**（B2 有序 logit 常用 客胜=0 / 平=1 / 主胜=2，HGB 按 `classes_`），但**落盘前必须重排成 `p_home,p_draw,p_away` 并写断言**；详见 `data_interface.md` §1.1（v1.3 新增）。
 
@@ -448,6 +455,7 @@ pip install -r appendix/requirements.txt
 | v2.6 | 2026-11-10 | **S2 字段统一交付 + 队名事实订正（新增 3 个入库文件、1 个契约文件，`requirements.txt` / `.gitignore` 均不变）**：① `configs/team_alias.csv`（243 行，由 `--build-alias` 从 raw 重生成）、`tests/test_s2_clean.py`（15 条）、`results/logs/s2_clean_2026-11-10.txt`（13/13 PASS）；`src/build_panel.py` 在同一文件追加 alias / ISO 日期 / `y` / H3 三列 + `s2_selfcheck()` + `--stage s2` CLI；② 全库实测：243 原始队名 → 241 归一名、仅 2 组真实改名、归一修掉 17 场升班马误判；订正 §3.3「`Manchester Utd` 变体」为不存在；③ `matchday` 明确为「主队已完成场次 + 1，含客场出场，两队展开计算」，评估窗 48 块新增队 ≤3、全库例外 `I1 2004/05`=6 为意甲扩军；④ M1 卡升 **v1.6**（§3.3 交付记录、§4 / §5 / §6 / §7 同步，坑位扩至 10 条）、`roles/README.md` **v1.7**、`football_data_fields.md` **v1.6**、`configs/README.md` 新增 alias 判定专节、分工方案 §3.1 T1.2 / T1.9、`CHANGELOG_structure.md` 同步；⑤ §0 / §2.1 结构树 / §3.3 / §7 更新。**S2 仍未产出 `match_id` / `panel.parquet` / `splits.json`，下一步 S3** |
 
 | v2.7 | 2026-11-10 | **S3 建模总表交付（新增 2 个入库文件 + 1 个本地派生物，`requirements.txt` / `.gitignore` 均不变）**：① `src/build_panel.py` 追加 `make_match_id()` / `build_panel()` / `write_panel()` / `s3_selfcheck()` 与 `--stage s3`，产出 `data/processed/panel.parquet`（**46,507 行 × 22 列 / 1,028,001 B，不入库**）；② 新增 `tests/test_panel_counts.py`（**15 条**，T1.3-a 场次规则 + 契约 + round-trip + 不入库）与 `results/logs/s3_panel_2026-11-10.txt`（**12/12 PASS**）；全量 `pytest -q tests/` **40 passed**，S1 8/8、S2 13/13 回归全绿；③ M1 卡升 **v1.7**（新增 §3.4、T1.3/T1.3-a 标已交付、产物表与验收项 2/3/8、坑位扩至 12 条）、`roles/README.md` **v1.8**、`football_data_fields.md` **v1.7**、`data_interface.md` **v1.5**（§1.0 补 S3 实现状态）、`configs/README.md`、分工方案 §3.1 T1.3、`CHANGELOG_structure.md`、`Team-32-Proposal_v3.0.md` 头部 companion 版本同步；④ §2.1 结构树 / §3.3 / §3.6 / §7 更新，顶部依据文档版本订正为 v1.5。**M2/M3/M4 的 `panel.parquet` 等待点解除；`configs/splits.json` 仍属 S4** |
+| v2.8 | 2026-11-10 | **S4 切分契约交付（新增 4 个入库文件、未新增目录，`requirements.txt` / `.gitignore` 均不变）**：① 新建 `src/splits.py`（`make_splits()` / `write_splits()` / `load_splits()` / **`resolve_split()`** / `s4_selfcheck()`）与 `tests/test_splits.py`（**18 条**），`src/build_panel.py` 加 `--stage s4` 统一入口；产出 `configs/splits.json`（**48 块 / 14,946 B，入库**）与 `results/logs/s4_splits_2026-11-10.txt`（**12/12 PASS**）；② 规则定死为「train = 同联赛 `date < test_start`」，逐块断言与「season 严格更早」等价、train 中目标季及之后 0 场、48 块 test 并集恰 16,733 场、`n_train ≥ 4,284`、`n_new_team ≤ 3`（实测最大 2）；③ 全量 `pytest -q tests/` **58 passed**，S1 8/8 / S2 13/13 / S3 12/12 回归全绿；④ M1 卡升 **v1.8**（§3.5 + T1.5 / T1.6 + 产物表 + 验收项 5/6/7 + 坑位 14 条）、`roles/README.md` **v1.9**、M2/M3/M4 卡交接行、`football_data_fields.md` **v1.8**、`data_interface.md` **v1.6**、`configs/README.md` 新增 splits 专节、分工方案 §3.1 T1.5 / T1.6、`CHANGELOG_structure.md`、Proposal v3.0 头部同步；⑤ §1 / §2.1 结构树与说明 / §3.3 / §3.6 / §7 更新。**M1 数据底座 S0–S4 全部交付，全组三个等待点解除；11/09 接口冻结签字、T1.4 / T1.6 独立文件 / T1.7 / T1.10 仍属后续待办** |
 
 ---
 

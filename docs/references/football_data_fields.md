@@ -1,12 +1,13 @@
 # football-data.co.uk 字段速查
 
-> 版本 v1.7 · 2026-11-10 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
+> 版本 v1.8 · 2026-11-10 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
 > **仓库已含 132 个原始 CSV 快照（`data/raw/`，已入库），clone 即用、无需重新下载**；本节 URL 仅用于快照更新 / 补漏，完整下载命令见根目录 README §3.2，字节级校验见 §3.4。
 > **v1.3（M1 开工复核）**：补 §4 / §5 的全库读取实测（ragged 行、重复表头、整列缺失、空白行），并订正评估窗三列收盘赔率覆盖为 45 块满格 / 3 块共缺 5 场 / B6 有效 n = **16,728**。
 > **v1.4（S1 读取器实测）**：订正「11 个文件行字段数多于表头」为「11 个文件行长 ≠ 表头（9 长 / 8 短，共 775 长行 + 1,331 短行）」；`0304_F1` 由「365 行 50 列」改为「380 场有效行 39–52 列、365 行不齐（208 短 / 157 长）」。实现见 `src/build_panel.py::read_raw()`，46,507 行 0 列错位。
 > **v1.5（S1-r2 溢出实测）**：775 条长行的 **2,895 个溢出格 100% 为 `''`**（非空 0）；1,331 条短行缺的列**只有空串列名**（6,215 处），白名单 19 列 0 截断；775 条长行核心列全正常，排除整体右移。`read_raw()` 现对「溢出非空」零容忍，`selfcheck()` 第 6 项同步收紧，测试升至 10 条。
 > **v1.6（S2 字段统一实测）**：全库 **243 个原始队名**、归一后 241；仅 2 组真实改名（N1 的 `Roda JC`→`Roda`、`Sparta`→`Sparta Rotterdam`），**不存在**旧稿举例的 `Man United` / `Manchester Utd` 变体；`Ajaccio` / `Ajaccio GFCO` 是同城两支不同队，禁止模糊匹配合并。日期 `dayfirst=True, format='mixed'` 0 NaT、ISO 范围 `2003-08-01 → 2025-05-25`；`FTR` 分布 H/D/A = 21,194 / 11,824 / 13,489 → `y=0/1/2`。归一表见 `configs/team_alias.csv`，实现见 `src/build_panel.py::clean_panel()`，自检日志见 `results/logs/s2_clean_2026-11-10.txt`。
 > **v1.7（S3 建模总表）**：`data/processed/panel.parquet` 已交付，46,507 行 × **22 列**；`match_id` 唯一、`date` 为 ISO 字符串、`season` 为 `YYYY/YY`；T1.3-a 场次核查用「n 队满额 `n×(n−1)`」规则逐块断言 132 块，仅 `F1 2019/20`=279 / `N1 2019/20`=232 两个腰斩例外；评估窗 48 块 16,733 场、B6 有效 16,728。列清单见 §6，实现见 `src/build_panel.py::build_panel()`，自检日志见 `results/logs/s3_panel_2026-11-10.txt`。**`Max*` 不进 panel**，覆盖率矩阵仍直接读 raw。
+> **v1.8（S4 切分契约）**：`configs/splits.json` 已交付（48 块 / 14,946 B，**入库**），train = 同联赛 `date < test_start`、test = 该联赛该季全部比赛，48 块 test 并集恰 16,733 场、`n_train ≥ 4,284`、`n_new_team ≤ 3`（历史累积口径，实测最大 2）。M2 harness 统一走 `src.splits.resolve_split(panel, block)`；`n_new_team` 与 `is_promoted_*`（上一季名单）不是同一个数。实现见 `src/splits.py`，自检日志见 `results/logs/s4_splits_2026-11-10.txt`。**评估窗口径不变**：1718–2425 × 6 = 48 块 / 16,733 场，B6 有效 16,728。
 > **命名口径（v1.2）**：市场基准 arm 为 `B6`，重校准市场为 `B6r`；提交版 Proposal 里的 `MK` / `MK*` 是同一物的旧名，映射表见 `docs/plans/Team-32-Proposal_v3.0.md` §4 末。`M0`–`M4` 一律不再作模型名。
 
 ## 1. 下载 URL
