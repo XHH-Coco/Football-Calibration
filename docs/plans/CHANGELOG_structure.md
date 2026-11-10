@@ -23,6 +23,9 @@
 | 2026-11-10 | **v2.6** | **S2 字段统一交付（新增 3 个入库文件 + 1 个契约文件、未新增目录，`requirements.txt` / `.gitignore` 均不变）**：`configs/team_alias.csv`（243 行队名归一表，可由 `--build-alias` 重生成）、`tests/test_s2_clean.py`（15 条）、`results/logs/s2_clean_2026-11-10.txt`（13/13 PASS）；`src/build_panel.py` 同文件追加 `build_team_alias()` / `clean_panel()` / `s2_selfcheck()` 与 `--stage s2` CLI（默认仍跑 S1）。README 升 **v2.6**（§0 / §2.1 结构树补 `team_alias.csv` 与 `test_s2_clean.py` / §3.3 队名事实订正 + S2 实测结论 / §7）、M1 卡升 **v1.6**（§3.3 交付记录 + §4 / §5 / §6 / §7，坑位 10 条）、`roles/README.md` **v1.7**、`football_data_fields.md` **v1.6**、`configs/README.md` 新增 alias 判定专节、分工方案 §3.1 T1.2 / T1.9 同步。全库实测 243→241 队名、2 组真实改名、归一修掉 17 场升班马误判、五元组 0 重复；**自检 13/13 + 全量 25 项 pytest 全绿**，S2 仍未产出 `panel.parquet` | 否 | M1 | a08e024 |
 
 
+| 2026-11-10 | **v2.7** | **S3 建模总表交付（新增 2 个入库文件 + 1 个本地派生物，未新增目录，`requirements.txt` / `.gitignore` 均不变）**：`src/build_panel.py` 追加 `make_match_id()` / `build_panel()` / `write_panel()` / `s3_selfcheck()` 与 `--stage s3`；新增 `tests/test_panel_counts.py`（15 条）、`results/logs/s3_panel_2026-11-10.txt`（12/12 PASS）；产出 `data/processed/panel.parquet`（46,507 行 × 22 列 / 1,028,001 B，**不入库**，`git check-ignore` 已验）。全量 `pytest -q tests/` **40 passed**，S1 8/8 / S2 13/13 回归全绿。README 升 **v2.7**（§2.1 结构树补 `test_panel_counts.py` / `processed` 注释、§3.3 S3 实测结论、§3.6 一键重跑、§7 修订记录、顶部依据文档订正为 `data_interface.md` **v1.5**）；M1 卡升 **v1.7**（§3.4 交付记录 + T1.3/T1.3-a 标已交付 + 产物表 / 验收项 2/3/8 + 坑位 12 条）、`roles/README.md` **v1.8**、`football_data_fields.md` **v1.7**（新增 §6 的 22 列清单）、`data_interface.md` **v1.5**（§1.0 实现状态，契约不变）、`configs/README.md`、分工方案 §3.1 T1.3 / T1.3-a、`Team-32-Proposal_v3.0.md` 头部 companion 版本同步。**M2/M3/M4 的 `panel.parquet` 等待点解除；`configs/splits.json` 仍属 S4** | 否 | M1 | TBD |
+
+
 ## 追加模板
 
 ```

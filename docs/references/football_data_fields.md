@@ -1,11 +1,12 @@
 # football-data.co.uk 字段速查
 
-> 版本 v1.6 · 2026-11-10 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
+> 版本 v1.7 · 2026-11-10 · 依据官方 <https://www.football-data.co.uk/notes.txt>，并对 2026-11-07 实际下载的表头做了核对。
 > **仓库已含 132 个原始 CSV 快照（`data/raw/`，已入库），clone 即用、无需重新下载**；本节 URL 仅用于快照更新 / 补漏，完整下载命令见根目录 README §3.2，字节级校验见 §3.4。
 > **v1.3（M1 开工复核）**：补 §4 / §5 的全库读取实测（ragged 行、重复表头、整列缺失、空白行），并订正评估窗三列收盘赔率覆盖为 45 块满格 / 3 块共缺 5 场 / B6 有效 n = **16,728**。
 > **v1.4（S1 读取器实测）**：订正「11 个文件行字段数多于表头」为「11 个文件行长 ≠ 表头（9 长 / 8 短，共 775 长行 + 1,331 短行）」；`0304_F1` 由「365 行 50 列」改为「380 场有效行 39–52 列、365 行不齐（208 短 / 157 长）」。实现见 `src/build_panel.py::read_raw()`，46,507 行 0 列错位。
 > **v1.5（S1-r2 溢出实测）**：775 条长行的 **2,895 个溢出格 100% 为 `''`**（非空 0）；1,331 条短行缺的列**只有空串列名**（6,215 处），白名单 19 列 0 截断；775 条长行核心列全正常，排除整体右移。`read_raw()` 现对「溢出非空」零容忍，`selfcheck()` 第 6 项同步收紧，测试升至 10 条。
 > **v1.6（S2 字段统一实测）**：全库 **243 个原始队名**、归一后 241；仅 2 组真实改名（N1 的 `Roda JC`→`Roda`、`Sparta`→`Sparta Rotterdam`），**不存在**旧稿举例的 `Man United` / `Manchester Utd` 变体；`Ajaccio` / `Ajaccio GFCO` 是同城两支不同队，禁止模糊匹配合并。日期 `dayfirst=True, format='mixed'` 0 NaT、ISO 范围 `2003-08-01 → 2025-05-25`；`FTR` 分布 H/D/A = 21,194 / 11,824 / 13,489 → `y=0/1/2`。归一表见 `configs/team_alias.csv`，实现见 `src/build_panel.py::clean_panel()`，自检日志见 `results/logs/s2_clean_2026-11-10.txt`。
+> **v1.7（S3 建模总表）**：`data/processed/panel.parquet` 已交付，46,507 行 × **22 列**；`match_id` 唯一、`date` 为 ISO 字符串、`season` 为 `YYYY/YY`；T1.3-a 场次核查用「n 队满额 `n×(n−1)`」规则逐块断言 132 块，仅 `F1 2019/20`=279 / `N1 2019/20`=232 两个腰斩例外；评估窗 48 块 16,733 场、B6 有效 16,728。列清单见 §6，实现见 `src/build_panel.py::build_panel()`，自检日志见 `results/logs/s3_panel_2026-11-10.txt`。**`Max*` 不进 panel**，覆盖率矩阵仍直接读 raw。
 > **命名口径（v1.2）**：市场基准 arm 为 `B6`，重校准市场为 `B6r`；提交版 Proposal 里的 `MK` / `MK*` 是同一物的旧名，映射表见 `docs/plans/Team-32-Proposal_v3.0.md` §4 末。`M0`–`M4` 一律不再作模型名。
 
 ## 1. 下载 URL
@@ -78,6 +79,20 @@ https://www.football-data.co.uk/mmz4281/{season}/{div}.csv
 | 行长不齐 | 11 个文件行长 ≠ 表头（9 长 / 8 短）；`csv.reader` **按名取列**（多余字段忽略、缺列补 NaN），**不要 `on_bad_lines='skip'`**（`0304_F1` 会静默丢 365 场）。`src/build_panel.py::read_raw()` 已落地；**r2**：2,895 个溢出格实测全空，非空即抛 `ValueError`，短行只缺空串列名列 |
 | 表头重名 | 14 个文件有重复列名；整表 `concat` / `reindex` 会报错，只取白名单列 |
 | 整列缺失 | `PSCH/PSCD/PSCA` 在 0304–1112 是「列不存在」；白名单缺列补 NaN，不要直接索引 |
+
+## 6. `panel.parquet` 的 22 列（S3 / 2026-11-10 实测）
+
+`python src/build_panel.py --stage s3` 从 132 个 raw 一键重跑产出，**不入库**（README §3.6）。列顺序即契约，46,507 行、按 `league, season, date, home, away` 排序。
+
+| 组 | 列 | 说明 |
+|---|---|---|
+| identity（6） | `match_id`, `league`, `season`, `date`, `home`, `away` | `match_id = league\|season\|date\|home\|away`；`date` 为 ISO **字符串**、`season` 为 `YYYY/YY`、队名已按 `configs/team_alias.csv` 归一 |
+| 结果（6） | `FTR`, `y`, `FTHG`, `FTAG`, `HTHG`, `HTAG` | `y = FTR.map(H=0,D=1,A=2)`；分布 21,194 / 11,824 / 13,489 |
+| 射门（4） | `HS`, `AS`, `HST`, `AST` | 荷甲 2017/18 起才满格；评估窗 100% 可用 |
+| 收盘赔率（3） | `PSCH`, `PSCD`, `PSCA` | 唯一市场基准；0304–1112 整列不存在 → 全 NaN；评估窗缺 3 块共 5 场，B6 有效 n = 16,728 |
+| H3（3） | `is_promoted_home`, `is_promoted_away`, `matchday` | 只由季前名单 / 赛程构造，打乱赛后列后逐元素不变 |
+
+> ⚠️ **保留 ≠ 可入模**：`FTR` / 比分 / 射门是**赛后观测**，留在 panel 里只为 `y` 审计与误差分析；任何 B0–B5b 的特征都不得包含它们，三列收盘赔率除 B6/B6r 外同样不得入模（`data_interface.md` §2）。`MaxCH/MaxCD/MaxCA` 与 `HTR` 等**不在 22 列内**，T1.4 覆盖率矩阵必须直接读 `data/raw/`。
 
 ---
 

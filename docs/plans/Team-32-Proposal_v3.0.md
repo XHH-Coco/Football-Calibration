@@ -8,7 +8,7 @@ Date: 2026-11-08 · Supersedes the submitted 2026-10-30 version as the internal 
 | Team | Team 32 (5 members; names and UIDs as on the submitted PDF) |
 | Submitted version | `Team-32-Proposal.pdf`, 2026-10-30 (2-point deliverable, unchanged) |
 | This version | **v3.0**, 2026-11-08 — same research question, corrected hypotheses, controlled ladder |
-| Companion documents | `08_小组分工实施方案_v1.3.md` (r2 execution revision), `data_interface.md` v1.3 (contracts), five role cards |
+| Companion documents | `08_小组分工实施方案_v1.3.md` (r3 execution revision), `data_interface.md` v1.5 (contracts, S3 implementation status), five role cards |
 | Status | Approved as the single execution blueprint; no parallel naming or hypothesis sets remain |
 
 ---

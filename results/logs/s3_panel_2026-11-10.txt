@@ -1,0 +1,49 @@
+====================================================================================================
+S3 建模总表自检 · Football-Calibration / M1 · T1.3 + T1.3-a
+====================================================================================================
+执行时间 : 2026-11-10T13:38:12+08:00
+解释器   : Python / pandas 3.1.1 · numpy 2.5.4
+输入     : data/raw/*.csv 132 文件 → 46,507 行（S1 已剔除 11 行全空白）
+输出     : 46,507 行 × 22 列；产物 已写入 data/processed/panel.parquet (1,028,001 B)
+
+panel 列序（22 列，顺序即契约）：
+  match_id, league, season, date, home, away, FTR, y, FTHG, FTAG, HTHG, HTAG, HS, AS, HST, AST, PSCH, PSCD, PSCA, is_promoted_home, is_promoted_away, matchday
+match_id 示例：
+  D1|2003/04|2003-08-01|Bayern Munich|Ein Frankfurt
+  D1|2003/04|2003-08-02|Hamburg|Hannover
+  D1|2003/04|2003-08-02|Hertha|Werder Bremen
+
+场次核查（T1.3-a）：
+  D1   全库 22 季  6,732 场 / 评估窗 8 季  2,448 场
+  E0   全库 22 季  8,360 场 / 评估窗 8 季  3,040 场
+  F1   全库 22 季  8,111 场 / 评估窗 8 季  2,791 场
+  I1   全库 22 季  8,286 场 / 评估窗 8 季  3,040 场
+  N1   全库 22 季  6,658 场 / 评估窗 8 季  2,374 场
+  SP1  全库 22 季  8,360 场 / 评估窗 8 季  3,040 场
+  合计 全库 46,507 / 评估窗 16,733（48 块）
+  非满额块（相对 n 队满额 n*(n-1) 少打的比赛）：{('F1', '2019/20'): 279, ('N1', '2019/20'): 232}
+  法甲 2023/24 起 18 队 → 306 场/季，由 n*(n-1) 规则覆盖，不是缺赛
+评估窗三列收盘赔率缺失：5 场，按块 {('D1', '2018/19'): 1, ('N1', '2017/18'): 3, ('SP1', '2017/18'): 1}；B6 / B6r 有效 n = 16,728
+
+----------------------------------------------------------------------------------------------------
+[PASS] 行数守恒：46,518 − 11 空白 = 46,507，且与 S2 清洗表一致  ->  raw=46,507, panel=46,507
+[PASS] 22 列窄表、列序与 PANEL_COLUMNS 恒等；Max* 不进 panel  ->  cols=22
+[PASS] match_id 唯一 / 非空 / 5 段 / 可由契约公式逐字符复算  ->  unique=True, reproducible=True
+[PASS] 按 league,season,date 单调排序，且五元组 0 重复  ->  sorted=True, dupes=0
+[PASS] y = FTR.map(H=0,D=1,A=2)，值域 {0,1,2}，分布 21,194/11,824/13,489  ->  y_counts={0: 21194, 1: 11824, 2: 13489}
+[PASS] date 为 ISO 字符串、season 为 YYYY/YY、范围 2003-08-01→2025-05-25  ->  range=2003-08-01 → 2025-05-25
+[PASS] H3 三列无空、matchday 1–38，且打乱赛后列后逐元素不变  ->  invariant=True
+[PASS] 收盘赔率：前 9 季全 NaN；评估窗只缺 3 块共 5 场，B6 有效 16,728  ->  earlyNaN=True, missing=5, blocks={('D1', '2018/19'): 1, ('N1', '2017/18'): 3, ('SP1', '2017/18'): 1}
+[PASS] T1.3-a：132 块均满足 n 队满额 n*(n−1)，仅 2 个真实腰斩块例外  ->  blocks=132, short={('F1', '2019/20'): 279, ('N1', '2019/20'): 232}
+[PASS] 六联赛 22 季合计 46,507；评估窗 48 块 16,733 且逐联赛合计全对  ->  leagueTotals={'D1': 6732, 'E0': 8360, 'F1': 8111, 'I1': 8286, 'N1': 6658, 'SP1': 8360}, evalTotals={'D1': 2448, 'E0': 3040, 'F1': 2791, 'I1': 3040, 'N1': 2374, 'SP1': 3040}
+[PASS] Parquet round-trip：读回逐元素相等；正式产物已写入且可读  ->  roundtrip=True, written=1,028,001 B
+[PASS] 幂等可复现（同一 raw 两次 build_panel 相等）+ 不入库规则仍在  ->  reproducible=True, gitignore(*.parquet + /data/processed/*)=True
+----------------------------------------------------------------------------------------------------
+汇总: 12/12 项 PASS  -> S3 通过，可进入 S4
+
+边界: S3 只交付建模总表；configs/splits.json（48 块）属 S4，覆盖率矩阵 / 泄漏测试 / 复现包属后续 T 任务。
+      panel.parquet 不入库（.gitignore *.parquet + /data/processed/*），全组各自跑同一脚本生成。
+      panel 保留比分 / 射门 / FTR 仅供 y 审计与误差分析，**不得入模**；赔率列除 B6/B6r 外不得入模。
+复现: python src/build_panel.py --stage s3 --log results/logs/s3_panel_<date>.txt
+      python src/build_panel.py --stage s3 --out <自定义路径>   # 指定落盘位置
+      pytest -q tests/

@@ -4,8 +4,10 @@
   S1（已交付） ``read_raw()`` / ``read_all()`` / ``selfcheck()``：132 个原始 CSV → 规整 DataFrame；
   S2（已交付） ``build_team_alias()`` / ``clean_panel()`` / ``s2_selfcheck()``：
               队名归一、ISO 日期、``y`` 编码、``is_promoted_*`` 与 ``matchday``；
-  S3 / S4（未做） ``match_id`` + ``panel.parquet`` / ``splits.json``。
-**S2 仍不落盘**：``clean_panel()`` 只返回内存中的清洗表。
+  S3（已交付） ``make_match_id()`` / ``build_panel()`` / ``write_panel()`` /
+              ``s3_selfcheck()``：22 列建模总表 + ``data/processed/panel.parquet``；
+  S4（未做）   ``splits.json``（48 块切分）。
+**S1 / S2 仍不落盘**：只有 S3 的 ``write_panel()`` 会写数据文件，且产出不入库。
 
 为什么不能用裸 ``pd.read_csv``（2026-11-08 全库 132 文件实测）
 ------------------------------------------------------------------
@@ -30,10 +32,15 @@
 溢出格 100% 为 ``''``；现把该前提写成硬断言：一旦出现非空值立即抛
 ``ValueError``，避免源站改版 / 整行错位时静默吞掉真实信息。
 
-运行
-----
-    python src/build_panel.py --log results/logs/s1_read_raw_2026-11-08.txt
-    pytest -q tests/test_read_raw.py
+运行（项目环境 DSC5001_Project，见 M1 卡 §7 坑 8）
+--------------------------------------------------
+    python src/build_panel.py --log results/logs/s1_read_raw_2026-11-08.txt   # S1 自检
+    python src/build_panel.py --stage s2 --log results/logs/s2_clean_2026-11-10.txt
+    python src/build_panel.py --stage s3 --log results/logs/s3_panel_2026-11-10.txt
+    pytest -q tests/
+
+``--stage s3`` 默认把建模总表写到 ``data/processed/panel.parquet``（**不入库**，
+README §3.6）；全组各自跑同一脚本得到同一张表，契约是「同一脚本 → 同一张表」。
 """
 
 from __future__ import annotations
@@ -84,7 +91,8 @@ def read_raw(path: str | Path) -> pd.DataFrame:
     - 逐文件元信息挂在 ``df.attrs``，供自检与覆盖率矩阵使用（``pd.concat`` 后不保留）。
 
     S2 的 ``clean_panel()`` 才做队名 alias 归一、ISO 日期、``y`` 编码、H3 三列；
-    S3 才写 ``match_id`` 与 ``panel.parquet``。这里**都不做**。
+    ``match_id`` 与 ``panel.parquet`` 由 S3 的 ``build_panel()`` / ``write_panel()``
+    负责（已在同一文件实现）。这里**都不做**。
     """
     path = Path(path)
     text, encoding = _decode(path.read_bytes())
@@ -287,7 +295,8 @@ def selfcheck(raw_dir: str | Path | None = None,
 # S2 / T1.2 —— 字段统一：team_alias 归一 / ISO 日期 / y / H3 指示变量
 #
 # 边界：本步**只在同一文件里追加清洗层**，返回「加了列的 DataFrame」，
-#      不写 match_id、不落 data/processed/panel.parquet（S3）、不切 48 块（S4）。
+#      不写 match_id、不落 data/processed/panel.parquet（S3 已在同一文件实现）、
+#      不切 48 块（S4 待做）。
 # 依赖：只使用季前名单（上一季参赛队）与赛程（league/season/home/away/date），
 #      绝不读取 FTR / 比分 / 射门等赛后信息；T1.9 的打乱测试即验证这一点。
 # =============================================================================
@@ -535,7 +544,8 @@ def clean_panel(raw: pd.DataFrame | None = None,
                 alias_path: str | Path | None = None) -> pd.DataFrame:
     """S2 主入口：``read_all()`` -> 归一 / ISO 日期 / ``y`` / H3 三列。
 
-    **只返回 DataFrame，不落盘**；``match_id`` 与 ``panel.parquet`` 留到 S3。
+    **只返回 DataFrame，不落盘**；``match_id`` 与 ``panel.parquet`` 由 S3 的
+    ``build_panel()`` / ``write_panel()`` 负责（已在同一文件实现）。
     """
     frame = read_all() if raw is None else raw.copy()
     alias_map, _ = load_team_alias(alias_path)
@@ -729,22 +739,345 @@ def s2_selfcheck(log_path: str | Path | None = None,
             "dupes": five_tuple_dupes, "h3_invariant": invariant}
 
 
+# =============================================================================
+# S3 / T1.3 + T1.3-a —— 建模总表：match_id + 22 列窄表 + panel.parquet
+#
+# 边界：本步**第一次落盘**，且只落一个数据文件 data/processed/panel.parquet。
+#      splits.json（48 块切分）留 S4；覆盖率矩阵 / 泄漏测试 / 复现包属后续 T 任务。
+# 契约：data_interface.md §1.0 / §1.1 —— match_id 逐字符一致、date 为 ISO 字符串、
+#      season 为 YYYY/YY、y = FTR.map(H=0,D=1,A=2)。
+#
+# 两个刻意的设计（写进 M1 卡 §7 坑位）：
+#   1. date 存 **ISO 字符串**而不是 datetime64。preds_*.csv 里 date 是字符串，
+#      两边按 match_id 逐字符内连接；若 panel 存时间戳，读出来格式会漂移。
+#   2. panel 保留比分 / 射门 / FTR 等**赛后观测列**，用途是 y 的审计与误差分析，
+#      **不等于允许入模**。防泄漏由各 arm 的特征白名单 + splits.json 控制，
+#      任何模型都不得把 FTR / 比分 / 射门当特征（data_interface.md §2）。
+#      MaxCH/MaxCD/MaxCA 不进 panel，覆盖率矩阵按 T1.4 直接读 raw。
+# =============================================================================
+
+PANEL_PATH = ROOT / "data" / "processed" / "panel.parquet"
+PANEL_COLUMNS: tuple[str, ...] = (
+    "match_id", "league", "season", "date", "home", "away",
+    "FTR", "y", "FTHG", "FTAG", "HTHG", "HTAG",
+    "HS", "AS", "HST", "AST",
+    "PSCH", "PSCD", "PSCA",
+    "is_promoted_home", "is_promoted_away", "matchday",
+)
+H3_PANEL_COLS: tuple[str, ...] = (
+    "is_promoted_home", "is_promoted_away", "matchday",
+)
+SORT_KEYS: tuple[str, ...] = ("league", "season", "date", "home", "away")
+EXPECTED_LEAGUE_TOTALS = {"E0": 8_360, "SP1": 8_360, "I1": 8_286,
+                          "D1": 6_732, "F1": 8_111, "N1": 6_658}
+EXPECTED_EVAL_TOTALS = {"E0": 3_040, "SP1": 3_040, "I1": 3_040,
+                        "D1": 2_448, "F1": 2_791, "N1": 2_374}
+# 「相对 n 队满额赛程」少打了的块：都是真实世界事件，不是抓漏（T1.3-a）。
+EXPECTED_SHORT_BLOCKS = {("F1", "2019/20"): 279, ("N1", "2019/20"): 232}
+# 评估窗三列收盘赔率缺失的 5 场，按块分布（data_interface.md §1.0）。
+EXPECTED_ODDS_MISSING_BLOCKS = {
+    ("SP1", "2017/18"): 1, ("N1", "2017/18"): 3, ("D1", "2018/19"): 1,
+}
+EXPECTED_EVAL_ROWS = 16_733
+EXPECTED_B6_ROWS = 16_728
+EXPECTED_BLOCKS = 132
+EXPECTED_EVAL_BLOCKS = 48
+
+
+def make_match_id(frame: pd.DataFrame) -> pd.DataFrame:
+    """``match_id = league|season|date|home|away``（ISO 字符串日期 + 归一队名）。
+
+    与 ``data_interface.md`` §1.0 的 f-string **逐字符同构**：preds_*.csv 里的
+    match_id 必须能直接和本列内连接。重复即抛错，绝不 dedup（会静默少比赛）。
+    """
+    needed = ("league", "season", "date", "home", "away")
+    absent = [c for c in needed if c not in frame.columns]
+    if absent:
+        raise ValueError(f"make_match_id 缺少列：{absent}；请先跑 clean_panel()")
+    out = frame.copy()
+    out["match_id"] = (out["league"].astype(str) + "|" + out["season"] + "|"
+                       + out["date"] + "|" + out["home"] + "|" + out["away"])
+    if (out["match_id"].isna().any()
+            or not out["match_id"].str.count(r"\|").eq(4).all()):
+        raise ValueError("match_id 存在空值或字段数不等于 5")
+    n_dupes = int(out["match_id"].duplicated().sum())
+    if n_dupes:
+        examples = out.loc[out["match_id"].duplicated(), "match_id"].head(3).tolist()
+        raise ValueError(f"match_id 重复 {n_dupes} 行，例如 {examples}；禁止 dedup")
+    return out
+
+
+def build_panel(raw: pd.DataFrame | None = None,
+                alias_path: str | Path | None = None) -> pd.DataFrame:
+    """S3 主入口：S2 清洗表 → ``match_id`` → 22 列窄表 → 排序。
+
+    **只返回 DataFrame，不落盘**；落盘是 ``write_panel()`` 的职责。
+    幂等：同一份 raw 连续调用两次，结果逐元素相等（s3 自检第 12 项）。
+    """
+    frame = clean_panel(raw, alias_path)
+    frame = make_match_id(frame)
+    absent = [c for c in PANEL_COLUMNS if c not in frame.columns]
+    if absent:
+        raise ValueError(f"S2 清洗表缺少 panel 契约列：{absent}")
+    panel = (frame.loc[:, list(PANEL_COLUMNS)]
+             .sort_values(list(SORT_KEYS), kind="mergesort")
+             .reset_index(drop=True))
+
+    if len(panel) != EXPECTED_ROWS:
+        raise ValueError(f"panel 行数应为 {EXPECTED_ROWS}，实际 {len(panel)}")
+    if list(panel.columns) != list(PANEL_COLUMNS):
+        raise ValueError("panel 列顺序与 PANEL_COLUMNS 契约不一致")
+    if not panel["match_id"].is_unique:
+        raise ValueError("排序后 match_id 不再唯一")
+    if not np.array_equal(panel["y"].to_numpy(),
+                          panel["FTR"].map(LABEL_MAP).to_numpy()):
+        raise ValueError("y 与 FTR.map(H=0,D=1,A=2) 不一致")
+    if panel[list(H3_PANEL_COLS)].isna().any().any():
+        raise ValueError("H3 三列存在空值")
+    return panel
+
+
+def write_panel(panel: pd.DataFrame | None = None,
+                out_path: str | Path | None = None) -> dict:
+    """把 22 列窄表写成 ``data/processed/panel.parquet``（**不入库**，README §3.6）。
+
+    ``index=False`` 保证读回时列序 / 行数完全一样；重复运行直接覆盖，幂等。
+    """
+    p = Path(out_path) if out_path is not None else PANEL_PATH
+    frame = build_panel() if panel is None else panel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_parquet(p, index=False, engine="pyarrow")
+    if not p.exists() or p.stat().st_size == 0:
+        raise ValueError(f"panel.parquet 写入失败或为空：{p}")
+    return {"path": str(p), "bytes": p.stat().st_size,
+            "rows": len(frame), "cols": len(frame.columns)}
+
+
+def s3_selfcheck(log_path: str | Path | None = None,
+                 raw_dir: str | Path | None = None,
+                 out_path: str | Path | None = None) -> dict:
+    """S3 验收：12 项硬断言 + 可复核日志。
+
+    - ``out_path=None``：只在临时目录验证 Parquet round-trip，不写仓库（测试用）。
+    - ``out_path`` 给定：额外把正式主表写到该路径并读回再验一次（CLI 用）。
+    """
+    import tempfile
+
+    out: list[str] = []
+
+    def emit(line: str = "") -> None:
+        print(line)
+        out.append(line)
+
+    raw = read_all(raw_dir)
+    panel = build_panel(raw)
+    sub = panel.loc[panel["season"].isin(EVAL_SEASONS)]
+
+    # --- 独立复算，不复用 build_panel 的中间结果 ---
+    recomputed_id = (panel["league"].astype(str) + "|" + panel["season"] + "|"
+                     + panel["date"] + "|" + panel["home"] + "|" + panel["away"])
+    id_ok = bool(panel["match_id"].equals(recomputed_id)
+                 and panel["match_id"].str.count(r"\|").eq(4).all()
+                 and panel["match_id"].notna().all()
+                 and panel["match_id"].is_unique)
+    key_frame = panel[list(SORT_KEYS)].reset_index(drop=True)
+    sorted_keys = (panel[list(SORT_KEYS)]
+                   .sort_values(list(SORT_KEYS), kind="mergesort")
+                   .reset_index(drop=True))
+    sorted_ok = bool(key_frame.equals(sorted_keys))
+    five_tuple_dupes = int(panel.duplicated(["league", "season", "date",
+                                             "home", "away"]).sum())
+    y_ok = bool(
+        np.array_equal(panel["y"].to_numpy(), panel["FTR"].map(LABEL_MAP).to_numpy())
+        and set(panel["y"].unique()) <= {0, 1, 2}
+        and panel["y"].value_counts().sort_index().to_dict()
+        == {0: 21_194, 1: 11_824, 2: 13_489}
+    )
+    date_ok = bool(
+        panel["date"].str.match(r"^\d{4}-\d{2}-\d{2}$").all()
+        and panel["date"].min() == "2003-08-01"
+        and panel["date"].max() == "2025-05-25"
+        and panel["season"].str.match(r"^\d{4}/\d{2}$").all()
+    )
+    h3_invariant = h3_invariant_to_post_match(panel)
+    h3_ok = bool(panel[list(H3_PANEL_COLS)].notna().all().all()
+                 and panel["matchday"].between(1, 38).all()
+                 and h3_invariant)
+
+    # 赔率覆盖：前 9 季整列不存在 → 全 NaN；评估窗只缺 3 块共 5 场。
+    odds_early_nan = bool(panel.loc[panel["season"] <= "2011/12",
+                                    list(ODDS_COLS)].isna().all().all())
+    eval_missing = sub[list(ODDS_COLS)].isna().any(axis=1)
+    missing_by_block = (sub.loc[eval_missing].groupby(["league", "season"])
+                        .size().to_dict())
+    n_missing = int(eval_missing.sum())
+    odds_ok = bool(odds_early_nan and n_missing == 5
+                   and missing_by_block == EXPECTED_ODDS_MISSING_BLOCKS
+                   and len(sub) - n_missing == EXPECTED_B6_ROWS)
+
+    # T1.3-a 场次核查：n 队联赛满额 = n*(n-1)，只有 2 个真实腰斩块例外。
+    teams = _team_blocks(panel)
+    block_rows = panel.groupby(["league", "season"]).size().to_dict()
+    block_ok = len(teams) == EXPECTED_BLOCKS and all(
+        block_rows[k] == EXPECTED_SHORT_BLOCKS.get(k, len(v) * (len(v) - 1))
+        for k, v in teams.items()
+    )
+    league_totals = panel.groupby("league").size().to_dict()
+    eval_totals = sub.groupby("league").size().to_dict()
+    totals_ok = bool(
+        league_totals == EXPECTED_LEAGUE_TOTALS
+        and eval_totals == EXPECTED_EVAL_TOTALS
+        and sum(league_totals.values()) == EXPECTED_ROWS
+        and len(sub) == EXPECTED_EVAL_ROWS
+        and sub.groupby(["league", "season"]).ngroups == EXPECTED_EVAL_BLOCKS
+    )
+
+    # Parquet round-trip：先在临时目录验「落盘不会变形」，再写正式产物。
+    roundtrip_ok = True
+    with tempfile.TemporaryDirectory(prefix="wb_panel_") as tmp:
+        tmp_path = Path(tmp) / "panel.parquet"
+        panel.to_parquet(tmp_path, index=False, engine="pyarrow")
+        try:
+            pd.testing.assert_frame_equal(pd.read_parquet(tmp_path), panel)
+        except AssertionError:
+            roundtrip_ok = False
+    written: dict | None = None
+    if out_path is not None:
+        written = write_panel(panel, out_path)
+        back = pd.read_parquet(out_path)
+        try:
+            pd.testing.assert_frame_equal(back, panel)
+        except AssertionError:
+            roundtrip_ok = False
+        if len(back) != EXPECTED_ROWS or not back["match_id"].is_unique:
+            roundtrip_ok = False
+
+    # 幂等 + 不入库规则
+    repro_ok = bool(panel.equals(build_panel(raw)))
+    gitignore_text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    ignore_ok = "*.parquet" in gitignore_text and "/data/processed/*" in gitignore_text
+
+    emit("=" * 100)
+    emit("S3 建模总表自检 · Football-Calibration / M1 · T1.3 + T1.3-a")
+    emit("=" * 100)
+    emit(f"执行时间 : {pd.Timestamp.now().tz_localize('Asia/Shanghai').isoformat(timespec='seconds')}")
+    emit(f"解释器   : Python / pandas {pd.__version__} · numpy {np.__version__}")
+    emit(f"输入     : data/raw/*.csv 132 文件 → {len(raw):,} 行（S1 已剔除 11 行全空白）")
+    if written:
+        # 日志入库，写相对路径，避免各人机器上的绝对路径造成无意义 diff。
+        try:
+            rel = Path(written["path"]).resolve().relative_to(ROOT).as_posix()
+        except ValueError:
+            rel = written["path"]
+        out_desc = f"已写入 {rel} ({written['bytes']:,} B)"
+    else:
+        out_desc = "仅内存（未指定 --out）"
+    emit(f"输出     : {len(panel):,} 行 × {len(panel.columns)} 列；产物 {out_desc}")
+    emit("")
+    emit(f"panel 列序（{len(PANEL_COLUMNS)} 列，顺序即契约）：")
+    emit("  " + ", ".join(PANEL_COLUMNS))
+    emit("match_id 示例：")
+    for value in panel["match_id"].head(3):
+        emit(f"  {value}")
+    emit("")
+    emit("场次核查（T1.3-a）：")
+    for lg in sorted(panel["league"].unique()):
+        emit(f"  {lg:<4} 全库 22 季 {league_totals[lg]:>6,} 场 / "
+             f"评估窗 8 季 {eval_totals[lg]:>6,} 场")
+    emit(f"  合计 全库 {sum(league_totals.values()):,} / "
+         f"评估窗 {len(sub):,}（{sub.groupby(['league', 'season']).ngroups} 块）")
+    emit(f"  非满额块（相对 n 队满额 n*(n-1) 少打的比赛）：{EXPECTED_SHORT_BLOCKS}")
+    emit(f"  法甲 2023/24 起 18 队 → 306 场/季，由 n*(n-1) 规则覆盖，不是缺赛")
+    emit(f"评估窗三列收盘赔率缺失：{n_missing} 场，按块 {missing_by_block}；"
+         f"B6 / B6r 有效 n = {len(sub) - n_missing:,}")
+    emit("")
+
+    written_desc = (f"{written['bytes']:,} B" if written
+                    else "N/A（未指定 --out）")
+
+    checks: list[tuple[str, bool, str]] = [
+        ("行数守恒：46,518 − 11 空白 = 46,507，且与 S2 清洗表一致",
+         len(raw) == EXPECTED_ROWS and len(panel) == EXPECTED_ROWS,
+         f"raw={len(raw):,}, panel={len(panel):,}"),
+        (f"{len(PANEL_COLUMNS)} 列窄表、列序与 PANEL_COLUMNS 恒等；Max* 不进 panel",
+         list(panel.columns) == list(PANEL_COLUMNS)
+         and not any(c.startswith("Max") for c in panel.columns),
+         f"cols={len(panel.columns)}"),
+        ("match_id 唯一 / 非空 / 5 段 / 可由契约公式逐字符复算",
+         id_ok, f"unique={panel['match_id'].is_unique}, reproducible={id_ok}"),
+        ("按 league,season,date 单调排序，且五元组 0 重复",
+         sorted_ok and five_tuple_dupes == 0,
+         f"sorted={sorted_ok}, dupes={five_tuple_dupes}"),
+        ("y = FTR.map(H=0,D=1,A=2)，值域 {0,1,2}，分布 21,194/11,824/13,489",
+         y_ok, f"y_counts={panel['y'].value_counts().sort_index().to_dict()}"),
+        ("date 为 ISO 字符串、season 为 YYYY/YY、范围 2003-08-01→2025-05-25",
+         date_ok, f"range={panel['date'].min()} → {panel['date'].max()}"),
+        ("H3 三列无空、matchday 1–38，且打乱赛后列后逐元素不变",
+         h3_ok, f"invariant={h3_invariant}"),
+        ("收盘赔率：前 9 季全 NaN；评估窗只缺 3 块共 5 场，B6 有效 16,728",
+         odds_ok, f"earlyNaN={odds_early_nan}, missing={n_missing}, "
+                  f"blocks={missing_by_block}"),
+        ("T1.3-a：132 块均满足 n 队满额 n*(n−1)，仅 2 个真实腰斩块例外",
+         block_ok, f"blocks={len(teams)}, short={EXPECTED_SHORT_BLOCKS}"),
+        ("六联赛 22 季合计 46,507；评估窗 48 块 16,733 且逐联赛合计全对",
+         totals_ok, f"leagueTotals={league_totals}, evalTotals={eval_totals}"),
+        ("Parquet round-trip：读回逐元素相等；正式产物已写入且可读",
+         roundtrip_ok, f"roundtrip={roundtrip_ok}, written={written_desc}"),
+        ("幂等可复现（同一 raw 两次 build_panel 相等）+ 不入库规则仍在",
+         repro_ok and ignore_ok,
+         f"reproducible={repro_ok}, gitignore(*.parquet + /data/processed/*)={ignore_ok}"),
+    ]
+
+    emit("-" * 100)
+    for name, ok, detail in checks:
+        emit(f"[{'PASS' if ok else 'FAIL'}] {name}  ->  {detail}")
+    passed = sum(ok for _, ok, _ in checks)
+    emit("-" * 100)
+    emit(f"汇总: {passed}/{len(checks)} 项 PASS"
+         f"{'  -> S3 通过，可进入 S4' if passed == len(checks) else '  -> 存在 FAIL，禁止进入 S4'}")
+    emit("")
+    emit("边界: S3 只交付建模总表；configs/splits.json（48 块）属 S4，覆盖率矩阵 / 泄漏测试 / 复现包属后续 T 任务。")
+    emit("      panel.parquet 不入库（.gitignore *.parquet + /data/processed/*），全组各自跑同一脚本生成。")
+    emit("      panel 保留比分 / 射门 / FTR 仅供 y 审计与误差分析，**不得入模**；赔率列除 B6/B6r 外不得入模。")
+    emit("复现: python src/build_panel.py --stage s3 --log results/logs/s3_panel_<date>.txt")
+    emit("      python src/build_panel.py --stage s3 --out <自定义路径>   # 指定落盘位置")
+    emit("      pytest -q tests/")
+
+    if log_path is not None:
+        lp = Path(log_path)
+        lp.parent.mkdir(parents=True, exist_ok=True)
+        lp.write_text("\n".join(out) + "\n", encoding="utf-8")
+        print(f"\n自检日志已写入: {lp}")
+    return {"passed": passed, "total": len(checks), "rows": len(panel),
+            "cols": len(panel.columns), "eval_rows": len(sub),
+            "b6_rows": len(sub) - n_missing, "blocks": len(teams),
+            "roundtrip": roundtrip_ok, "reproducible": repro_ok,
+            "written": written}
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(
-        description="M1 / build_panel.py：S1 读取器自检（默认）或 S2 字段统一自检")
-    ap.add_argument("--stage", choices=["s1", "s2"], default="s1",
-                    help="s1 = read_raw() 自检（默认，兼容原命令）；s2 = 字段统一自检")
+        description="M1 / build_panel.py：S1 读取器自检（默认）/ S2 字段统一 / S3 建模总表")
+    ap.add_argument("--stage", choices=["s1", "s2", "s3"], default="s1",
+                    help="s1 = read_raw() 自检（默认）；s2 = 字段统一；s3 = 拼总表并落盘")
     ap.add_argument("--build-alias", action="store_true",
                     help="从 data/raw/ 重新生成 configs/team_alias.csv（S2 产物）")
     ap.add_argument("--raw-dir", default=None, help="原始 CSV 目录（默认 data/raw/）")
+    ap.add_argument("--out", default=None,
+                    help="s3 主表落盘路径（默认 data/processed/panel.parquet，不入库）")
     ap.add_argument("--log", default=None,
                     help=("自检日志路径（默认不落盘）；建议 "
                           f"s1: results/logs/s1_read_raw_{date.today()}.txt / "
-                          f"s2: results/logs/s2_clean_{date.today()}.txt"))
+                          f"s2: results/logs/s2_clean_{date.today()}.txt / "
+                          f"s3: results/logs/s3_panel_{date.today()}.txt"))
     args = ap.parse_args()
     if args.build_alias:
         rows = build_team_alias(args.raw_dir, ALIAS_PATH)
         print(f"configs/team_alias.csv 已生成：{len(rows)} 行")
-    summary = (s2_selfcheck(args.log, args.raw_dir) if args.stage == "s2"
-               else selfcheck(args.raw_dir, args.log))
+    if args.stage == "s3":
+        summary = s3_selfcheck(args.log, args.raw_dir, args.out or str(PANEL_PATH))
+    elif args.stage == "s2":
+        summary = s2_selfcheck(args.log, args.raw_dir)
+    else:
+        summary = selfcheck(args.raw_dir, args.log)
     raise SystemExit(0 if summary["passed"] == summary["total"] else 1)

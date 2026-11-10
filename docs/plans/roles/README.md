@@ -15,7 +15,7 @@
 
 每份卡的结构相同：**人话定位 → 依赖关系 → 第一天 30 分钟 → 任务表 → 预期产物 → 验收标准 → 坑 → 术语 → 升级路径**。
 
-> **交付状态速览（2026-11-10）**：M1 的 **S0、S1、S2 均已完成**。S0 环境与快照自检 **7/7 PASS**；S1 稳健读取器 `read_raw()` **8/8 PASS + 10 项 pytest**（r2：行尾溢出非空即抛 `ValueError`）；**S2 字段统一 13/13 PASS + 全量 25 项 pytest 全绿**——`configs/team_alias.csv`（243 行、2 组真实改名、归一后 241 队名）、ISO 日期、`y=0/1/2`、`is_promoted_*` 与 `matchday` 全部落地，46,507 行五元组 0 重复。**M4 等的 `team_alias.csv` 已交付（等待点解除，比 §3 的 11/08 时点晚 2 天）**；`panel.parquet` / `splits.json` 仍未产出，属 S3 / S4。**产物**：`src/build_panel.py`、`configs/team_alias.csv`、`tests/test_read_raw.py`、`tests/test_s2_clean.py`、`results/logs/s0_* / s1_* / s2_*`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1 / §3.2 / §3.3。下一步是 **S3（拼总表 + `match_id` + `panel.parquet`）**。
+> **交付状态速览（2026-11-10 13:31）**：M1 的 **S0、S1、S2、S3 均已完成**。S0 环境与快照自检 **7/7 PASS**；S1 稳健读取器 `read_raw()` **8/8 PASS + 10 项 pytest**（r2：行尾溢出非空即抛 `ValueError`）；S2 字段统一 **13/13 PASS**（`team_alias.csv` 243 行、2 组真实改名、归一后 241 队名，ISO 日期 / `y=0/1/2` / H3 三列）；**S3 建模总表 12/12 PASS + 全量 40 项 pytest 全绿**——`data/processed/panel.parquet` **46,507 行 × 22 列 / 1,028,001 B**，`match_id` 唯一、按 `league,season,date` 排序、Parquet 读回逐元素相等，**不入库**，由 `python src/build_panel.py --stage s3` 一键重跑。**M4 等的 `team_alias.csv` 与 M2/M3/M4 等的 `panel.parquet` 两个等待点均已解除**（比 §3 的 11/08 时点晚 2 天）；**`configs/splits.json` 仍未产出，属 S4**。**产物**：`src/build_panel.py`、`configs/team_alias.csv`、`tests/test_read_raw.py` / `test_s2_clean.py` / `test_panel_counts.py`、`results/logs/s0_* / s1_* / s2_* / s3_*`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1 / §3.2 / §3.3 / **§3.4**。下一步是 **S4（48 块 `splits.json`）**。
 
 ## 2. 五个人的工时与备份
 
@@ -38,7 +38,7 @@
 |---|---|---|---|
 | **11/07** | 口径确认邮件 | M5 → 老师 | 邮件 |
 | **11/08**（实际 11/10 ✅） | 队名统一表 | M1 → M4 | `configs/team_alias.csv`（243 行，见 §1 状态速览） |
-| **11/08** | 建模总表 | M1 → 全组 | `data/processed/panel.parquet` |
+| **11/08**（实际 11/10 ✅） | 建模总表 | M1 → M2/M3/M4 | `data/processed/panel.parquet`（46,507 行 × 22 列，不入库，`--stage s3` 各自重跑；见 §1 状态速览） |
 | **11/09** | **接口冻结**：48 块切分 + 预测 schema（9 arm，含 B6r）+ B4 信息集清单 + H3 两列 | M1/M2/M3 → 全组 | `configs/splits.json`、`data_interface.md`、B4 输入清单 |
 | **11/10** | 图表清单 + 章节分工 | M5 → 全组 | `figure_list.md` |
 | **11/10** | **数据冻结** | M1 → 全组 | `data-v1.0` tag + `docs/plans/CHANGELOG_data.md` |
@@ -57,7 +57,7 @@
 3. **重采样单位是 48 个块，不是 16,733 场比赛**。按场重采样会把区间压窄 3–5 倍，制造一堆假显著。
 4. **B6r 的两个重校准参数只能在 train 段拟合**；在 test 段拟合就是泄漏，H4 作废。`is_promoted_*` / `matchday` 只能由季前名单与赛程构造。
 5. **B5a/B5b 只用 sklearn 内置 HGB**（零新增依赖）；任何模型落盘前必须把内部标签重排成 `p_home,p_draw,p_away`；B6r 只能用 train 段 `PSCH` 三列齐全的比赛拟合。
-6. **`match_id` / ISO 日期 / `season` 格式以 `data_interface.md` §1.0 为准**：`panel` 与各 `preds_*.csv` 都带 `match_id` 列且逐字符一致，`date` 不得写回 raw 的 `dd/mm/yy`。M1 读 raw 必须走 T1.2-a 的 `csv.reader` 按名取列，禁止 `on_bad_lines='skip'`。
+6. **`match_id` / ISO 日期 / `season` 格式以 `data_interface.md` §1.0 为准**：`panel` 与各 `preds_*.csv` 都带 `match_id` 列且逐字符一致，`date` 一律 ISO **字符串**、不得写回 raw 的 `dd/mm/yy`，也不要把 panel 存成 `datetime64`（S3 已把该口径写成断言）。M1 读 raw 必须走 T1.2-a 的 `csv.reader` 按名取列，禁止 `on_bad_lines='skip'`。**panel 里保留 `FTR` / 比分 / 射门仅供审计，不等于允许入模**；赔率列除 B6/B6r 外同样不得入模。
 
 ## 5. 固定节奏
 
@@ -70,4 +70,4 @@
 
 ---
 
-*索引 v1.7 · 2026-11-10 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.6**（§3.1 S0 + §3.2 S1 + §3.3 S2），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0 / S1 / S2 已交付，见 §1 交付状态速览***
+*索引 v1.8 · 2026-11-10 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.7**（§3.1 S0 + §3.2 S1 + §3.3 S2 + §3.4 S3），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0 / S1 / S2 / S3 已交付，见 §1 交付状态速览；S4 待交付***

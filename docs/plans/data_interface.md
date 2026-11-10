@@ -1,8 +1,9 @@
 # 数据接口约定（统一预测文件 schema 与防泄漏红线）
 
-> 版本 **v1.4** · 2026-11-08 · 摘录自 `08_小组分工实施方案_v1.3.md`（r3 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
+> 版本 **v1.5** · 2026-11-10 · 摘录自 `08_小组分工实施方案_v1.3.md`（r3 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
 > **v1.2 → v1.3**：① §1.1 补「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例；② §2 补 B6r 的 train 段拟合样本边界（`PSCH` 自 2012/13 才有）；③ §2 对照一致性行补 sklearn HGB 的 `classes_` 重排；④ §5 H4 判定备注同步。D1 决策落地为零新增依赖。
 > **v1.3 → v1.4（M1 开工复核）**：① 新增 **§1.0 `match_id` / ISO 日期 / `season` 格式**契约，§1 schema 增加 `match_id` 列；② `preds_*.csv` 的 `date` 由「原始字段」改为 **ISO `YYYY-MM-DD`**；③ B6 有效样本数按全窗复测订正为 **16,728**（3 块共 5 场缺三列收盘赔率）。
+> **v1.4 → v1.5（S3 落地状态登记，契约本身不变）**：`panel.parquet` 已于 2026-11-10 由 `python src/build_panel.py --stage s3` 产出，§1.0 补「实现状态」一段，明确 **22 列清单、`date` 为 ISO 字符串、`match_id` 46,507 行唯一、产物不入库、panel 保留赛后列不等于允许入模**。判定规则、阈值、B0–B6r 口径**一字未改**；同步 README 顶部与 Proposal v3.0 头部的 companion 版本号。
 > ✅ **命名已定稿（U3 闭环）**：模型标识、文件名与 `model` 列一律用 **`B0`–`B6` + `B6r`** 共 9 个 arm；`M1`–`M5` 只指成员。对外假设编号用 Proposal 的 **H1–H4**；原「结构 vs 灵活」降为受控比较 **C1/C2**，主场优势降为**附录 A1**。B↔M 映射表见 `Team-32-Proposal_v3.0.md` §4 末。
 > **市场基准列已定：只读收盘价 `PSCH/PSCD/PSCA`**（见 v1.3 §5.5）；`PSH/PSD/PSA` 为开盘价、`B365*` 为别家非收盘价，均不作基准。
 
@@ -32,6 +33,11 @@
 | `season` | 一律 `YYYY/YY`（`2024/25`）；`configs/splits.json` 的 `season` 同用此格式，4 位码 `2425` 仅用于定位 raw 文件 |
 | `date` | 一律 ISO `YYYY-MM-DD`；`test_start` / `test_end` 同格式。raw 的年份位数跨文件不同（73 个文件两位年、29 个四位年），**直接写回会让跨模型内连接全部对不上** |
 | 配对 | 所有 Δ 先用 `match_id` 内连接再逐场相减；B6 / B6r 少 5 场时按交集行数计算并在表注写明 |
+
+> ✅ **实现状态（S3 · 2026-11-10，12/12 PASS + 40 项 pytest 全绿）**：`panel.parquet` 已由 `python src/build_panel.py --stage s3` 一键产出，**46,507 行 × 22 列 / 1,028,001 B，不入库**（README §3.6），按 `league, season, date, home, away` 排序。列顺序恒为
+> `match_id, league, season, date, home, away, FTR, y, FTHG, FTAG, HTHG, HTAG, HS, AS, HST, AST, PSCH, PSCD, PSCA, is_promoted_home, is_promoted_away, matchday`。
+> 三条落地口径：① **`date` 存 ISO 字符串，不存 `datetime64`**——`preds_*.csv` 是字符串，时间戳会让 `match_id` 内连接整片对不上；② `match_id` 46,507 行唯一，重复即抛 `ValueError`（**禁止 dedup**，会静默少比赛）；③ `MaxCH/MaxCD/MaxCA` **不进 panel**，覆盖率矩阵按 T1.4 直接读 raw。
+> ⚠️ **panel 保留 `FTR` / 比分 / 射门仅供 `y` 审计与误差分析，不等于允许入模**；赔率列除 B6 / B6r 外同样不得入模（§2）。各 arm 的特征白名单 + `configs/splits.json`（S4）才是防泄漏的落点。逐项断言见 `tests/test_panel_counts.py`、`results/logs/s3_panel_2026-11-10.txt` 与 M1 分工卡 §3.4。
 
 ### 1.1 `y` 编码与类别顺序（M1 在 `build_panel.py` 里定死）
 
