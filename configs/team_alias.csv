@@ -1,0 +1,244 @@
+raw_name,canonical_name,league,first_seen_season
+Aachen,Aachen,D1,2006/07
+Augsburg,Augsburg,D1,2011/12
+Bayern Munich,Bayern Munich,D1,2003/04
+Bielefeld,Bielefeld,D1,2004/05
+Bochum,Bochum,D1,2003/04
+Braunschweig,Braunschweig,D1,2013/14
+Cottbus,Cottbus,D1,2006/07
+Darmstadt,Darmstadt,D1,2015/16
+Dortmund,Dortmund,D1,2003/04
+Duisburg,Duisburg,D1,2005/06
+Ein Frankfurt,Ein Frankfurt,D1,2003/04
+FC Koln,FC Koln,D1,2003/04
+Fortuna Dusseldorf,Fortuna Dusseldorf,D1,2012/13
+Freiburg,Freiburg,D1,2003/04
+Greuther Furth,Greuther Furth,D1,2012/13
+Hamburg,Hamburg,D1,2003/04
+Hannover,Hannover,D1,2003/04
+Hansa Rostock,Hansa Rostock,D1,2003/04
+Heidenheim,Heidenheim,D1,2023/24
+Hertha,Hertha,D1,2003/04
+Hoffenheim,Hoffenheim,D1,2008/09
+Holstein Kiel,Holstein Kiel,D1,2024/25
+Ingolstadt,Ingolstadt,D1,2015/16
+Kaiserslautern,Kaiserslautern,D1,2003/04
+Karlsruhe,Karlsruhe,D1,2007/08
+Leverkusen,Leverkusen,D1,2003/04
+M'gladbach,M'gladbach,D1,2003/04
+Mainz,Mainz,D1,2004/05
+Munich 1860,Munich 1860,D1,2003/04
+Nurnberg,Nurnberg,D1,2004/05
+Paderborn,Paderborn,D1,2014/15
+RB Leipzig,RB Leipzig,D1,2016/17
+Schalke 04,Schalke 04,D1,2003/04
+St Pauli,St Pauli,D1,2010/11
+Stuttgart,Stuttgart,D1,2003/04
+Union Berlin,Union Berlin,D1,2019/20
+Werder Bremen,Werder Bremen,D1,2003/04
+Wolfsburg,Wolfsburg,D1,2003/04
+Arsenal,Arsenal,E0,2003/04
+Aston Villa,Aston Villa,E0,2003/04
+Birmingham,Birmingham,E0,2003/04
+Blackburn,Blackburn,E0,2003/04
+Blackpool,Blackpool,E0,2010/11
+Bolton,Bolton,E0,2003/04
+Bournemouth,Bournemouth,E0,2015/16
+Brentford,Brentford,E0,2021/22
+Brighton,Brighton,E0,2017/18
+Burnley,Burnley,E0,2009/10
+Cardiff,Cardiff,E0,2013/14
+Charlton,Charlton,E0,2003/04
+Chelsea,Chelsea,E0,2003/04
+Crystal Palace,Crystal Palace,E0,2004/05
+Derby,Derby,E0,2007/08
+Everton,Everton,E0,2003/04
+Fulham,Fulham,E0,2003/04
+Huddersfield,Huddersfield,E0,2017/18
+Hull,Hull,E0,2008/09
+Ipswich,Ipswich,E0,2024/25
+Leeds,Leeds,E0,2003/04
+Leicester,Leicester,E0,2003/04
+Liverpool,Liverpool,E0,2003/04
+Luton,Luton,E0,2023/24
+Man City,Man City,E0,2003/04
+Man United,Man United,E0,2003/04
+Middlesbrough,Middlesbrough,E0,2003/04
+Newcastle,Newcastle,E0,2003/04
+Norwich,Norwich,E0,2004/05
+Nott'm Forest,Nott'm Forest,E0,2022/23
+Portsmouth,Portsmouth,E0,2003/04
+QPR,QPR,E0,2011/12
+Reading,Reading,E0,2006/07
+Sheffield United,Sheffield United,E0,2006/07
+Southampton,Southampton,E0,2003/04
+Stoke,Stoke,E0,2008/09
+Sunderland,Sunderland,E0,2005/06
+Swansea,Swansea,E0,2011/12
+Tottenham,Tottenham,E0,2003/04
+Watford,Watford,E0,2006/07
+West Brom,West Brom,E0,2004/05
+West Ham,West Ham,E0,2005/06
+Wigan,Wigan,E0,2005/06
+Wolves,Wolves,E0,2003/04
+Ajaccio,Ajaccio,F1,2003/04
+Ajaccio GFCO,Ajaccio GFCO,F1,2015/16
+Amiens,Amiens,F1,2017/18
+Angers,Angers,F1,2015/16
+Arles,Arles,F1,2010/11
+Auxerre,Auxerre,F1,2003/04
+Bastia,Bastia,F1,2003/04
+Bordeaux,Bordeaux,F1,2003/04
+Boulogne,Boulogne,F1,2009/10
+Brest,Brest,F1,2010/11
+Caen,Caen,F1,2004/05
+Clermont,Clermont,F1,2021/22
+Dijon,Dijon,F1,2011/12
+Evian Thonon Gaillard,Evian Thonon Gaillard,F1,2011/12
+Grenoble,Grenoble,F1,2008/09
+Guingamp,Guingamp,F1,2003/04
+Istres,Istres,F1,2004/05
+Le Havre,Le Havre,F1,2008/09
+Le Mans,Le Mans,F1,2003/04
+Lens,Lens,F1,2003/04
+Lille,Lille,F1,2003/04
+Lorient,Lorient,F1,2006/07
+Lyon,Lyon,F1,2003/04
+Marseille,Marseille,F1,2003/04
+Metz,Metz,F1,2003/04
+Monaco,Monaco,F1,2003/04
+Montpellier,Montpellier,F1,2003/04
+Nancy,Nancy,F1,2005/06
+Nantes,Nantes,F1,2003/04
+Nice,Nice,F1,2003/04
+Nimes,Nimes,F1,2018/19
+Paris SG,Paris SG,F1,2003/04
+Reims,Reims,F1,2012/13
+Rennes,Rennes,F1,2003/04
+Sedan,Sedan,F1,2006/07
+Sochaux,Sochaux,F1,2003/04
+St Etienne,St Etienne,F1,2004/05
+Strasbourg,Strasbourg,F1,2003/04
+Toulouse,Toulouse,F1,2003/04
+Troyes,Troyes,F1,2005/06
+Valenciennes,Valenciennes,F1,2006/07
+Ancona,Ancona,I1,2003/04
+Ascoli,Ascoli,I1,2005/06
+Atalanta,Atalanta,I1,2004/05
+Bari,Bari,I1,2009/10
+Benevento,Benevento,I1,2017/18
+Bologna,Bologna,I1,2003/04
+Brescia,Brescia,I1,2003/04
+Cagliari,Cagliari,I1,2004/05
+Carpi,Carpi,I1,2015/16
+Catania,Catania,I1,2006/07
+Cesena,Cesena,I1,2010/11
+Chievo,Chievo,I1,2003/04
+Como,Como,I1,2024/25
+Cremonese,Cremonese,I1,2022/23
+Crotone,Crotone,I1,2016/17
+Empoli,Empoli,I1,2003/04
+Fiorentina,Fiorentina,I1,2004/05
+Frosinone,Frosinone,I1,2015/16
+Genoa,Genoa,I1,2007/08
+Inter,Inter,I1,2003/04
+Juventus,Juventus,I1,2003/04
+Lazio,Lazio,I1,2003/04
+Lecce,Lecce,I1,2003/04
+Livorno,Livorno,I1,2004/05
+Messina,Messina,I1,2004/05
+Milan,Milan,I1,2003/04
+Modena,Modena,I1,2003/04
+Monza,Monza,I1,2022/23
+Napoli,Napoli,I1,2007/08
+Novara,Novara,I1,2011/12
+Palermo,Palermo,I1,2004/05
+Parma,Parma,I1,2003/04
+Perugia,Perugia,I1,2003/04
+Pescara,Pescara,I1,2012/13
+Reggina,Reggina,I1,2003/04
+Roma,Roma,I1,2003/04
+Salernitana,Salernitana,I1,2021/22
+Sampdoria,Sampdoria,I1,2003/04
+Sassuolo,Sassuolo,I1,2013/14
+Siena,Siena,I1,2003/04
+Spal,Spal,I1,2017/18
+Spezia,Spezia,I1,2020/21
+Torino,Torino,I1,2006/07
+Treviso,Treviso,I1,2005/06
+Udinese,Udinese,I1,2003/04
+Venezia,Venezia,I1,2021/22
+Verona,Verona,I1,2013/14
+AZ Alkmaar,AZ Alkmaar,N1,2003/04
+Ajax,Ajax,N1,2003/04
+Almere City,Almere City,N1,2023/24
+Cambuur,Cambuur,N1,2013/14
+Den Bosch,Den Bosch,N1,2004/05
+Den Haag,Den Haag,N1,2003/04
+Dordrecht,Dordrecht,N1,2014/15
+Excelsior,Excelsior,N1,2006/07
+FC Emmen,FC Emmen,N1,2018/19
+Feyenoord,Feyenoord,N1,2003/04
+For Sittard,For Sittard,N1,2018/19
+Go Ahead Eagles,Go Ahead Eagles,N1,2013/14
+Graafschap,Graafschap,N1,2004/05
+Groningen,Groningen,N1,2003/04
+Heerenveen,Heerenveen,N1,2003/04
+Heracles,Heracles,N1,2005/06
+NAC Breda,NAC Breda,N1,2003/04
+Nijmegen,Nijmegen,N1,2003/04
+PSV Eindhoven,PSV Eindhoven,N1,2003/04
+Roda,Roda,N1,2010/11
+Roda JC,Roda,N1,2003/04
+Roosendaal,Roosendaal,N1,2003/04
+Sparta,Sparta Rotterdam,N1,2005/06
+Sparta Rotterdam,Sparta Rotterdam,N1,2016/17
+Twente,Twente,N1,2003/04
+Utrecht,Utrecht,N1,2003/04
+VVV Venlo,VVV Venlo,N1,2007/08
+Vitesse,Vitesse,N1,2003/04
+Volendam,Volendam,N1,2003/04
+Waalwijk,Waalwijk,N1,2003/04
+Willem II,Willem II,N1,2003/04
+Zwolle,Zwolle,N1,2003/04
+Alaves,Alaves,SP1,2005/06
+Albacete,Albacete,SP1,2003/04
+Almeria,Almeria,SP1,2007/08
+Ath Bilbao,Ath Bilbao,SP1,2003/04
+Ath Madrid,Ath Madrid,SP1,2003/04
+Barcelona,Barcelona,SP1,2003/04
+Betis,Betis,SP1,2003/04
+Cadiz,Cadiz,SP1,2005/06
+Celta,Celta,SP1,2003/04
+Cordoba,Cordoba,SP1,2014/15
+Eibar,Eibar,SP1,2014/15
+Elche,Elche,SP1,2013/14
+Espanol,Espanol,SP1,2003/04
+Getafe,Getafe,SP1,2004/05
+Gimnastic,Gimnastic,SP1,2006/07
+Girona,Girona,SP1,2017/18
+Granada,Granada,SP1,2011/12
+Hercules,Hercules,SP1,2010/11
+Huesca,Huesca,SP1,2018/19
+La Coruna,La Coruna,SP1,2003/04
+Las Palmas,Las Palmas,SP1,2015/16
+Leganes,Leganes,SP1,2016/17
+Levante,Levante,SP1,2004/05
+Malaga,Malaga,SP1,2003/04
+Mallorca,Mallorca,SP1,2003/04
+Murcia,Murcia,SP1,2003/04
+Numancia,Numancia,SP1,2004/05
+Osasuna,Osasuna,SP1,2003/04
+Real Madrid,Real Madrid,SP1,2003/04
+Recreativo,Recreativo,SP1,2006/07
+Santander,Santander,SP1,2003/04
+Sevilla,Sevilla,SP1,2003/04
+Sociedad,Sociedad,SP1,2003/04
+Sp Gijon,Sp Gijon,SP1,2008/09
+Tenerife,Tenerife,SP1,2009/10
+Valencia,Valencia,SP1,2003/04
+Valladolid,Valladolid,SP1,2003/04
+Vallecano,Vallecano,SP1,2011/12
+Villarreal,Villarreal,SP1,2003/04
+Xerez,Xerez,SP1,2009/10
+Zaragoza,Zaragoza,SP1,2003/04

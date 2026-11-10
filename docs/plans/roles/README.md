@@ -15,7 +15,7 @@
 
 每份卡的结构相同：**人话定位 → 依赖关系 → 第一天 30 分钟 → 任务表 → 预期产物 → 验收标准 → 坑 → 术语 → 升级路径**。
 
-> **交付状态速览（2026-11-08）**：M1 的 **S0、S1 均已完成**。S0 环境与快照自检 **7/7 PASS**（132 CSV / 0 SHA256 失配 / Python 3.14.10 + 8 依赖）；**S1 稳健读取器 `read_raw()` 8/8 PASS + 10 项 pytest 全绿**（20:56 r2 补强：行尾溢出字段非空即抛 `ValueError`，2,895 个溢出格实测全空），132 文件全读入、46,507 行一场不丢、无列错位。**产物**：`src/build_panel.py`、`tests/test_read_raw.py`、`results/logs/s0_selfcheck_2026-11-08.txt`、`results/logs/s1_read_raw_2026-11-08.txt`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1 / §3.2。下一步是 S2（alias / 日期 / `y` / H3 两列）；M4 等的 `team_alias.csv` 与 `panel.parquet` 仍按 §3 的 11/08 时点交付，**尚未产出**。
+> **交付状态速览（2026-11-10）**：M1 的 **S0、S1、S2 均已完成**。S0 环境与快照自检 **7/7 PASS**；S1 稳健读取器 `read_raw()` **8/8 PASS + 10 项 pytest**（r2：行尾溢出非空即抛 `ValueError`）；**S2 字段统一 13/13 PASS + 全量 25 项 pytest 全绿**——`configs/team_alias.csv`（243 行、2 组真实改名、归一后 241 队名）、ISO 日期、`y=0/1/2`、`is_promoted_*` 与 `matchday` 全部落地，46,507 行五元组 0 重复。**M4 等的 `team_alias.csv` 已交付（等待点解除，比 §3 的 11/08 时点晚 2 天）**；`panel.parquet` / `splits.json` 仍未产出，属 S3 / S4。**产物**：`src/build_panel.py`、`configs/team_alias.csv`、`tests/test_read_raw.py`、`tests/test_s2_clean.py`、`results/logs/s0_* / s1_* / s2_*`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1 / §3.2 / §3.3。下一步是 **S3（拼总表 + `match_id` + `panel.parquet`）**。
 
 ## 2. 五个人的工时与备份
 
@@ -37,7 +37,7 @@
 | 日期 | 交接 | 谁给谁 | 物 |
 |---|---|---|---|
 | **11/07** | 口径确认邮件 | M5 → 老师 | 邮件 |
-| **11/08** | 队名统一表 | M1 → M4 | `configs/team_alias.csv` |
+| **11/08**（实际 11/10 ✅） | 队名统一表 | M1 → M4 | `configs/team_alias.csv`（243 行，见 §1 状态速览） |
 | **11/08** | 建模总表 | M1 → 全组 | `data/processed/panel.parquet` |
 | **11/09** | **接口冻结**：48 块切分 + 预测 schema（9 arm，含 B6r）+ B4 信息集清单 + H3 两列 | M1/M2/M3 → 全组 | `configs/splits.json`、`data_interface.md`、B4 输入清单 |
 | **11/10** | 图表清单 + 章节分工 | M5 → 全组 | `figure_list.md` |
@@ -70,4 +70,4 @@
 
 ---
 
-*索引 v1.6 · 2026-11-08 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.5**（§3.1 S0 + §3.2 S1 + §3.2.1 r2 补强），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0 / S1 已交付，见 §1 交付状态速览***
+*索引 v1.7 · 2026-11-10 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.6**（§3.1 S0 + §3.2 S1 + §3.3 S2），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0 / S1 / S2 已交付，见 §1 交付状态速览***

@@ -7,9 +7,28 @@
 | 文件 | 内容 | 产出者 | 冻结时点 |
 |---|---|---|---|
 | `splits.json` | 48 个 `(联赛, 赛季)` 块的 train / test 边界、`n_train`、`n_test` | M1 | **11/09 接口冻结**（11/10 随 `data-v1.0` 标签复核） |
-| `team_alias.csv` | 队名同义写法映射（`Man United` / `Manchester Utd` 等），人工维护 | **M1（M4 会签）** | 随用随改，改动走 PR |
+| `team_alias.csv` | 队名归一映射（`raw_name,canonical_name,league,first_seen_season`），**S2 已于 2026-11-10 产出 243 行**；由 `python src/build_panel.py --build-alias` 从 raw 一键重生成，判定依据见下方专节 | **M1（M4 会签）** | ✅ 已交付（2026-11-10，比 §3 的 11/08 时点晚 2 天）；**M4 会签待办**；后续改动走 PR |
 | `feature_whitelist_b5a.csv` | **B5a 专用**的信息集白名单，四列 `feature / source / allowed / sample_weight_rule`；是 B4↔B5a「特征与样本权重都锁死」的受控比较证据。文件名以本行为准，与 README §2.1 结构树、分工方案 v1.3 T4.5 / §5.2、M4 分工卡一致（旧稿里的 `feature_whitelist.csv` 作废） | M4 产出、M3 逐条会签 | 11/09 接口冻结（信息集清单）；11/13 M3 签字定稿 |
 | `raw_manifest.csv` | 132 个原始 CSV 的 URL / 字节数 / SHA256 / 下载时间 | M1 | 下载完成即冻结 |
+
+## `team_alias.csv` 判定说明（S2 / 2026-11-10 全库实测）
+
+> **生成方式**：`python src/build_panel.py --build-alias`（项目环境 `DSC5001_Project`）。
+> 脚本从 132 个 raw CSV 收集全部 `(league, raw_name)`，逐行写 `first_seen_season`；
+> `canonical_name` 默认等于原名，只有源码里 `CANONICAL_MERGES` 的**人工判定**会改指向。
+> `src/build_panel.py::s2_selfcheck()` 会断言「磁盘上的表 == 脚本重生成的表」，防止手工漂移。
+
+| 实测项 | 结果 |
+|---|---|
+| 原始队名 | **243** 个（D1 38 / E0 44 / F1 41 / I1 47 / N1 32 / SP1 41）；跨联赛同名 0 |
+| 归一后 | **241** 个；每联赛每季参赛队数仍为 18 或 20，与归一前一致 |
+| 真实改名 | **仅 2 组**，都在荷甲 N1、且赛季完全不重叠：`Roda JC`(2003/04–2009/10) → `Roda`(2010/11–2017/18)；`Sparta`(2005/06–2009/10) → `Sparta Rotterdam`(2016/17–2024/25) |
+| 归一的实际收益 | 不归一会把改名队误判成升班马：`is_promoted_home=1` 从 **6,367 → 6,350** 场（-17）；M4 的 Elo 也不再因同一队被拆成两队而从 1500 重启 |
+| 覆盖断言 | M1 卡 §6 验收项 9：`unique(home) ∪ unique(away)` 与 alias 差集为 0；`load_team_alias()` 遇到未登记队名**直接抛 ValueError**，不静默留白 |
+
+**明确不合并的相似队名**（人工判读，勿用模糊匹配自动并）：`Ajaccio` vs `Ajaccio GFCO`（同城两支不同俱乐部）、`Man City` vs `Man United`、`Bayern Munich` vs `Munich 1860`、`Den Bosch` vs `Den Haag`、`Ath Madrid` vs `Real Madrid`、`Le Mans` vs `Lens`、`Augsburg` vs `Duisburg`。原始数据里 `Man United` 这类写法**跨季是一致的**，不存在旧稿举例的 `Manchester Utd` 变体。
+
+**新增映射的三条硬规则**：① 两个名字的赛季范围不重叠且有确切证据是同一队；② `canonical_name` 必须是同一联赛中**已经出现过**的原始名（禁止引入「幽灵队名」，脚本会断言）；③ 改 `src/build_panel.py::CANONICAL_MERGES` 后重跑 `--build-alias`、S2 自检与全量 pytest，并走 PR + M4 会签。
 
 ## 规则
 

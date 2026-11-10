@@ -1,7 +1,7 @@
 ====================================================================================================
 S1 read_raw() 自检 · Football-Calibration / M1 · T1.2-a
 ====================================================================================================
-执行时间 : 2026-11-08T20:58:37+08:00
+执行时间 : 2026-11-10T13:08:45+08:00
 raw 目录 : D:\XHH\city-u-aifs\Statistical Machine Learning I\Project\Football-Calibration\data\raw
 Python   : 3.1.1 (pandas)
 
@@ -152,7 +152,7 @@ file            rows blank short  long  hdr  dup  missOdds badCells  encoding
 ----------------------------------------------------------------------------------------------------
 汇总: 8/8 项 PASS  -> S1 通过，可进入 S2
 
-说明: 本步只产出读取器与自检日志，未写 panel.parquet / team_alias.csv / splits.json；
-      read_raw() 对「行尾溢出字段非空」零容忍（直接抛 ValueError），防止换数据时静默吞信息；
-      队名 alias 归一、日期转 ISO、y 编码、H3 两列、match_id 均留到 S2 / S3。
+说明: S1 只产出读取器与自检日志；S2 已在同一文件实现 alias / ISO / y / H3 三列（--stage s2），
+      并产出 configs/team_alias.csv；S3 才写 match_id 与 panel.parquet，S4 才切 splits.json。
+      read_raw() 对「行尾溢出字段非空」零容忍（直接抛 ValueError），防止换数据时静默吞信息。
 复现: python src/build_panel.py --log <path>  |  pytest -q tests/test_read_raw.py

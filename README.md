@@ -12,7 +12,7 @@
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.5 · 2026-11-08** |
+| 本文档版本 | **v2.6 · 2026-11-10** |
 
 ---
 
@@ -68,21 +68,23 @@ Football-Calibration/
 ├── configs/                         # 小型、必须入库的契约与配置
 │   ├── README.md                    #   configs 的写入规则
 │   ├── raw_manifest.csv             #   132 个原始 CSV 的 URL / 字节数 / SHA256 / 下载时间（T1.1 冻结凭据）
+│   ├── team_alias.csv               #   ★ M1 / S2：243 行队名归一表（--build-alias 可重生成）
 │   └── .gitkeep
 │
 ├── src/                             # 全部可复用 Python 源码
-│   ├── build_panel.py               #   ★ M1 / S1：read_raw() 稳健读取器（S2 / S3 后续追加）
+│   ├── build_panel.py               #   ★ M1 / S1+S2：read_raw() 稳健读取器 + clean_panel() 字段统一（S3 后续追加）
 │   ├── models/                      #   B0–B6 + B6r 各 arm 实现
 │   ├── eval/                        #   harness / metrics / devig / bootstrap
 │   └── .gitkeep
 │
 ├── tests/                           # pytest 单测（含 test_leakage.py）
 │   ├── test_read_raw.py             #   ★ M1 / S1：read_raw() 验收（10 条，含 r2 溢出断言）
+│   ├── test_s2_clean.py             #   ★ M1 / S2：字段统一验收（15 条，含 T1.9 打乱不变性）
 │   └── .gitkeep
 │
 ├── results/                         # 代码直接产出、可重跑重建的中间数值结果
 │   ├── preds/                       #   各模型 48 块预测 CSV（统一 schema）
-│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 自检记录（*.log 忽略）
+│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 / S2 自检记录（*.log 忽略）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -253,11 +255,13 @@ foreach ($s in $seasons) {
 | **表头重复列名（r3 实测）** | **14 个文件**表头含重复列名（含空串 `''`），整表 `pd.concat` / `reindex` 会抛 `InvalidIndexError` / `ValueError`。只按白名单列构造 DataFrame，详见 M1 分工卡 T1.2-a 参考实现 |
 | **整列缺失与空白行（r3 实测）** | `PSCH/PSCD/PSCA` 在 **54 个文件**里是「列不存在」而非「值为空」（0304–1112 共 9 季 × 6），须按白名单补 NaN；另有 **7 个文件共 11 行全空白**，显式 drop 后 `46,518 → 46,507` |
 | 收盘 vs 非收盘 | 无 `C` 的是开市后采集的赔率，带 `C` 的才是收盘。基准必须用 `PSCH/PSCD/PSCA`，**不能用 `PSH/PSD/PSA`**，否则会系统性缩小「模型 vs 市场」的差距 |
-| 队名 | `Man United` / `Manchester Utd` 等同义写法，先按 `configs/team_alias.csv` 统一再做 Elo |
+| **队名（S2 实测订正）** | 全库 **243 个原始队名**，写法跨季高度一致，只有 **2 组真实改名**（荷甲 `Roda JC`→`Roda`、`Sparta`→`Sparta Rotterdam`）；旧稿举例的 `Man United` / `Manchester Utd` 变体**在本数据中不存在**。归一表 `configs/team_alias.csv`（243 行）已交付、归一后 241 队名；`Ajaccio` / `Ajaccio GFCO` 等同城不同队**不得合并**。详见 `configs/README.md` 与 M1 卡 §3.3 |
 | 覆盖率 | 实测荷甲 **2017/18 前**（0304–1617 共 14 季）无射门列，1718 起齐备；西甲 / 意甲 / 法甲 0304、0405 两季亦缺。法甲 2019/20 仅 279 场、荷甲 2019/20 仅 232 场（赛季腰斩）。如实保留，不插补、不删赛季 |
 | 冻结 | `configs/raw_manifest.csv`（132 行 URL / 字节数 / SHA256 / 下载时间）已入库并逐行校验通过；`data/raw/` 现已随仓库分发，**此后不要联网重下**。确需更新须走 PR、重算 manifest 并通知全组。**因此 T1.1 已交付完毕，无需实现 `src/download.py`**：复现包从已入库的 raw 起跑，只在补漏 / 更新快照时按 §3.2 的纯 shell 命令重建，详见 `docs/plans/roles/M1_数据工程与复现.md` T1.1 |
 
 字段全表见 `docs/references/football_data_fields.md`，官方说明 <https://www.football-data.co.uk/notes.txt>。
+
+> ✅ **S2 字段统一实测（2026-11-10）**：`src/build_panel.py::clean_panel()` 已把 46,507 行补成 `league` / `home` / `away` / ISO `date` / `y` + `is_promoted_home` / `is_promoted_away` / `matchday`（**仍不落盘**，`match_id` 与 `panel.parquet` 留 S3）。日期 0 NaT、范围 `2003-08-01 → 2025-05-25`；`y` 分布 21,194 / 11,824 / 13,489；五元组 0 重复；**自检 13/13 PASS + 全量 25 项 pytest 全绿**。逐项见 `results/logs/s2_clean_2026-11-10.txt` 与 M1 卡 §3.3。两个易踩的口径：`matchday` 是「主队本季已完成场次 + 1（**含其客场出场**）」，只按 `home` 单列分组会漏算；升班马按「上一季名单」，与 T1.6 的「历史累积 train」口径不同。
 
 ### 3.4 一致性校验（clone 后建议跑一次）
 
@@ -436,6 +440,7 @@ pip install -r appendix/requirements.txt
 | v2.3 | 2026-11-08 | **S0 环境与快照自检交付（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：新增入库产物 `results/logs/s0_selfcheck_2026-11-08.txt`（7 项 PASS 明细）；M1 分工卡升 **v1.3**（§3.1 S0 交付记录、§5 产物表、§6 验收项 1、§7 坑 8）、`roles/README.md` 升 **v1.4**（§1 交付状态速览）、`CHANGELOG_structure.md` 登记；README 同步 §0 / §2.1 / §3.4（S0 实测结论）/ §5.1（默认解释器提醒）/ §7。**S0 不新增正式脚本，下一步 S1 写 `read_raw()`** |
 | v2.4 | 2026-11-08 | **S1 稳健读取器交付 + 行长事实订正（新增 3 个入库文件，`requirements.txt` / `.gitignore` 均不变）**：① `src/build_panel.py`（`read_raw()` / `read_all()` / `selfcheck()`）、`tests/test_read_raw.py`（7 条）、`results/logs/s1_read_raw_2026-11-08.txt`（8/8 PASS）；② 订正全仓「11 个文件行字段数**多于**表头」为「11 个文件行长 **≠** 表头（9 长 / 8 短、775 长行 + 1,331 短行）」，`0304_F1` 由「365 行 50 列」改为「380 场有效行 39–52 列、365 行不齐」；③ M1 卡升 **v1.4**（§3.2 S1 交付记录、T1.2-a 标已交付、§5 产物表、§6 验收项 2a、§7 坑 6）、`roles/README.md` **v1.5**、`football_data_fields.md` **v1.4**、分工方案 §3.1 T1.2-a、`CHANGELOG_structure.md` 同步；④ §2.1 结构树补 `src/build_panel.py` 与 `tests/test_read_raw.py`、§3.3 坑表订正、§7 修订记录。**S1 仍未产出 `panel.parquet` / `team_alias.csv`，下一步 S2** |
 | v2.5 | 2026-11-08 | **S1-r2 补强：行尾溢出字段「非空即拒读」（无新增文件、无目录变更，`requirements.txt` / `.gitignore` 均不变）**：① `src/build_panel.py::read_raw()` 在按名取列前统计 `r[len(header):]`，非空即抛 `ValueError`，`df.attrs` 加 `n_overflow_cells` / `n_nonempty_overflow`；`selfcheck()` 第 6 项判定收紧为 `total_bad == 0 and total_overflow_nonempty == 0`，返回 dict 加两个字段；② `tests/test_read_raw.py` **7 → 10 条**（132 文件溢出全空 / 非空溢出拒读 / 空溢出放行，正反对照），`pytest` **10 passed**；③ 自检日志按 r2 重新生成，**8/8 PASS**，第 6 项 `overflowCells=2895, overflowNonEmpty=0`；④ 全库实测：2,895 个溢出格 100% 为 `''`、1,331 条短行只缺空串列名列、白名单 19 列 0 截断；⑤ M1 卡升 **v1.5**（新增 §3.2.1 r2 补强、§3.2 / §4 / §5 / §6 / §7 同步）、`roles/README.md` **v1.6**、`football_data_fields.md` **v1.5**、分工方案 T1.2-a、`CHANGELOG_structure.md` 同步；§0 / §2.1 / §3.3 / §7 更新。**46,507 行、19+1 列与 8/8 结论不变，S1 仍未产出 `panel.parquet`** |
+| v2.6 | 2026-11-10 | **S2 字段统一交付 + 队名事实订正（新增 3 个入库文件、1 个契约文件，`requirements.txt` / `.gitignore` 均不变）**：① `configs/team_alias.csv`（243 行，由 `--build-alias` 从 raw 重生成）、`tests/test_s2_clean.py`（15 条）、`results/logs/s2_clean_2026-11-10.txt`（13/13 PASS）；`src/build_panel.py` 在同一文件追加 alias / ISO 日期 / `y` / H3 三列 + `s2_selfcheck()` + `--stage s2` CLI；② 全库实测：243 原始队名 → 241 归一名、仅 2 组真实改名、归一修掉 17 场升班马误判；订正 §3.3「`Manchester Utd` 变体」为不存在；③ `matchday` 明确为「主队已完成场次 + 1，含客场出场，两队展开计算」，评估窗 48 块新增队 ≤3、全库例外 `I1 2004/05`=6 为意甲扩军；④ M1 卡升 **v1.6**（§3.3 交付记录、§4 / §5 / §6 / §7 同步，坑位扩至 10 条）、`roles/README.md` **v1.7**、`football_data_fields.md` **v1.6**、`configs/README.md` 新增 alias 判定专节、分工方案 §3.1 T1.2 / T1.9、`CHANGELOG_structure.md` 同步；⑤ §0 / §2.1 结构树 / §3.3 / §7 更新。**S2 仍未产出 `match_id` / `panel.parquet` / `splits.json`，下一步 S3** |
 
 ---
 
