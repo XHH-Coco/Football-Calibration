@@ -17,7 +17,7 @@
 | 项 | 冻结值 |
 |---|---|
 | 冻结时点 | 2026-11-10（S0–S5 数据底座全部交付后） |
-| 冻结 commit | `TBD`（提交流程回填，见 `CHANGELOG_structure.md` v2.9 行） |
+| 冻结 commit | `aaa227a`（S5 主提交，数据内容在此冻结）；`data-v1.0` tag 落在随后**仅回填 commit id** 的登记提交上，两者 tree 差异仅为这两个 id 字段，见 `CHANGELOG_structure.md` v2.9 行 |
 | 冻结 tag | `data-v1.0` |
 | 原始快照 | `data/raw/` **132 个 CSV / 14,341,191 B**（0304–2425 × 6 联赛），SHA256 逐行 0 失配；`.gitattributes` 的 `-text` 不改动 |
 | 队名契约 | `configs/team_alias.csv` 243 行 → 归一后 241 队名，仅 2 组真实改名（**入库**） |
@@ -36,7 +36,7 @@
 
 | 日期 | 原因 | 影响范围 | 重跑命令 | commit |
 |---|---|---|---|---|
-| 2026-11-10 | **首次冻结**：S0–S5 数据底座全部交付（稳健读取器 → 字段统一 → 22 列总表 → 48 块切分 → 覆盖率 / 泄漏 / 复现 / H3 收尾） | 132 raw CSV（未改动）、`panel` 生成逻辑、`team_alias.csv`、`splits.json`、覆盖率产物；评估窗 16,733 / B6 16,728 **均不变** | `bash appendix/run_all.sh`；`pytest -q tests/` | `TBD` |
+| 2026-11-10 | **首次冻结**：S0–S5 数据底座全部交付（稳健读取器 → 字段统一 → 22 列总表 → 48 块切分 → 覆盖率 / 泄漏 / 复现 / H3 收尾） | 132 raw CSV（未改动）、`panel` 生成逻辑、`team_alias.csv`、`splits.json`、覆盖率产物；评估窗 16,733 / B6 16,728 **均不变** | `bash appendix/run_all.sh`；`pytest -q tests/` | `aaa227a` |
 
 ### 后续登记模板
 
