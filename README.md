@@ -8,11 +8,11 @@
 | 课程 | DSC5001C63 Statistical Machine Learning I（Semester A 2026/27，Instructor: Kangning Cui） |
 | 团队 | Team 32（5 人） |
 | 选题 | *Do football betting markets know more than a model can learn? Auditing the closing line for calibration and information* |
-| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` **v1.6**；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
+| 依据文档 | **`docs/plans/Team-32-Proposal_v3.0.md`（唯一执行蓝本）**、`docs/plans/08_小组分工实施方案_v1.3.md`（唯一在库分工方案）、`docs/plans/data_interface.md` **v1.7**、`docs/plans/CHANGELOG_data.md`（数据冻结基线）；`docs/plans/Team-32-Proposal.pdf` 保留为 10/30 提交凭据 |
 | **Python 版本** | **3.14.7 / 3.14.10 均可**（本机 conda 环境 `DSC5001_Project` = 3.14.10，见 §5） |
 | 数据快照 | `data/raw/` **已入库**：132 个 CSV / 约 14 MB，clone 即用，无需重新下载（§3） |
 | 提交物 | Report + 10 页 Slides + ≤ 8 分钟全员录像 + 源码附录，2026-11-29 |
-| 本文档版本 | **v2.8 · 2026-11-10** |
+| 本文档版本 | **v2.9 · 2026-11-10**（M1 数据底座 **S0–S5 全部交付**，`data-v1.0` 已冻结） |
 
 ---
 
@@ -49,7 +49,7 @@ cd Football-Calibration
 
 > **本文件（§2.1 + §2.2）是目录结构的唯一书面说明。后续任何目录改动，必须同步修改这里（§2.4）。**
 
-### 2.1 当前项目文件结构（**v2.8 / 2026-11-10**）
+### 2.1 当前项目文件结构（**v2.9 / 2026-11-10**）
 
 ```
 Football-Calibration/
@@ -73,22 +73,29 @@ Football-Calibration/
 │   └── .gitkeep
 │
 ├── src/                             # 全部可复用 Python 源码
-│   ├── build_panel.py               #   ★ M1 / S1+S2+S3：稳健读取器 + 字段统一 + match_id / 22 列总表（--stage s3 一键落盘；--stage s4 转 splits.py）
-│   ├── splits.py                    #   ★ M1 / S4：48 块切分 + resolve_split() 供 M2 harness 调用（--stage s4 一键重生成）
+│   ├── build_panel.py               #   ★ M1 / S1+S2+S3：稳健读取器 + 字段统一 + match_id / 22 列总表（s3 落盘；s4 转 splits.py；s5 转 handover.py）
+│   ├── splits.py                    #   ★ M1 / S4：48 块切分 + resolve_split() 供 M2 harness 调用
+│   ├── coverage.py                  #   ★ M1 / S5 / T1.4：直接读 raw 的覆盖率矩阵 + 热力图（12/12 自检）
+│   ├── handover.py                  #   ★ M1 / S5：收尾自检（S1–S4 回归 + 全量 pytest + 产物 / 文档契约，不加工数据）
 │   ├── models/                      #   B0–B6 + B6r 各 arm 实现
 │   ├── eval/                        #   harness / metrics / devig / bootstrap
 │   └── .gitkeep
 │
-├── tests/                           # pytest 单测（含 test_leakage.py）
+├── tests/                           # pytest 单测（8 个文件，全量 95 passed）
 │   ├── test_read_raw.py             #   ★ M1 / S1：read_raw() 验收（10 条，含 r2 溢出断言）
 │   ├── test_s2_clean.py             #   ★ M1 / S2：字段统一验收（15 条，含 T1.9 打乱不变性）
 │   ├── test_panel_counts.py         #   ★ M1 / S3：T1.3-a 场次核查 + 总表契约验收（15 条）
 │   ├── test_splits.py               #   ★ M1 / S4：48 块切分 + 泄漏断言 + 契约幂等 / 入库（18 条）
+│   ├── test_leakage.py              #   ★ M1 / S5 / T1.6：五条泄漏断言集中，全组安全带（6 条）
+│   ├── test_h3_features.py          #   ★ M1 / S5 / T1.9：H3 三列对赛后信息不敏感（7 条）
+│   ├── test_coverage.py             #   ★ M1 / S5 / T1.4：覆盖率四条事实 + 不读 parquet（14 条）
+│   ├── test_repro.py                #   ★ M1 / S5 / T1.7：复现包契约 + --check 冒烟（10 条）
 │   └── .gitkeep
 │
 ├── results/                         # 代码直接产出、可重跑重建的中间数值结果
 │   ├── preds/                       #   各模型 48 块预测 CSV（统一 schema）
-│   ├── logs/                        #   收敛表、参数轨迹、S0 / S1 / S2 / S3 / S4 自检记录（*.log 忽略）
+│   ├── coverage_matrix.csv          #   ★ M1 / S5：132 行 × 18 列覆盖率矩阵（入库，M5 数据页引用）
+│   ├── logs/                        #   收敛表、参数轨迹、S0–S5 自检记录（含 s5_coverage / s5_handover 两张验收单；*.txt 入库，*.log 忽略）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -100,9 +107,9 @@ Football-Calibration/
 │   │   ├── Team-32-Proposal_v3.0.md     #     ★ 唯一执行蓝本（H1–H4 + B↔M 映射 + Revision notes）
 │   │   ├── 08_小组分工实施方案_v1.3.md  #     ★ 当前唯一分工方案（v1.2 已归档至 old_docs/）
 │   │   ├── 09_分工方案评审_v1.0.md        #     v1.1 的 19 项问题清单与实测复核（决策项已全部闭环）
-│   │   ├── data_interface.md        #     v1.6：统一预测 schema、match_id / ISO 日期、标签重排、防泄漏红线、48 块切分口径
+│   │   ├── data_interface.md        #     v1.7：统一预测 schema、match_id / ISO 日期、标签重排、防泄漏红线、48 块切分口径
 │   │   ├── CHANGELOG_structure.md   #     目录结构变更记录
-│   │   ├── CHANGELOG_data.md        #     数据变更日志（11/10 由 M1 创建，T1.10）
+│   │   ├── CHANGELOG_data.md        #     ★ M1 / S5：数据冻结基线与变更日志（data-v1.0，T1.10）
 │   │   └── roles/                   #     五份组员分工卡（可单独分发）
 │   │       ├── README.md            #       索引 + 交接时点 + 跨人红线
 │   │       ├── M1_数据工程与复现.md
@@ -120,7 +127,7 @@ Football-Calibration/
 │   └── .gitkeep
 │
 ├── products/                        # 面向交付 / 展示的最终产物（入库，定稿后冻结）
-│   ├── figures/                     #   fig01–fig08 等图片
+│   ├── figures/                     #   fig01–fig08 等图片；★ fig_data_coverage.png（S5 覆盖率热力图，已交付）
 │   ├── tables/                      #   排版完成的成品表格
 │   ├── poster/                      #   Poster
 │   ├── report/                      #   report.pdf 及源稿 report.md
@@ -128,8 +135,13 @@ Football-Calibration/
 │   ├── video/                       #   8 分钟录像（大文件默认忽略，§4.3）
 │   └── .gitkeep
 │
-└── appendix/                        # 源码附录复现包
-    ├── requirements.txt             #   依赖锁定清单（必须与 README §5.2 一致）
+└── appendix/                        # ★ 源码附录复现包（S5 / T1.7 已交付）
+    ├── requirements.txt             #   依赖锁定清单（恒 8 行，必须与 README §5.2 一致）
+    ├── seed.py                      #   DEFAULT_SEED=20261110（bootstrap / HGB 仍须各自显式传 random_state）
+    ├── run_all.sh                   #   一键复现入口（Git Bash；--check 只打印计划；全程不联网）
+    ├── run_all.ps1                  #   Windows PowerShell 5.1 等价入口
+    ├── MANIFEST.md                  #   「数字 → 脚本 → 命令」三列倒查表 + 数据来源与红线
+    ├── pip_freeze_2026-11-10.txt   #   本机间接依赖快照（30 行，仅备查）
     └── .gitkeep
 ```
 
@@ -137,7 +149,7 @@ Football-Calibration/
 
 - 当前为空的目录都放了一个空的 `.gitkeep` 占位文件，保证 `clone` 后结构完整；目录里出现第一个正式文件后可删除对应 `.gitkeep`（删了也要按 §2.4 同步本文件）。**`data/raw/` 已有 132 个正式文件，其 `.gitkeep` 已删除**；结构树中该目录的 132 个 CSV 不逐个列出，完整清单见 `configs/raw_manifest.csv`。
 - **版本文件只留最新一份**：`docs/`（含 `docs/plans/`、数据集剖析报告等）中同一份文档只保留当前版本（文件名带版本号）。被取代的旧版移入项目根目录 `old_docs/`（仓库外，不入库、不进 Git 历史），保留原文件名以便追查。目前已归档：`08_小组分工实施方案_v1.0.md`、`v1.1.md`、**`v1.2.md`**、`data_profile_v1.0.html`。**例外**：`Team-32-Proposal.pdf` 是 10/30 已提交的计分凭据，v3.0 以新增 Markdown 形式并存，不覆盖 PDF。**v1.1 中的数值（约 45,000 场 / 17,000 场 / B0 ≈ 1.03–1.05 / B365 基准）已作废，不要再引用。**
-- 上表只列出**当前已存在**的文件；唯一例外是 `docs/plans/CHANGELOG_data.md`，已标注 11/10 由 M1 的 T1.10 创建，创建后无需再改结构树。`src/build_panel.py` / `src/splits.py`、`configs/team_alias.csv` / `configs/splits.json` 与四份 `tests/test_*.py` 已按分工方案产出并补进结构树（S0–S4，2026-11-10）；`configs/feature_whitelist_b5a.csv`（M4）、`appendix/run_all.sh` / `MANIFEST.md`（M1）、`docs/plans/CHANGELOG_data.md`（T1.10）等仍待产出后再补。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
+- 上表只列出**当前已存在**的文件。`src/build_panel.py` / `src/splits.py` / `src/coverage.py` / `src/handover.py`、`configs/team_alias.csv` / `configs/splits.json`、八份 `tests/test_*.py`、`appendix/` 六份复现包、`docs/plans/CHANGELOG_data.md`、`results/coverage_matrix.csv` 与 `products/figures/fig_data_coverage.png` 均已按分工方案产出并补进结构树（**S0–S5，2026-11-10**）；`configs/feature_whitelist_b5a.csv`（M4）与 `products/video/*.mp4`（M5）仍待产出后再补。**路径口径以 `08_小组分工实施方案_v1.3.md` §5.2 为准**：必须全组一致的小文件放 `configs/`（与原始数据分离，便于 review 与 diff），会被报告引用的成品放 `products/`。`data/raw/` 自 v1.6 起已入库，该目录只放 132 个原始 CSV，不放契约文件。`raw_manifest.csv` 已于 2026-11-07 按分工方案 T1.1 随 132 个 CSV 下载生成（§3.3 冻结要求）；数据集剖析报告在库只有 `data_profile_v1.1.html`（扩展口径 132 文件），其主口径 54 文件的历史版 `v1.0` 已归档至 `old_docs/`，两者评估窗同为 48 块。
 
 ### 2.2 目录职责表
 
@@ -260,7 +272,7 @@ foreach ($s in $seasons) {
 | **整列缺失与空白行（r3 实测）** | `PSCH/PSCD/PSCA` 在 **54 个文件**里是「列不存在」而非「值为空」（0304–1112 共 9 季 × 6），须按白名单补 NaN；另有 **7 个文件共 11 行全空白**，显式 drop 后 `46,518 → 46,507` |
 | 收盘 vs 非收盘 | 无 `C` 的是开市后采集的赔率，带 `C` 的才是收盘。基准必须用 `PSCH/PSCD/PSCA`，**不能用 `PSH/PSD/PSA`**，否则会系统性缩小「模型 vs 市场」的差距 |
 | **队名（S2 实测订正）** | 全库 **243 个原始队名**，写法跨季高度一致，只有 **2 组真实改名**（荷甲 `Roda JC`→`Roda`、`Sparta`→`Sparta Rotterdam`）；旧稿举例的 `Man United` / `Manchester Utd` 变体**在本数据中不存在**。归一表 `configs/team_alias.csv`（243 行）已交付、归一后 241 队名；`Ajaccio` / `Ajaccio GFCO` 等同城不同队**不得合并**。详见 `configs/README.md` 与 M1 卡 §3.3 |
-| 覆盖率 | 实测荷甲 **2017/18 前**（0304–1617 共 14 季）无射门列，1718 起齐备；西甲 / 意甲 / 法甲 0304、0405 两季亦缺。法甲 2019/20 仅 279 场、荷甲 2019/20 仅 232 场（赛季腰斩）。如实保留，不插补、不删赛季 |
+| 覆盖率 | 实测荷甲 **2017/18 前**（0304–1617 共 14 季）无**射门 4 列** `HS/AS/HST/AST`（半场比分 `HTHG/HTAG` 全库都有），1718 起齐备；西甲 / 意甲 / 法甲 0304、0405 两季亦缺。法甲 2019/20 仅 279 场、荷甲 2019/20 仅 232 场（赛季腰斩）。**S5 订正**：评估窗内 `2425_D1` 的 Union Berlin–Bochum 另缺 6 个射门/半场列，故射门覆盖率是 **16,732/16,733 = 0.999940，不是 100%**（该场比分与收盘赔率齐全，B6 不受影响）。逐格见 `results/coverage_matrix.csv`。如实保留，不插补、不删赛季 |
 | 冻结 | `configs/raw_manifest.csv`（132 行 URL / 字节数 / SHA256 / 下载时间）已入库并逐行校验通过；`data/raw/` 现已随仓库分发，**此后不要联网重下**。确需更新须走 PR、重算 manifest 并通知全组。**因此 T1.1 已交付完毕，无需实现 `src/download.py`**：复现包从已入库的 raw 起跑，只在补漏 / 更新快照时按 §3.2 的纯 shell 命令重建，详见 `docs/plans/roles/M1_数据工程与复现.md` T1.1 |
 
 字段全表见 `docs/references/football_data_fields.md`，官方说明 <https://www.football-data.co.uk/notes.txt>。
@@ -270,6 +282,8 @@ foreach ($s in $seasons) {
 > ✅ **S3 建模总表实测（2026-11-10 13:31）**：`python src/build_panel.py --stage s3` 已产出 `data/processed/panel.parquet`——**46,507 行 × 22 列 / 1,028,001 B**，按 `league, season, date, home, away` 排序，`match_id` **46,507 行唯一**且可由 `data_interface.md` §1.0 的公式逐字符复算；`date` 是 ISO **字符串**（不是 `datetime64`，否则与 `preds_*.csv` 内连接会漂移），`season` 为 `YYYY/YY`。列序恒为 `match_id, league, season, date, home, away, FTR, y, FTHG, FTAG, HTHG, HTAG, HS, AS, HST, AST, PSCH, PSCD, PSCA, is_promoted_home, is_promoted_away, matchday`；**`Max*` 不进 panel**，覆盖率矩阵仍直接读 raw。**自检 12/12 PASS + 全量 40 项 pytest 全绿**，S1 8/8 与 S2 13/13 回归不变，逐项见 `results/logs/s3_panel_2026-11-10.txt` 与 M1 卡 §3.4。T1.3-a 场次核查用「n 队满额 `n×(n−1)`」规则逐块断言 132 块，只有 `F1 2019/20`=279 与 `N1 2019/20`=232 两个疫情腰斩例外；法甲 2023/24 起 18 队的 306 场不是缺赛。**注意**：panel 保留 `FTR` / 比分 / 射门仅供 `y` 审计与误差分析，**不等于允许入模**；赔率列除 B6/B6r 外同样不得入模（`data_interface.md` §2）。48 块切分已由下一段的 **S4** 交付。
 
 > ✅ **S4 切分契约实测（2026-11-10 14:28）**：`python src/build_panel.py --stage s4` 已产出 **`configs/splits.json`（48 块 / 14,946 B，入库）**；实现在 `src/splits.py`，验收在 `tests/test_splits.py`（18 条）。规则写死在契约的 `rule` 段：**test = 该联赛该季全部比赛；train = 同联赛且 `date < test_start` 的所有比赛**（严格更早、跨季累积）。实测 48 块 test 两两不重叠且并集恰为评估窗 **16,733 场（0 漏 0 重）**；`n_train` 最小 **4,284**（`1718_D1` / `1718_N1`），train 中目标季及之后 **0 场**、`train_end < test_start` 全成立；`n_new_team ≤ 3`（历史累积口径，实测最大 2、20 块非零，**与 S2 的 `is_promoted_*`「上一季名单」不是同一个数**）。「按 date 过滤」与「按 season 严格更早过滤」逐块得到同一批 `match_id`，等价性已写成断言。**S4 自检 12/12 PASS + 全量 `pytest -q tests/` 58 passed**，S1 8/8 / S2 13/13 / S3 12/12 回归全绿，逐项见 `results/logs/s4_splits_2026-11-10.txt` 与 M1 卡 §3.5。契约固定字段顺序、UTF-8 / LF、无时间戳，重跑两次 sha256 相同；`test_on_disk_contract_matches_regenerated` 会比对「磁盘契约 == 脚本重生成」，手改一行即红。
+
+> ✅ **S5 收尾包实测（2026-11-10 16:10）**：`python src/build_panel.py --stage s5` 收尾自检 **12/12 PASS**，全量 `pytest -q tests/` **95 passed**，S1 8/8 / S2 13/13 / S3 12/12 / S4 12/12 回归全绿。五件收尾事：**T1.4** `src/coverage.py` 直接读 raw 产出 `results/coverage_matrix.csv`（132 行 × 18 列 / 19,917 B）与 `products/figures/fig_data_coverage.png`（242,435 B，6 联赛热力图）；**T1.6** `tests/test_leakage.py` 把五条泄漏断言集中成全组安全带；**T1.7** `appendix/` 复现包（`seed.py` / `run_all.sh` / `run_all.ps1` / `MANIFEST.md` / `pip_freeze`，`bash appendix/run_all.sh` 从已入库 raw 一键重建、**全程不联网**）；**T1.9** `tests/test_h3_features.py` 证明 H3 三列只读 5 列身份列、打乱赛后信息后逐元素不变；**T1.10** `data-v1.0` tag + `docs/plans/CHANGELOG_data.md`。四条覆盖率事实与一条订正见 `results/logs/s5_coverage_2026-11-10.txt`，收尾验收单见 `results/logs/s5_handover_2026-11-10.txt`，逐项状态见 M1 卡 §3.6。**本机用 conda 解释器完整跑通 `run_all.sh`**（S3/S4/S5 各 12/12、95 passed、`splits.json` 重跑 sha256 相同）；干净 venv 的复核仍由 M2 在 G3 前完成。
 
 ### 3.4 一致性校验（clone 后建议跑一次）
 
@@ -328,6 +342,8 @@ Windows PowerShell 不支持上面的 heredoc，可把 Python 段保存为 `scri
 > ✅ **S3 已把这条约定变成可执行的**（2026-11-10）：`--stage s3` 从 132 个 raw 起跑，重新做 S1 读取 + S2 清洗 + `match_id`，裁成 22 列窄表并排序，再写 Parquet、读回逐元素比对；`tests/test_panel_counts.py` 还断言「同一 raw 两次 `build_panel()` 相等」与 `git check-ignore` 命中。全组拿到的不是「某人的二进制」，而是**同一脚本 + 12 项自检 + 15 条测试**。`data/processed/panel.parquet` 本机实测 1,028,001 B。
 >
 > ✅ **S4 补上另一半（2026-11-10）**：`configs/splits.json` 是**相反**的一类——它小到可以逐字 review、又必须全组完全一致，所以**入库**。`--stage s4` 从 132 个 raw 重建 panel、按规则切 48 块、写 JSON 再读回比对；`tests/test_splits.py` 断言「磁盘契约 == 脚本重生成」、`git check-ignore` **不**命中该文件，且 48 块 test 并集恰为 16,733 场。序列化固定字段顺序、UTF-8 / LF、无时间戳，重跑 sha256 不变。**判定规则不变：原始输入 + 契约入库，可由代码重建的大派生物不入库。**
+>
+> ✅ **S5 把复现做成一条命令（2026-11-10）**：`bash appendix/run_all.sh`（Windows 另附 `run_all.ps1`）从**已入库的 132 个 raw CSV** 起跑，`--stage s3` 重建主表、`--stage s4` 重建切分契约、`src/coverage.py` 重建覆盖率矩阵，最后跑全量 pytest；`--check` 只打印解释器与执行计划。**全程不联网、不装包、不写死 Linux venv 路径**。本机用 conda 解释器实测：S3/S4/S5 各 12/12、95 passed、`configs/splits.json` 重跑 sha256 相同。`appendix/MANIFEST.md` 的「数字 → 脚本 → 命令」三列表让报告里每个数字都能倒查；`data-v1.0` 冻结后改数据先写 `docs/plans/CHANGELOG_data.md`。
 
 **`y` 编码与类别顺序**（详见 `data_interface.md` §1.1）：`FTR` 的 `H/D/A` → `y = 0/1/2` 直接写进 `panel.parquet`，概率列恒为 `p_home, p_draw, p_away` 且 **`p_home` 在第一列**，`build_panel.py` 内写成断言。此口径已预置，**M1 不必等 M2 在 11/09 给口径**，M2 于接口冻结时签字确认即可。 **模型内部标签顺序自由**（B2 有序 logit 常用 客胜=0 / 平=1 / 主胜=2，HGB 按 `classes_`），但**落盘前必须重排成 `p_home,p_draw,p_away` 并写断言**；详见 `data_interface.md` §1.1（v1.3 新增）。
 
@@ -420,14 +436,16 @@ pip install -r appendix/requirements.txt
 
 ### 5.3 复现包
 
-`appendix/` 存放 `requirements.txt`、`run_all.sh`、`MANIFEST.md`（哪个数字出自哪个脚本）。三者与 §5.2 的表保持一致，由 M1 维护；附录需在干净环境 30 分钟内产出与仓库一致的主表。
+`appendix/` 存放**六份**文件：`requirements.txt`（恒 8 行，与 §5.2 逐行一致）、`seed.py`、`run_all.sh`（Git Bash，含 `--check`）、`run_all.ps1`（Windows PowerShell 5.1）、`MANIFEST.md`（「数字 → 脚本 → 命令」三列倒查表 + 数据来源 / 红线）、`pip_freeze_2026-11-10.txt`（本机间接依赖快照，仅备查）。由 M1 维护；**已在 S5 交付（2026-11-10）**。
+
+冷启动：`python -m venv .venv` → `.venv/Scripts/python.exe -m pip install -r appendix/requirements.txt`（Windows）→ `bash appendix/run_all.sh`。起点是已入库的 `data/raw/`，**禁止联网重下**；本机用 conda 解释器完整实测通过（S3/S4/S5 各 12/12、95 passed、`splits.json` 重跑字节相同），干净 venv 的复核由 M2 在 G3 前完成。`tests/test_repro.py`（10 条）把「8 行依赖 / §5.2 一致 / 不联网 / 三列清单 / `--check` 冒烟」写成自动断言。
 
 ---
 
 ## 6. 协作约定（摘要）
 
 - 每次合并走 PR，至少 1 人 review，跨工作包优先（分工方案 §4.4）；
-- 冻结标签：`data-v1.0`(11/10)、`harness-v1.0`(11/13)、`code-v1.0`(11/24)、`report-v1.0`(11/28)；
+- 冻结标签：**`data-v1.0` ✅ 已打（S5 / 11/10，配 `docs/plans/CHANGELOG_data.md`）**、`harness-v1.0`(11/13)、`code-v1.0`(11/24)、`report-v1.0`(11/28)；
 - 统一预测文件 schema 与防泄漏红线见 `docs/plans/data_interface.md`，术语口径与图表清单见 `docs/templates/figure_list_template.md`；
 - 负结果即成功；**唯一等价边际 ±0.02 nats** 等判定规则在跑数前写死，不得事后修改；
 - 模型命名、假设编号、阶梯口径以 `Team-32-Proposal_v3.0.md` + `08_小组分工实施方案_v1.3.md` 为唯一依据，任何新文档不得再引入 `M0`–`M4` / `MK` 作为模型名。
@@ -456,6 +474,7 @@ pip install -r appendix/requirements.txt
 
 | v2.7 | 2026-11-10 | **S3 建模总表交付（新增 2 个入库文件 + 1 个本地派生物，`requirements.txt` / `.gitignore` 均不变）**：① `src/build_panel.py` 追加 `make_match_id()` / `build_panel()` / `write_panel()` / `s3_selfcheck()` 与 `--stage s3`，产出 `data/processed/panel.parquet`（**46,507 行 × 22 列 / 1,028,001 B，不入库**）；② 新增 `tests/test_panel_counts.py`（**15 条**，T1.3-a 场次规则 + 契约 + round-trip + 不入库）与 `results/logs/s3_panel_2026-11-10.txt`（**12/12 PASS**）；全量 `pytest -q tests/` **40 passed**，S1 8/8、S2 13/13 回归全绿；③ M1 卡升 **v1.7**（新增 §3.4、T1.3/T1.3-a 标已交付、产物表与验收项 2/3/8、坑位扩至 12 条）、`roles/README.md` **v1.8**、`football_data_fields.md` **v1.7**、`data_interface.md` **v1.5**（§1.0 补 S3 实现状态）、`configs/README.md`、分工方案 §3.1 T1.3、`CHANGELOG_structure.md`、`Team-32-Proposal_v3.0.md` 头部 companion 版本同步；④ §2.1 结构树 / §3.3 / §3.6 / §7 更新，顶部依据文档版本订正为 v1.5。**M2/M3/M4 的 `panel.parquet` 等待点解除；`configs/splits.json` 仍属 S4** |
 | v2.8 | 2026-11-10 | **S4 切分契约交付（新增 4 个入库文件、未新增目录，`requirements.txt` / `.gitignore` 均不变）**：① 新建 `src/splits.py`（`make_splits()` / `write_splits()` / `load_splits()` / **`resolve_split()`** / `s4_selfcheck()`）与 `tests/test_splits.py`（**18 条**），`src/build_panel.py` 加 `--stage s4` 统一入口；产出 `configs/splits.json`（**48 块 / 14,946 B，入库**）与 `results/logs/s4_splits_2026-11-10.txt`（**12/12 PASS**）；② 规则定死为「train = 同联赛 `date < test_start`」，逐块断言与「season 严格更早」等价、train 中目标季及之后 0 场、48 块 test 并集恰 16,733 场、`n_train ≥ 4,284`、`n_new_team ≤ 3`（实测最大 2）；③ 全量 `pytest -q tests/` **58 passed**，S1 8/8 / S2 13/13 / S3 12/12 回归全绿；④ M1 卡升 **v1.8**（§3.5 + T1.5 / T1.6 + 产物表 + 验收项 5/6/7 + 坑位 14 条）、`roles/README.md` **v1.9**、M2/M3/M4 卡交接行、`football_data_fields.md` **v1.8**、`data_interface.md` **v1.6**、`configs/README.md` 新增 splits 专节、分工方案 §3.1 T1.5 / T1.6、`CHANGELOG_structure.md`、Proposal v3.0 头部同步；⑤ §1 / §2.1 结构树与说明 / §3.3 / §3.6 / §7 更新。**M1 数据底座 S0–S4 全部交付，全组三个等待点解除；11/09 接口冻结签字、T1.4 / T1.6 独立文件 / T1.7 / T1.10 仍属后续待办** |
+| v2.9 | 2026-11-10 | **S5 收尾包交付（M1 数据底座 S0–S5 全部封版；`requirements.txt` / `.gitignore` 均未改）**：① 新增 `src/coverage.py`（T1.4，直接读 raw 的覆盖率矩阵 132×18 / 19,917 B + `products/figures/fig_data_coverage.png` 242,435 B，自检 12/12）、`src/handover.py`（收尾自检 12/12）与 `src/build_panel.py --stage s5`；② 新增四个测试文件 `test_leakage.py`（T1.6 五条泄漏断言集中，6 条）/ `test_h3_features.py`（T1.9，7 条）/ `test_coverage.py`（14 条）/ `test_repro.py`（10 条），全量 **95 passed**；③ `appendix/` 新增 `seed.py` / `run_all.sh` / `run_all.ps1` / `MANIFEST.md` / `pip_freeze_2026-11-10.txt`，一键复现从已入库 raw 起跑、不联网，本机实测通过；④ 新建 `docs/plans/CHANGELOG_data.md` 并打 **`data-v1.0`** tag；⑤ **实测订正**：评估窗射门列并非 100%（`2425_D1` Union Berlin–Bochum 缺 6 列，覆盖率 0.999940），分工方案 / 字段速查 / M1 卡 / 本文件 §3.3 同步修订；⑥ §2.1 结构树与说明、§3.3 / §3.6 / §5.3 / §6 / §7 更新，M1 卡升 v1.9、roles 索引升 v2.0、契约升 v1.7、字段速查升 v1.9。**剩余仅 T1.8 录像（M5）、11/09 接口冻结的 M2 主签 + M3/M4 会签、G3 干净 venv 复核，以及搁置的 U1/U2** |
 
 ---
 

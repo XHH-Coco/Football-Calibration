@@ -8,6 +8,10 @@
               ``s3_selfcheck()``：22 列建模总表 + ``data/processed/panel.parquet``；
   S4（已交付） ``src/splits.py``：48 块 rolling-origin 切分 → ``configs/splits.json``
               （**入库契约**）；本文件只提供 ``--stage s4`` 统一入口。
+  S5（已交付） ``src/coverage.py`` / ``src/handover.py`` + ``tests/test_leakage.py`` /
+              ``test_h3_features.py`` / ``appendix/`` + ``docs/plans/CHANGELOG_data.md``：
+              覆盖率矩阵、五条泄漏断言、复现包、H3 独立测试、数据冻结；
+              本文件只提供 ``--stage s5`` 收尾自检入口（转 ``src/handover.py``）。
 **S1 / S2 仍不落盘**：S3 的 ``write_panel()`` 写不入库的数据文件，
 S4 的 ``write_splits()`` 写**入库**的 KB 级纯文本契约。
 
@@ -40,12 +44,14 @@ S4 的 ``write_splits()`` 写**入库**的 KB 级纯文本契约。
     python src/build_panel.py --stage s2 --log results/logs/s2_clean_2026-11-10.txt
     python src/build_panel.py --stage s3 --log results/logs/s3_panel_2026-11-10.txt
     python src/build_panel.py --stage s4 --log results/logs/s4_splits_2026-11-10.txt
+    python src/build_panel.py --stage s5 --log results/logs/s5_handover_2026-11-10.txt
     pytest -q tests/
 
 ``--stage s3`` 默认把建模总表写到 ``data/processed/panel.parquet``（**不入库**，
 README §3.6）；全组各自跑同一脚本得到同一张表，契约是「同一脚本 → 同一张表」。
 ``--stage s4`` 转到 ``src/splits.py``，把 48 块切分写到 ``configs/splits.json``
-（**入库**，随 Git 分发）。
+（**入库**，随 Git 分发）。``--stage s5`` 转到 ``src/handover.py`` 做收尾自检，
+**不加工数据**，只跑 S1–S4 回归、全量 pytest、产物与文档契约检查。
 """
 
 from __future__ import annotations
@@ -64,7 +70,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 
 # 白名单：顺序即输出列顺序，任何文件都返回同样的 19 + 1 列。
-# 不进 panel 的 Max* / 射门列仍保留在此，供 S6 覆盖率矩阵读 raw 时复用。
+# 不进 panel 的 Max* / 射门列仍保留在此，供 S5 的 src/coverage.py 读 raw 时复用。
 KEEP: tuple[str, ...] = (
     "Div", "Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR",
     "HTHG", "HTAG", "HS", "AS", "HST", "AST",
@@ -1065,10 +1071,11 @@ def s3_selfcheck(log_path: str | Path | None = None,
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(
         description="M1 / build_panel.py：S1 读取器自检（默认）/ S2 字段统一 / "
-                    "S3 建模总表 / S4 48 块切分")
-    ap.add_argument("--stage", choices=["s1", "s2", "s3", "s4"], default="s1",
+                    "S3 建模总表 / S4 48 块切分 / S5 收尾自检")
+    ap.add_argument("--stage", choices=["s1", "s2", "s3", "s4", "s5"], default="s1",
                     help="s1 = read_raw() 自检（默认）；s2 = 字段统一；"
-                         "s3 = 拼总表并落盘；s4 = 生成 configs/splits.json")
+                         "s3 = 拼总表并落盘；s4 = 生成 configs/splits.json；"
+                         "s5 = 收尾自检（不加工数据）")
     ap.add_argument("--build-alias", action="store_true",
                     help="从 data/raw/ 重新生成 configs/team_alias.csv（S2 产物）")
     ap.add_argument("--raw-dir", default=None, help="原始 CSV 目录（默认 data/raw/）")
@@ -1080,12 +1087,19 @@ if __name__ == "__main__":
                           f"s1: results/logs/s1_read_raw_{date.today()}.txt / "
                           f"s2: results/logs/s2_clean_{date.today()}.txt / "
                           f"s3: results/logs/s3_panel_{date.today()}.txt / "
-                          f"s4: results/logs/s4_splits_{date.today()}.txt"))
+                          f"s4: results/logs/s4_splits_{date.today()}.txt / "
+                          f"s5: results/logs/s5_handover_{date.today()}.txt"))
     args = ap.parse_args()
     if args.build_alias:
         rows = build_team_alias(args.raw_dir, ALIAS_PATH)
         print(f"configs/team_alias.csv 已生成：{len(rows)} 行")
-    if args.stage == "s4":
+    if args.stage == "s5":
+        # 延迟导入：handover.py 反过来 import 本文件，放到分支里避免循环。
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
+        from src.handover import handover_selfcheck
+        summary = handover_selfcheck(args.log)
+    elif args.stage == "s4":
         # 延迟导入：splits.py 反过来 import 本文件，放到分支里避免循环。
         # 直接 ``python src/build_panel.py`` 时 sys.path[0] 是 src/，需补仓库根。
         if str(ROOT) not in sys.path:

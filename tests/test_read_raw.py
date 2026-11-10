@@ -2,7 +2,7 @@
 
 对应 M1 分工卡 §6 验收项 2a。运行：``pytest -q tests/test_read_raw.py``。
 仓库未打包（无 pyproject / setup.cfg），pytest 从任意目录启动时需显式把仓库根
-加入 sys.path，后续 S5 的三份测试沿用同一写法。
+加入 sys.path，后续各测试文件沿用同一写法（S2–S5 已全部落地）。
 """
 
 from __future__ import annotations

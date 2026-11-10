@@ -15,7 +15,7 @@
 
 每份卡的结构相同：**人话定位 → 依赖关系 → 第一天 30 分钟 → 任务表 → 预期产物 → 验收标准 → 坑 → 术语 → 升级路径**。
 
-> **交付状态速览（2026-11-10 14:28）**：M1 的 **S0、S1、S2、S3、S4 全部完成，数据底座交付完毕**。S0 环境与快照自检 **7/7 PASS**；S1 稳健读取器 `read_raw()` **8/8 PASS + 10 项 pytest**（r2：行尾溢出非空即抛 `ValueError`）；S2 字段统一 **13/13 PASS**（`team_alias.csv` 243 行、2 组真实改名、归一后 241 队名，ISO 日期 / `y=0/1/2` / H3 三列）；S3 建模总表 **12/12 PASS**——`data/processed/panel.parquet` **46,507 行 × 22 列 / 1,028,001 B**，`match_id` 唯一、按 `league,season,date` 排序、Parquet 读回逐元素相等，**不入库**，由 `python src/build_panel.py --stage s3` 各自重跑；**S4 切分契约 12/12 PASS + 全量 58 项 pytest 全绿**——`configs/splits.json` **48 块 / 14,946 B**，train = 同联赛 `date < test_start`、test 并集恰 16,733 场、`n_train ≥ 4,284`、`n_new_team ≤ 3`（实测最大 2），**入库、可 diff、重跑字节相同**。**M4 等的 `team_alias.csv`、M2/M3/M4 等的 `panel.parquet`、全组等的 `splits.json` 三个等待点全部解除**（比 §3 的 11/08–11/09 计划时点晚 1–2 天）。**产物**：`src/build_panel.py`、`src/splits.py`、`configs/team_alias.csv` / `configs/splits.json`、`tests/test_read_raw.py` / `test_s2_clean.py` / `test_panel_counts.py` / `test_splits.py`、`results/logs/s0_* / s1_* / s2_* / s3_* / s4_*`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1 / §3.2 / §3.3 / §3.4 / **§3.5**。下一步是 **T1.4 覆盖率矩阵 / T1.6 独立泄漏测试 / T1.7 复现包 / T1.10 `data-v1.0` 冻结**，以及 **11/09 接口冻结的 M2 主签 + M3·M4 会签**。
+> **交付状态速览（2026-11-10 16:10）**：M1 的 **S0、S1、S2、S3、S4、S5 全部完成，数据底座封版**。S0 环境与快照自检 **7/7 PASS**；S1 稳健读取器 `read_raw()` **8/8 PASS + 10 项 pytest**（r2：行尾溢出非空即抛 `ValueError`）；S2 字段统一 **13/13 PASS**（`team_alias.csv` 243 行、2 组真实改名、归一后 241 队名，ISO 日期 / `y=0/1/2` / H3 三列）；S3 建模总表 **12/12 PASS**——`data/processed/panel.parquet` **46,507 行 × 22 列 / 1,028,001 B**，`match_id` 唯一、按 `league,season,date` 排序、Parquet 读回逐元素相等，**不入库**，由 `python src/build_panel.py --stage s3` 各自重跑；**S4 切分契约 12/12 PASS + 全量 58 项 pytest 全绿**——`configs/splits.json` **48 块 / 14,946 B**，train = 同联赛 `date < test_start`、test 并集恰 16,733 场、`n_train ≥ 4,284`、`n_new_team ≤ 3`（实测最大 2），**入库、可 diff、重跑字节相同**。**M4 等的 `team_alias.csv`、M2/M3/M4 等的 `panel.parquet`、全组等的 `splits.json` 三个等待点全部解除**（比 §3 的 11/08–11/09 计划时点晚 1–2 天）。**S5 收尾包（2026-11-10 16:10，12/12 PASS + 全量 95 项 pytest 全绿）** 已把分工方案里 S4 之后仍属 M1 的五件事一次做完：**T1.4** 覆盖率矩阵（`src/coverage.py` → `results/coverage_matrix.csv` 132×18 + `products/figures/fig_data_coverage.png`，**直接读 raw**）；**T1.6** 独立安全带 `tests/test_leakage.py`（五条泄漏断言集中）；**T1.7** `appendix/` 复现包（`seed.py` / `run_all.sh` / `run_all.ps1` / `MANIFEST.md` / `pip_freeze`，`bash appendix/run_all.sh` 从已入库 raw 一键重建、不联网）；**T1.9** `tests/test_h3_features.py`；**T1.10** `data-v1.0` tag + `docs/plans/CHANGELOG_data.md`。**实测订正**：评估窗射门列**并非 100% 可用**——`2425_D1` Union Berlin–Bochum 缺 6 个射门/半场列，覆盖率 0.999940；旧稿「100% 可用」已在分工方案 / 字段速查同步订正，以射门列为特征的 arm 须显式处理 NaN。**产物**：`src/build_panel.py` / `src/splits.py` / `src/coverage.py` / `src/handover.py`、`configs/team_alias.csv` / `configs/splits.json`、`appendix/` 六份、`tests/` 八个文件、`results/logs/s0_* … s5_*`、`results/coverage_matrix.csv` / `products/figures/fig_data_coverage.png`；**状态登记**：[`M1_数据工程与复现.md`](M1_数据工程与复现.md) §3.1–**§3.6**。**剩余待办**：仅 T1.8 录像（M5）、**11/09 接口冻结的 M2 主签 + M3·M4 会签**（真人动作）、G3 前 M2 用干净 venv 复核复现包，以及搁置的 U1/U2。
 
 ## 2. 五个人的工时与备份
 
@@ -41,7 +41,7 @@
 | **11/08**（实际 11/10 ✅） | 建模总表 | M1 → M2/M3/M4 | `data/processed/panel.parquet`（46,507 行 × 22 列，不入库，`--stage s3` 各自重跑；见 §1 状态速览） |
 | **11/09**（实际 11/10 ✅ 已落盘） | **接口冻结**：48 块切分 + 预测 schema（9 arm，含 B6r）+ B4 信息集清单 + H3 两列 | M1/M2/M3 → 全组 | `configs/splits.json`（**48 块，已交付**）、`data_interface.md`、B4 输入清单；**M2 主签 + M3/M4 会签待办** |
 | **11/10** | 图表清单 + 章节分工 | M5 → 全组 | `figure_list.md` |
-| **11/10** | **数据冻结** | M1 → 全组 | `data-v1.0` tag + `docs/plans/CHANGELOG_data.md` |
+| **11/10 ✅** | **数据冻结** | M1 → 全组 | `data-v1.0` tag + `docs/plans/CHANGELOG_data.md`（**S5 已交付**；另提前交付覆盖率矩阵 / 泄漏测试 / 复现包 / H3 独立测试，见 §1 速览） |
 | **11/10 前** | **复核两项搁置事项**：Proposal `meta` 占位符 / instructor 口径确认信 | M1 + M5 → 全组 | `08_小组分工实施方案_v1.3.md` §4.2-a 未决事项登记表（U1/U2 仍搁置，**U3 已闭环**） |
 | **11/13** | `harness-v1.0` 冻结；白名单签字；ξ/ρ 兜底决策 | M2/M3/M4 | — |
 | **11/17** | **G1 全链路通**：**9 个 arm** 都有 48 块预测 | 全员 | `results/preds/` |
@@ -70,4 +70,4 @@
 
 ---
 
-*索引 v1.9 · 2026-11-10 · 依据 `08_小组分工实施方案_v1.3.md`（r3 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.8**（§3.1 S0 + §3.2 S1 + §3.3 S2 + §3.4 S3 + **§3.5 S4**），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0 / S1 / S2 / S3 / S4 已全部交付，见 §1 交付状态速览；下一步是 T1.4 / T1.6 独立文件 / T1.7 / T1.10 与 11/09 冻结签字***
+*索引 v2.0 · 2026-11-10 · 依据 `08_小组分工实施方案_v1.3.md`（r4 修订） / `Team-32-Proposal_v3.0.md`；**M1 分工卡为 v1.9**（§3.1 S0 → §3.2 S1 → §3.3 S2 → §3.4 S3 → §3.5 S4 → **§3.6 S5**），M2 / M4 为 v1.2（D1 sklearn HGB），M3 / M5 仍为 v1.1；**S0–S5 已全部交付、数据底座封版，见 §1 交付状态速览；剩余仅 T1.8 录像、11/09 冻结签字与 G3 干净 venv 复核***

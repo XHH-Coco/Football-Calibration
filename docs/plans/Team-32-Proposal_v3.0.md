@@ -8,8 +8,8 @@ Date: 2026-11-08 · Supersedes the submitted 2026-10-30 version as the internal 
 | Team | Team 32 (5 members; names and UIDs as on the submitted PDF) |
 | Submitted version | `Team-32-Proposal.pdf`, 2026-10-30 (2-point deliverable, unchanged) |
 | This version | **v3.0**, 2026-11-08 — same research question, corrected hypotheses, controlled ladder |
-| Companion documents | `08_小组分工实施方案_v1.3.md` (r3 execution revision), `data_interface.md` v1.6 (contracts, S3/S4 implementation status), `configs/splits.json` (48-block rolling-origin split contract, delivered 2026-11-10), five role cards |
-| Status | Approved as the single execution blueprint; no parallel naming or hypothesis sets remain |
+| Companion documents | `08_小组分工实施方案_v1.3.md` (r4 execution revision), `data_interface.md` v1.7 (contracts, S0–S5 implementation status), `configs/splits.json` (48-block rolling-origin split contract, delivered 2026-11-10), `results/coverage_matrix.csv` + `products/figures/fig_data_coverage.png` (coverage matrix, delivered 2026-11-10), `appendix/` (offline reproduction kit), `docs/plans/CHANGELOG_data.md` (`data-v1.0` freeze), five role cards |
+| Status | Approved as the single execution blueprint; no parallel naming or hypothesis sets remain. **Data foundation frozen 2026-11-10 (M1 S0–S5, `data-v1.0`)**; hypotheses H1–H4, the B0–B6r ladder and the ±0.02 nats equivalence margin are unchanged. One measured correction: evaluation-window shot columns are **0.999940** complete (one `2425_D1` match missing six shot/half-time fields), not 100%; B6/B6r effective n = 16,728 is unchanged. |
 
 ---
 

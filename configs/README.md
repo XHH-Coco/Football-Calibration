@@ -6,7 +6,7 @@
 
 | 文件 | 内容 | 产出者 | 冻结时点 |
 |---|---|---|---|
-| `splits.json` | 48 个 `(联赛, 赛季)` 块的 train / test 边界、`n_train`、`n_test`、`n_new_team`；**S4 已于 2026-11-10 交付（48 块 / 14,946 B）**，判定说明见下方专节 | M1 | **11/09 接口冻结**（11/10 随 `data-v1.0` 标签复核）；✅ 已交付（实际 11/10，比冻结时点晚 1 天）；**M2 主签 + M3/M4 会签待办** |
+| `splits.json` | 48 个 `(联赛, 赛季)` 块的 train / test 边界、`n_train`、`n_test`、`n_new_team`；**S4 已于 2026-11-10 交付（48 块 / 14,946 B）**，判定说明见下方专节 | M1 | **11/09 接口冻结**（11/10 随 S5 打 `data-v1.0` 冻结标签）；✅ 已交付（实际 11/10，比冻结时点晚 1 天）；**M2 主签 + M3/M4 会签待办** |
 | `team_alias.csv` | 队名归一映射（`raw_name,canonical_name,league,first_seen_season`），**S2 已于 2026-11-10 产出 243 行**；由 `python src/build_panel.py --build-alias` 从 raw 一键重生成，判定依据见下方专节 | **M1（M4 会签）** | ✅ 已交付（2026-11-10，比 §3 的 11/08 时点晚 2 天）；**M4 会签待办**；后续改动走 PR |
 | `feature_whitelist_b5a.csv` | **B5a 专用**的信息集白名单，四列 `feature / source / allowed / sample_weight_rule`；是 B4↔B5a「特征与样本权重都锁死」的受控比较证据。文件名以本行为准，与 README §2.1 结构树、分工方案 v1.3 T4.5 / §5.2、M4 分工卡一致（旧稿里的 `feature_whitelist.csv` 作废） | M4 产出、M3 逐条会签 | 11/09 接口冻结（信息集清单）；11/13 M3 签字定稿 |
 | `raw_manifest.csv` | 132 个原始 CSV 的 URL / 字节数 / SHA256 / 下载时间 | M1 | 下载完成即冻结 |
@@ -48,6 +48,18 @@
 **消费方式**：M2 harness 统一调 `src.splits.resolve_split(panel, block)` 取 `(train_df, test_df)`；切分由规则决定，JSON 里的 `n_train` / `n_test` 只用于校验，手工把 `test_start` 往后挪会当场抛 `ValueError`。簇 bootstrap 的重采样单位是**这 48 个块**，绝不是 16,733 场比赛。
 
 **改契约的三条硬规则**：① 改 `src/splits.py` 的切分规则后重跑 `--stage s4`、S4 自检与全量 pytest；② 走 PR + **M2 主签 / M3·M4 会签**，PR 描述写明受影响的模型与已产出的预测文件；③ 在 `docs/plans/CHANGELOG_data.md` 记日期、原因、影响范围与重跑命令。11/10 的 `data-v1.0` 只作复核，不替代 11/09 签字。
+
+## S5 收尾与 `data-v1.0` 冻结（2026-11-10）
+
+> **本目录的 `splits.json`（S4）与 `team_alias.csv`（S2）已随 `data-v1.0` 冻结**；M1 数据底座 S0–S5 全部交付、可开始建模。冻结后任何 raw / panel / splits / alias 变更，先在 `docs/plans/CHANGELOG_data.md` 写一行（日期 / 原因 / 影响范围 / 重跑命令 / commit），再走 PR + **M2 主签 / M3·M4 会签**。**11/09 接口冻结的真人签字仍待办**，标签不替代签字。
+
+| S5 产物 | 位置 | 与本目录契约的关系 |
+|---|---|---|
+| 覆盖率矩阵 + 热力图 | `results/coverage_matrix.csv`（132×18）、`products/figures/fig_data_coverage.png` | **直接读 raw**，不读 22 列 panel；`PSCH` 自 2012/13、`MaxCH` 自 2019/20、N1 射门 4 列自 2017/18；评估窗射门覆盖率 **0.999940**（`2425_D1` 缺 1 场），B6 / B6r 有效 n = **16,728 不变** |
+| 独立泄漏 / H3 测试 | `tests/test_leakage.py`（6 条）、`tests/test_h3_features.py`（7 条） | 复核 `splits.json` 的「磁盘契约 == `resolve_split()` 复算」与 H3 三列只读 5 列身份列 |
+| 一键复现包 | `appendix/run_all.sh` / `run_all.ps1` / `seed.py` / `MANIFEST.md` | 从**已入库 132 个 raw CSV** 重建 panel 与 `splits.json`，不联网、不重下；重跑后 `splits.json` sha256 不变 |
+| 冻结日志 | `docs/plans/CHANGELOG_data.md` | 冻结基线（48 块 / 16,733 场 / B6 16,728 / 射门 0.999940）与后续变更登记 |
+| 收尾验收单 | `results/logs/s5_handover_2026-11-10.txt` | S1–S4 回归 + T1.4 自检 + 全量 `pytest -q tests/` **95 passed** + 产物 / 文档契约 |
 
 ## 规则
 

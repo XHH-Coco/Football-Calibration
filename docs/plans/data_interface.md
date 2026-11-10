@@ -1,6 +1,7 @@
 # 数据接口约定（统一预测文件 schema 与防泄漏红线）
 
-> 版本 **v1.6** · 2026-11-10 · 摘录自 `08_小组分工实施方案_v1.3.md`（r3 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
+> 版本 **v1.7** · 2026-11-10 · 摘录自 `08_小组分工实施方案_v1.3.md`（r4 修订）§5.1 / §5.3 / §5.5，蓝本 `Team-32-Proposal_v3.0.md`，供全员实现前对齐。
+> **v1.6 → v1.7（S5 落地状态登记，契约本身不变）**：T1.4 覆盖率矩阵 / T1.6 独立泄漏测试 / T1.7 复现包 / T1.9 独立 H3 测试 / T1.10 `data-v1.0` 冻结均已交付，M1 数据底座 **S0–S5 封版**。§1.0 补 S5 实现状态；**实测订正**：评估窗射门列并非 100% 可用（`2425_D1` 缺 1 场，覆盖率 0.999940），以射门列为特征的 arm 须显式处理 NaN；`PSCH/PSCD/PSCA` 与 B6 有效 16,728 **不变**。**判定规则、阈值、±0.02 nats、H1–H4 / C1/C2 口径一字未改**；同步 README / M1 卡 / roles 索引 / 字段速查 / configs/README / Proposal 头部。
 > **v1.2 → v1.3**：① §1.1 补「内部有序标签 → 落盘 `p_home,p_draw,p_away` 重排」硬规则与断言示例；② §2 补 B6r 的 train 段拟合样本边界（`PSCH` 自 2012/13 才有）；③ §2 对照一致性行补 sklearn HGB 的 `classes_` 重排；④ §5 H4 判定备注同步。D1 决策落地为零新增依赖。
 > **v1.3 → v1.4（M1 开工复核）**：① 新增 **§1.0 `match_id` / ISO 日期 / `season` 格式**契约，§1 schema 增加 `match_id` 列；② `preds_*.csv` 的 `date` 由「原始字段」改为 **ISO `YYYY-MM-DD`**；③ B6 有效样本数按全窗复测订正为 **16,728**（3 块共 5 场缺三列收盘赔率）。
 > **v1.4 → v1.5（S3 落地状态登记，契约本身不变）**：`panel.parquet` 已于 2026-11-10 由 `python src/build_panel.py --stage s3` 产出，§1.0 补「实现状态」一段，明确 **22 列清单、`date` 为 ISO 字符串、`match_id` 46,507 行唯一、产物不入库、panel 保留赛后列不等于允许入模**。判定规则、阈值、B0–B6r 口径**一字未改**；同步 README 顶部与 Proposal v3.0 头部的 companion 版本号。
@@ -42,6 +43,10 @@
 
 > ✅ **实现状态（S4 · 2026-11-10，12/12 PASS + 全量 58 项 pytest 全绿）**：`configs/splits.json` 已由 `python src/build_panel.py --stage s4` 产出，**48 块 / 14,946 B、入库**（与不入库的 `panel.parquet` 正好相反）。顶层 `schema_version=1.0` + `rule` + `n_blocks / n_test_total / n_train_min` + `blocks`；每块字段 `block_id, league, season, test_start, test_end, train_start, train_end, n_train, n_test, n_new_team`，`season` 为 `YYYY/YY`、四个日期为 ISO。
 > 三条落地口径：① **train = 同联赛且 `date < test_start`**（严格更早、跨季累积）；逐块断言它与「`season` 严格更早」得到同一批 `match_id`、train 中目标季及之后 0 场、`train_end < test_start`、train∩test 空；② M2 harness **统一调 `src.splits.resolve_split(panel, block)`** 取 `(train_df, test_df)`，JSON 里的 `n_train` / `n_test` 只用于校验——手工把 `test_start` 往后挪会当场抛 `ValueError`，不会悄悄多给模型比赛；③ 契约固定字段顺序、UTF-8 / LF、无时间戳，重跑 sha256 不变，`tests/test_splits.py` 断言「磁盘契约 == 脚本重生成」。`n_test` 合计 16,733、`n_train ≥ 4,284`、`n_new_team ≤ 3`（历史累积口径，实测最大 2；**与 S2 的 `is_promoted_*`「上一季名单」不是同一个数**）。逐项见 `tests/test_splits.py`、`results/logs/s4_splits_2026-11-10.txt` 与 M1 分工卡 §3.5。改切分口径须走 PR + **M2 主签 / M3·M4 会签**。
+
+> ✅ **实现状态（S5 · 2026-11-10，收尾自检 12/12 PASS + 全量 95 项 pytest 全绿）**：M1 数据底座 **S0–S5 封版**。T1.4 `src/coverage.py` 直接读 raw 产出 `results/coverage_matrix.csv`（132×18）与 `products/figures/fig_data_coverage.png`；T1.6 `tests/test_leakage.py` 把五条泄漏断言集中成全组安全带；T1.7 `appendix/` 复现包（`run_all.sh` / `run_all.ps1` / `seed.py` / `MANIFEST.md`，从已入库 raw 起跑、不联网）；T1.9 `tests/test_h3_features.py` 证明 H3 三列只读 5 列身份列；T1.10 `data-v1.0` tag + `docs/plans/CHANGELOG_data.md`。
+> ⚠️ **唯一影响下游的实测订正**：评估窗射门列**不是 100% 可用**——`2425_D1` 的 `Union Berlin vs Bochum`（2024-12-14）缺全部 6 个 `HTHG/HTAG/HS/AS/HST/AST`，评估窗射门覆盖率 **16,732/16,733 = 0.999940**；该场比分与三列收盘赔率齐全，**B6 / B6r 有效 n = 16,728 不变**，但 M4 以射门列为特征的 arm 必须显式处理这一行 NaN（勿默认无缺失、勿插补成 0）。分工方案 v1.3 §3.1 T1.4 / §5 风险表与字段速查 v1.8 的「评估窗 100% 可用」旧表述已同步订正。半场比分 `HTHG/HTAG` 全库都有，**不是射门列**；荷甲 `HS/AS/HST/AST` 自 2017/18 起满格。
+> **判定规则、阈值、±0.02 nats、H1–H4 / C1/C2 口径、9 个 arm 的 `preds_*.csv` schema 全部未改**。逐项见 `results/logs/s5_handover_2026-11-10.txt`、`s5_coverage_2026-11-10.txt` 与 M1 分工卡 §3.6。冻结后任何 raw / panel / splits 变更先写 `CHANGELOG_data.md`。
 
 ### 1.1 `y` 编码与类别顺序（M1 在 `build_panel.py` 里定死）
 
