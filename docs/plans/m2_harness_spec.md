@@ -1,6 +1,6 @@
 # M2 评估框架规格与预注册判定规则（`src/eval/` 接口契约）
 
-> **版本 v1.1 · 2026-11-11 · 状态：实现已落地（H1/H2/H4 支持、H3 描述性、C1 待 M4 的 B5a）；待签字（M2 主签 + M3/M4 会签，11/13 `harness-v1.0` 冻结前）**
+> **版本 v1.2 · 2026-11-11 · 状态：实现已落地（H1/H2/H4 支持、H3 描述性、C1 待 M4 的 B5a）；待签字（M2 主签 + M4/M5 会签，11/13 `harness-v1.0` 冻结前；M3 已于 2026-11-11 会签）**
 > 主责 M2 · 备份人 M1 · 依据 `08_小组分工实施方案_v1.3.md` §3.2 / §5.1 / §5.3 / §5.5、`Team-32-Proposal_v3.0.md` §2 / §5、`docs/plans/data_interface.md` v1.7
 > **本文件是「尺子」的唯一书面说明。** 冻结之后只修 bug，不改口径；改口径须 M2 主签 + M5 会签并在 `CHANGELOG_structure.md` 记一笔。
 > **本文件不含任何代码**：§3 是模块与函数签名契约，§7 是跑数前必须落进代码分支的判定规则。
@@ -322,7 +322,7 @@ B6r 的具体口径（写成断言，不是注释）：
 | 角色 | 会签内容 | 状态 |
 |---|---|---|
 | **M2（主签）** | 本文件 §3 接口签名、§7 判定规则、§8 表结构 | ☐ 待签（11/13 前） |
-| **M3（会签）** | ① `PRED_COLS` / `check_pred` 上提到 `src/eval/harness.py`（`run_b4.py` 改 import）；② `inner_split()` 与 `tune_b4.py` 现用「train 内最后一个完整赛季」口径一致 | ☐ 待签 |
+| **M3（会签）** | ① `PRED_COLS` / `check_pred` 上提到 `src/eval/harness.py`（`run_b4.py` 改 import）；② `inner_split()` 与 `tune_b4.py` 现用「train 内最后一个完整赛季」口径一致 | ✅ 2026-11-11 会签（在 `939e3da` 上实测：全量 `pytest -q tests/` **183 passed**；`python -m src.models.run_b4` 重跑 48 折，`preds_B3.csv` / `preds_B4.csv` 与入库版**逐字节相同**，`convergence.csv` / `xi_rho_by_block.csv` 仅 `elapsed_s` 不同；两处 `inner_split()` 实现同构，切换后 48 折结果不变） |
 | **M4（会签）** | ① 5 个 arm 的 `fit(train_df, sample_weight=None)` / `predict_proba(test_df)` 签名；② `feature_whitelist_b5a.csv` 与本文件 §4 的 schema 无冲突 | ☐ 待签 |
 | **M1（知会）** | `match_id` / ISO 日期 / 块归属口径未变（沿用 `data_interface.md` §1.0、`splits.json`） | ☐ 待知会 |
 | **M5（会签）** | §6 措辞模板与 §8.1 表列名满足报告 §5 取数需求 | ☐ 待签 |
@@ -335,6 +335,7 @@ B6r 的具体口径（写成断言，不是注释）：
 |---|---|---|
 | v1.0 | 2026-11-11 | 首版：模块与函数签名契约（§3）、推断协议（§5）、预注册判定规则（§7）、`table_main.csv` 列定义（§8.1）、验收映射（§9）、签字区（§11）；附施工前基线实测（§1）。**不含代码**；冻结时点 11/13 与新 `harness-v1.0` 同步。 |
 | v1.1 | 2026-11-11 | 落地登记（契约不变）：§2 交付物 4 明确 design effect 并入 `bootstrap.py`；§3.3 `inner_split(train)` 签名与 M3 `tune_b4.py` 一致。实现已完成：`src/eval/` 十模块、`preds_B6.csv` / `preds_B6r.csv`、`table_main.csv`、`market_gap.csv`、`fig07`、四个执行过的 notebook、9 个测试文件。H1/H2/H4 支持、H3 只作描述、C1 待 M4 的 B5a。 |
+| v1.2 | 2026-11-11 | **M3 会签（契约不变）**：§11 M3 两行由 ☐ 改为 ✅，依据是在 `939e3da` 上的实测——全量 **183 passed**；用 `harness.inner_split()` 重跑 48 折后 `preds_B3.csv` / `preds_B4.csv` 与入库版逐字节相同（两个 log 仅 `elapsed_s` 变化），即 `PRED_COLS` / `check_pred` 上提与内层切分切换均为行为中性。**M2 主签与 M4/M5 会签仍待签。** |
 
 ---
 
