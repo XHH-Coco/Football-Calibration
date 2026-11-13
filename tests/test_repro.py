@@ -148,7 +148,10 @@ def test_09_pip_freeze_snapshot_covers_all_eight_deps():
 @pytest.mark.skipif(shutil.which("bash") is None, reason="本机无 bash（Git Bash / WSL）")
 def test_10_run_all_check_smoke():
     """--check 只打印计划、不写文件；顺带验证 132 个 raw CSV 在位。"""
-    proc = subprocess.run(["bash", "appendix/run_all.sh", "--check"],
+    # 用 which 解析出的完整路径：裸 "bash" 会被 CreateProcess 先解析到 System32 的
+    # WSL 桩（装了 WSL 但无发行版时 returncode=1），从而跳过 PATH 里的 Git Bash。
+    bash = shutil.which("bash")
+    proc = subprocess.run([bash, "appendix/run_all.sh", "--check"],
                           cwd=ROOT, capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr
     assert "N_RAW=132" in proc.stdout

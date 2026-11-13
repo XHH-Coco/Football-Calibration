@@ -37,8 +37,16 @@ def test_table_main_key_numbers():
 
 
 @pytest.mark.skipif(not _has_preds(), reason="预测文件未生成")
-def test_table_main_pending_m4_annotation():
+def test_table_main_m4_arms_filled_after_delivery():
+    # M4（B0/B1/B2/B5a/B5b）已于 2026-11-11 交付预测文件；行应已填充而非 pending_M4
+    preds = Path(__file__).resolve().parents[1] / "results" / "preds"
+    for arm in ("B0", "B1", "B2", "B5a", "B5b"):
+        if not (preds / f"preds_{arm}.csv").exists():
+            pytest.skip(f"preds_{arm}.csv 缺失")
     tm = build_table_main().set_index("arm")
     for arm in ("B0", "B1", "B2", "B5a", "B5b"):
-        assert tm.loc[arm, "note"] == "pending_M4"
+        assert tm.loc[arm, "note"] == ""
+        assert tm.loc[arm, "log_loss"] > 0
+        assert tm.loc[arm, "deff"] > 0
+        assert tm.loc[arm, "n_matches"] > 0
     assert tm.loc["B6", "note"] == ""

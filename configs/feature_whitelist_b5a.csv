@@ -1,0 +1,10 @@
+feature,source,allowed,sample_weight_rule
+h_gf5,rolling mean home goals for last 5 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+h_gf10,rolling mean home goals for last 10 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+h_ga5,rolling mean home goals against last 5 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+h_ga10,rolling mean home goals against last 10 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+a_gf5,rolling mean away goals for last 5 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+a_gf10,rolling mean away goals for last 10 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+a_ga5,rolling mean away goals against last 5 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+a_ga10,rolling mean away goals against last 10 matches (shift 1),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
+elo_diff,Elo difference home-away (src/elo.py shared engine; progressive date-by-date),yes,"exp(-xi*delta_days); xi = B4 per-block estimate (M3), fallback 0.0019; delta_days = train_end - match date"
