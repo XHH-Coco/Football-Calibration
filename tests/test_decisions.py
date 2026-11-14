@@ -15,6 +15,8 @@ from src.eval.decisions import (  # noqa: E402
     H4_REL_THRESHOLD,
     _branch,
     c1_verdict,
+    c2_verdict,
+    controlled_verdict,
     h1_ordering_verdict,
     h1_verdict,
     h2_verdict,
@@ -35,6 +37,20 @@ def test_c1_four_branches():
     assert c1_verdict(0.03, 0.025, 0.04)["decision"] == "B4 更好"
     assert c1_verdict(-0.03, -0.04, -0.025)["decision"] == "B5a 更好"
     assert "分辨率不足" in c1_verdict(0.0, -0.03, 0.03)["decision"]
+
+
+def test_c2_four_branches_labels_are_c2_specific():
+    assert c2_verdict(0.001, -0.01, 0.01)["decision"] == "实际等价"
+    assert c2_verdict(0.03, 0.025, 0.04)["decision"] == "B5a 更好"
+    assert c2_verdict(-0.03, -0.04, -0.025)["decision"] == "B5b 更好"
+    assert "分辨率不足" in c2_verdict(0.0, -0.03, 0.03)["decision"]
+
+
+def test_controlled_verdict_generic():
+    v = controlled_verdict("X", "Y", 0.03, 0.025, 0.04)
+    assert v["decision"] == "X 更好"
+    v = controlled_verdict("X", "Y", -0.03, -0.04, -0.025)
+    assert v["decision"] == "Y 更好"
 
 
 def test_h1_slope_branches():

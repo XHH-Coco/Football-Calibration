@@ -29,18 +29,29 @@ def _branch(point: float, lo: float, hi: float,
     return "indeterminate"
 
 
-def c1_verdict(delta: float, lo: float, hi: float) -> dict[str, str]:
-    """C1 受控比较（模型类，B5a vs B4）：``Δ = LL(B5a) − LL(B4)``（正 = B4 更好）。"""
+def controlled_verdict(before: str, after: str, delta: float, lo: float,
+                       hi: float) -> dict[str, str]:
+    """受控比较四分支（C1/C2 通用）：``Δ = LL(after) − LL(before)``，正 = before 更好。"""
     b = _branch(delta, lo, hi)
     if b == "equivalent":
         decision, reason = "实际等价", "90% 区间完全落在 ±0.02 内"
     elif b == "above":
-        decision, reason = "B4 更好", "90% 区间完全在 +0.02 之上"
+        decision, reason = f"{before} 更好", "90% 区间完全在 +0.02 之上"
     elif b == "below":
-        decision, reason = "B5a 更好", "90% 区间完全在 −0.02 之下"
+        decision, reason = f"{after} 更好", "90% 区间完全在 −0.02 之下"
     else:
         decision, reason = "分辨率不足，不下结论", "区间跨边界或宽于 0.04"
     return {"decision": decision, "reason": reason}
+
+
+def c1_verdict(delta: float, lo: float, hi: float) -> dict[str, str]:
+    """C1（模型类，B4 → B5a）：``Δ = LL(B5a) − LL(B4)``（正 = B4 更好）。"""
+    return controlled_verdict("B4", "B5a", delta, lo, hi)
+
+
+def c2_verdict(delta: float, lo: float, hi: float) -> dict[str, str]:
+    """C2（信息集，B5a → B5b）：``Δ = LL(B5b) − LL(B5a)``（正 = B5a 更好）。"""
+    return controlled_verdict("B5a", "B5b", delta, lo, hi)
 
 
 def h1_verdict(slope_prop: float, lo: float, hi: float) -> dict[str, str]:
