@@ -1,0 +1,7 @@
+# §5.4 H2 — Reading the gap: the market's edge is information, not miscalibration
+
+**One-sentence conclusion.** All seven transparent arms trail the de-vigged market on paired matches, the best of them (B4) by 0.035 nats per match, and recalibrating the market itself barely moves that gap — so the shortfall is information the model lacks, not a calibration error.
+
+The shortfall is measured in three parts. **First, it is universal:** every transparent arm B0–B5b is worse than B6 on the same matches, by 0.027 (B2) to 0.116 (B0) nats, with B4 at 0.035 nats (90% CI 0.031–0.040). **Second, it is not a method artefact:** the three de-vigging methods — proportional, Shin and power — give the same sign and essentially the same magnitude (0.0353, 0.0355, 0.0355 nats), so the gap survives however the margin is removed. **Third, it is information, not calibration:** passing the market through its own two-parameter recalibration (B6r) changes the model–market gap by a relative 0.0017 (90% CI −0.0077–0.0114, upper bound 0.011 < 0.25), so the market's edge persists even after its calibration is repaired. What the models lack is therefore what the market observes but they cannot — injuries, line-ups and late pre-match news — which is exactly the H4 reading, and not a fixable defect in how the models map probabilities to outcomes.
+
+*Sources: `results/table_main.csv` (B4–B6 = 0.0353 nats), `results/market_gap.csv` (three methods), `analysis/h4_information.ipynb` (H4 relative change 0.0017, 90% upper 0.011).*
