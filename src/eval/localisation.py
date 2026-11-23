@@ -4,8 +4,13 @@
 ``β1·promoted + β2·early_w + 联赛×赛季固定效应`` 做 OLS。
 
 - ``promoted_i = is_promoted_home ∨ is_promoted_away``；
-- ``early_w_i = 1{matchday ≤ w}``，主版 ``w = 6``；``matchday`` 是 panel 里**主队**本季
-  已完成场次 +1（客队 matchday 不在 panel 中，作已声明局限）；
+- ``early_w_i = 1{matchday_i ≤ w}``，主版 ``w = 6``；
+- **``matchday_i = min(matchday_home, matchday_away)``（预注册主版，v1.4 修正）**：
+  两队本季此前出场数 + 1，均由 panel 自身算出（同联赛同赛季同队按日期 cumcount），
+  0 缺失。旧交付版只用主队 matchday 并标成「已声明局限」——没有必要，
+  因为客队 matchday 完全可由 panel 推出；两口径 early 标记不同的场次 1,025 场，
+  系数 −0.0114（min）vs −0.0108（仅主队），结论不变但主版必须回到预注册口径。
+  ``matchday_max`` 与「仅主队」两版由 ``h3_sensitivity`` 作描述性对照；
 - 系数区间：48 块簇 bootstrap（重抽块 → 重拟合 → 分位法）；
 - sweep ``1–3 / 1–6 / 1–10`` 为跑数前声明的描述性稳健曲线，不进主推断。
 """
@@ -30,12 +35,33 @@ def _load_pred(arm: str) -> pd.DataFrame:
     return pd.read_csv(p, dtype={"match_id": str, "season": str, "date": str})
 
 
+def team_matchday(panel: pd.DataFrame) -> pd.DataFrame:
+    """每支球队每季的轮次：同联赛同赛季同队按日期累计出场数 + 1。
+
+    返回 ``league, season, date, team, matchday_team``（键唯一，重复即报错）。
+    主队和客队都走这一张表——只按 home 分组会漏掉客队（旧实现的局限）。
+    """
+    long = pd.concat([
+        panel[["league", "season", "date", "home"]].rename(columns={"home": "team"}),
+        panel[["league", "season", "date", "away"]].rename(columns={"away": "team"}),
+    ], ignore_index=True)
+    long = long.sort_values(["league", "season", "team", "date"], kind="stable")
+    long["matchday_team"] = long.groupby(["league", "season", "team"], sort=False).cumcount() + 1
+    key = ["league", "season", "date", "team"]
+    dup = long.duplicated(key)
+    if dup.any():
+        raise ValueError(f"同一球队同日出场 {int(dup.sum())} 次，无法唯一映射轮次")
+    return long[key + ["matchday_team"]]
+
+
 def build_h3_frame() -> pd.DataFrame:
-    """返回 ``gap / promoted / matchday / block`` 的逐场表（B4 ∩ B6 = 16,728 场）。"""
+    """返回逐场表（B4 ∩ B6 = 16,728 场）：``gap / promoted / matchday_home /
+    matchday_away / matchday(=min) / matchday_max / block``。"""
     panel = load_panel()
     b4 = _load_pred("B4")
     b6 = _load_pred("B6")
-    m = b4[["match_id", "p_home", "p_draw", "p_away", "y"]].merge(
+    m = b4[["match_id", "league", "season", "date", "home", "away",
+            "p_home", "p_draw", "p_away", "y"]].merge(
         b6[["match_id", "p_home", "p_draw", "p_away"]],
         on="match_id", suffixes=("_b4", "_b6"))
     p4 = m[["p_home_b4", "p_draw_b4", "p_away_b4"]].to_numpy()
@@ -44,14 +70,32 @@ def build_h3_frame() -> pd.DataFrame:
     l4 = -np.log(np.clip(p4[np.arange(len(y)), y], 1e-15, None))
     l6 = -np.log(np.clip(p6[np.arange(len(y)), y], 1e-15, None))
     gap = l4 - l6
-    meta = panel.set_index("match_id")[["league", "season", "is_promoted_home",
-                                        "is_promoted_away", "matchday"]]
+
+    meta = panel.set_index("match_id")[["is_promoted_home", "is_promoted_away"]]
     meta = meta.loc[m["match_id"]].reset_index()
     promoted = ((meta["is_promoted_home"].astype(bool))
                 | (meta["is_promoted_away"].astype(bool))).to_numpy().astype(float)
-    block = (meta["league"] + "|" + meta["season"]).to_numpy()
-    return pd.DataFrame({"gap": gap, "promoted": promoted,
-                         "matchday": meta["matchday"].to_numpy(), "block": block})
+
+    look = team_matchday(panel)
+    md_home = m[["league", "season", "date", "home"]].merge(
+        look, left_on=["league", "season", "date", "home"],
+        right_on=["league", "season", "date", "team"], how="left")["matchday_team"].to_numpy()
+    md_away = m[["league", "season", "date", "away"]].merge(
+        look, left_on=["league", "season", "date", "away"],
+        right_on=["league", "season", "date", "team"], how="left")["matchday_team"].to_numpy()
+    if np.isnan(md_home).any() or np.isnan(md_away).any():
+        raise ValueError(f"轮次缺失：home {int(np.isnan(md_home).sum())} / "
+                         f"away {int(np.isnan(md_away).sum())} 场")
+
+    return pd.DataFrame({
+        "gap": gap,
+        "promoted": promoted,
+        "matchday_home": md_home.astype(float),
+        "matchday_away": md_away.astype(float),
+        "matchday": np.minimum(md_home, md_away).astype(float),   # 预注册主版
+        "matchday_max": np.maximum(md_home, md_away).astype(float),
+        "block": (m["league"] + "|" + m["season"]).to_numpy(),
+    })
 
 
 def _block_suffstat(df: pd.DataFrame, w: int):
@@ -102,6 +146,7 @@ def h3_coefficients(df: pd.DataFrame, w: int = 6, B: int = 10_000,
         "early": {"coef": float(beta[2]),
                   "lo": float(np.quantile(b_early, alpha / 2)),
                   "hi": float(np.quantile(b_early, 1 - alpha / 2))},
+        "n": int(len(df)),
     }
 
 
@@ -112,4 +157,29 @@ def h3_sweep(df: pd.DataFrame, windows: tuple[int, ...] = (3, 6, 10)) -> pd.Data
         res = h3_coefficients(df, w)
         rows.append({"window": w, "coef": res["early"]["coef"],
                      "lo": res["early"]["lo"], "hi": res["early"]["hi"]})
+    return pd.DataFrame(rows)
+
+
+# 预注册主版在前；其余两版只作描述性敏感性（回归结果不得据此升格为主推断）
+H3_DEFINITIONS = (
+    ("min(home,away)（主版）", "matchday"),
+    ("max(home,away)", "matchday_max"),
+    ("仅主队（旧交付版）", "matchday_home"),
+)
+
+
+def h3_sensitivity(df: pd.DataFrame, w: int = 6, B: int = 10_000,
+                   seed: int = 20261110) -> pd.DataFrame:
+    """三种 early 定义下的系数对照（``min`` 为主版，另两版描述性）。"""
+    rows = []
+    for label, col in H3_DEFINITIONS:
+        res = h3_coefficients(df.assign(matchday=df[col].to_numpy()), w=w, B=B, seed=seed)
+        rows.append({
+            "definition": label,
+            "early_coef": res["early"]["coef"], "early_lo": res["early"]["lo"],
+            "early_hi": res["early"]["hi"],
+            "promoted_coef": res["promoted"]["coef"],
+            "promoted_lo": res["promoted"]["lo"], "promoted_hi": res["promoted"]["hi"],
+            "n": res["n"],
+        })
     return pd.DataFrame(rows)

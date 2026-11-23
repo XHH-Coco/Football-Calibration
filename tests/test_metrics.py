@@ -105,3 +105,34 @@ def test_reliability_curve_columns():
     assert set(c.columns) == {"class", "pred_mean", "obs_freq", "count"}
     assert set(c["class"]) <= {0, 1, 2}
     assert np.all((c["obs_freq"] >= 0) & (c["obs_freq"] <= 1))
+
+
+def test_smooth_curve_uses_scott_bandwidth_per_class():
+    """v1.4 订正：带宽是 Scott 规则 ``1.06·sd(p_k)·n^{-1/5}``，**按类**算。
+
+    旧实现取 ``max(n^{-1/5}, 0.02) = 0.143``（n=16,728），在概率量纲上等于几乎全局
+    平均；这里用 n=16,728 的两类不同离散度数据把两者区分开。
+    """
+    from src.eval.metrics import reliability_curve_smooth
+
+    rng = np.random.default_rng(7)
+    n = 16_728
+    p = np.column_stack([
+        rng.beta(2, 3, n),        # 宽
+        rng.beta(6, 6, n),        # 中
+        rng.beta(9, 2, n),        # 窄而偏
+    ])
+    p /= p.sum(axis=1, keepdims=True)
+    y = rng.integers(0, 3, n)
+    c = reliability_curve_smooth(p, y)
+    bw = c.groupby("class")["bandwidth"].first().to_dict()
+    assert set(bw) == {0, 1, 2}
+    assert all(h <= 0.06 for h in bw.values())          # 远小于旧的 0.143
+    assert len({round(h, 6) for h in bw.values()}) >= 2  # 逐类不同（可能碰到 0.01 下限）
+    # Scott 规则自洽：h = max(1.06·sd·n^{-1/5}, 0.01)
+    for k in (0, 1, 2):
+        expect = max(1.06 * p[:, k].std(ddof=1) * n ** (-1 / 5), 0.01)
+        assert bw[k] == pytest.approx(expect, rel=1e-9)
+    # 稀疏尾部被 ESS 过滤掉，曲线只在有样本的区间给点
+    assert (c["ess"] >= 20.0).all()
+    assert c["pred"].min() > 0.0

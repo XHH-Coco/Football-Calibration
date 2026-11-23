@@ -12,7 +12,7 @@
   §2  假设 H1–H4                    → 按蓝本 §2 起草，M5 兜底
   §3  数据                          → M1
   §4.3 B0/B1/B2/B5a/B5b             → M4
-  §4.4 评估框架 + H1 市场侧斜率      → M2
+  §4.4 评估框架 + H1 市场侧斜率      → section_4_4_evaluation.md (M2) ✅
   §4.5 H2 与市场差距                → M2
   §4.6 H3/H4                        → M2
   §5.1 消融 / C1–C2                 → M4
@@ -29,7 +29,7 @@ Semester A 2026/27 · Instructor: Kangning Cui · Date: 2026-11-28
 
 ## Abstract
 
-We treat the de-vigged closing line of the football betting market as a measuring instrument to be audited rather than an opponent to be beaten. On 46,507 matches across six European leagues (2003/04–2024/25) we evaluate nine arms — a transparent ladder from an outcome-frequency prior (B0) to a Dixon–Coles model (B4) and gradient-boosted machines (B5a/B5b), against the de-vigged market (B6) and a recalibrated market (B6r) — under a 48-block expanding-window rolling-origin protocol with cluster bootstrap. The market is under-dispersed: its calibration slope is 1.086 (90% CI 1.047–1.124), the favourite–longshot signature. The best transparent model, B4, trails the market by 0.035 nats per match (90% CI 0.031–0.040), and the shortfall is not a calibration error — recalibrating the market (B6r) leaves the gap almost unchanged (relative 0.0017, 90% upper 0.011 < 0.25). The market's edge is information the model lacks; the models, conversely, are over-dispersed, most severely on draws. A negative result by design, reported as such.
+We treat the de-vigged closing line of the football betting market as a measuring instrument to be audited rather than an opponent to be beaten. On 46,507 matches across six European leagues (2003/04–2024/25) we evaluate nine arms — a transparent ladder from an outcome-frequency prior (B0) to a Dixon–Coles model (B4) and gradient-boosted machines (B5a/B5b), against the de-vigged market (B6) and a recalibrated market (B6r) — under a 48-block expanding-window rolling-origin protocol with cluster bootstrap. The market is under-dispersed in direction: the proportional de-vigging slope is 1.086 (90% CI 1.047–1.124), the favourite–longshot signature, although the magnitude depends on how the margin is removed (Shin 1.052, power 1.030 with an interval covering one). The best transparent model (B2) trails the market by 0.027 nats per match (90% CI 0.024–0.030) and the pre-registered Dixon–Coles arm by 0.035 (0.031–0.040); the shortfall is not a calibration error — recalibrating the market (B6r) leaves the gap almost unchanged (relative 0.0017, 90% upper 0.011 < 0.25). The market's edge is information the model lacks; the models, conversely, are over-dispersed, most severely on draws. A negative result by design, reported as such.
 
 ---
 
@@ -56,7 +56,7 @@ Six leagues × 22 seasons, 46,507 matches; closing prices `PSCH/PSCD/PSCA` from 
 ### 4.1 The ladder *(PENDING — M5/M3)*
 ### 4.2 Structured score models: B3 / B4 *(并入 `section_4_2_model.md` — M3 ✅)*
 ### 4.3 Baselines and boosted arms: B0/B1/B2/B5a/B5b *(PENDING — M4)*
-### 4.4 Evaluation framework and market calibration (H1 market side) *(PENDING — M2)*
+### 4.4 Evaluation framework and market calibration (H1 market side) *(并入 `section_4_4_evaluation.md` — M2 ✅)*
 ### 4.5 The model–market gap (H2) *(PENDING — M2)*
 ### 4.6 Localisation and recalibration (H3/H4) *(PENDING — M2)*
 

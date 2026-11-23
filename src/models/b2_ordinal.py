@@ -70,13 +70,28 @@ def predict_proba(test_df: pd.DataFrame, state, x_test: pd.DataFrame | None = No
     internal_m = list(state["multi"].classes_)
     order_m = [internal_m.index(k) for k in [0, 1, 2]]
     p_multi = p_multi[:, order_m]
-    from src.models._common import log_loss
-    y = test_df["y"].to_numpy()
-    diff = log_loss(y, p) - log_loss(y, p_multi)
-    print(f"      [B2] {test_df['league'].iloc[0]}|{test_df['season'].iloc[0]} "
-          f"ordinal={log_loss(y, p):.5f} multinomial={log_loss(y, p_multi):.5f} "
-          f"diff={diff:+.5f}")
     return p
+
+
+def ordinal_vs_multinomial(test_df: pd.DataFrame, p_ordinal: np.ndarray,
+                           state, x_test: pd.DataFrame | None = None) -> dict[str, float]:
+    """**诊断用**（不在预测路径里）：ordered logit 与 multinomial 的 log loss 对比。
+
+    验收要求两者差 < 0.01；v1.4 把这段从 ``predict_proba`` 里搬出来，避免推理函数
+    带副作用（原实现的 ``print`` 会在每次预测时打日志，且用到了 test 标签）。
+    与 ``predict_proba`` 一样，``x_test`` 应由调用方传入同一份，避免重复推进状态机。
+    """
+    x_test = (transform_features(test_df, state["builder"])
+              if x_test is None else x_test)
+    xf = _b2_frame(x_test)
+    p_multi = state["multi"].predict_proba(xf.to_numpy())
+    internal_m = list(state["multi"].classes_)
+    p_multi = p_multi[:, [internal_m.index(k) for k in [0, 1, 2]]]
+    y = test_df["y"].to_numpy()
+    from src.models._common import log_loss
+    ll_o, ll_m = log_loss(y, p_ordinal), log_loss(y, p_multi)
+    return {"log_loss_ordinal": float(ll_o), "log_loss_multinomial": float(ll_m),
+            "diff": float(ll_o - ll_m)}
 
 
 def main() -> int:

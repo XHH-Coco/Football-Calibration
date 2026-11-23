@@ -11,7 +11,11 @@
 - cluster-robust SE：``Var = G/(G−1) · Σ_b (n_b/N)² (δ_b − Δ̂)²``，``G=48``。
 - design effect：``deff = Var_cluster / Var_iid``，其中 ``Var_iid = s²/N``（逐场 δ 的
   样本方差）。
-- 自检：块级 vs 逐场重采样的 90% 区间宽度比应 ∈ [3, 5]。
+- 自检：块级 vs 逐场重采样的 90% 区间宽度比满足 ``ratio ≈ √deff > 1``。**不是**
+  「3–5 倍」——那个早期口径在这里是错的（v1.4 订正，见 ``docs/plans/m2_harness_spec.md``
+  §3.4）：宽度比由 deff 唯一决定，本项目实测 deff 1.32–2.28 ⇒ ratio 1.17–1.50；
+  要 3–5 倍须 deff 9–25，等于假设同一块内 16,733/48 ≈ 349 场比赛几乎完全同质。
+  自检文本由 ``selfcheck_text()`` 生成并落盘 ``results/logs/bootstrap_selfcheck.txt``。
 """
 
 from __future__ import annotations
@@ -141,10 +145,88 @@ def iid_bootstrap(block: BlockDeltas, B: int = 10_000,
 
 def width_ratio(block: BlockDeltas, B: int = 10_000, alpha: float = 0.10,
                 seed: int = DEFAULT_SEED) -> dict[str, float]:
-    """块级 vs 逐场 90% 区间宽度比；验收要求 ∈ [3, 5]。"""
+    """块级 vs 逐场 90% 区间宽度比；``ratio ≈ √deff``（恒 > 1，本项目实测 1.17–1.50）。"""
     cb = cluster_bootstrap(block, B=B, alpha=alpha, seed=seed)
     ib = iid_bootstrap(block, B=B, alpha=alpha, seed=seed)
     wc = cb["hi"] - cb["lo"]
     wi = ib["hi"] - ib["lo"]
     return {"cluster_width": wc, "iid_width": wi,
             "ratio": wc / wi if wi > 0 else float("nan")}
+
+
+# 自检里展示的 arm（覆盖先验、透明、GBM、市场四档）与配对（覆盖单臂与配对差两种用法）
+SELFCHECK_ARMS = ("B0", "B2", "B4", "B5a", "B6")
+SELFCHECK_PAIRS = (("B4", "B6"), ("B2", "B4"), ("B4", "B6r"))
+
+
+def selfcheck_text(frames: dict, pairs=SELFCHECK_PAIRS, B: int = 10_000,
+                   alpha: float = 0.10, seed: int = DEFAULT_SEED,
+                   deff_tol: float = 0.25) -> str:
+    """生成 ``results/logs/bootstrap_selfcheck.txt`` 的正文（验收项 7 的证据）。
+
+    ``frames``：``{arm: 该 arm 的 preds DataFrame}``，需含 ``match_id / league / season /
+    p_home / p_draw / p_away / y``。单臂走 ``block_logloss``（逐场 log loss 的块聚合），
+    配对走 ``block_deltas``（``δ = ℓ_a − ℓ_b``）。
+
+    每行报：``n``（场数）、``deff``、块级宽度、逐场宽度、``ratio``、``ratio²`` 与
+    ``√deff`` 的偏差。断言 ``ratio > 1`` 且 ``ratio² ≈ deff``（相对误差 < ``deff_tol``）；
+    任一不满足即在正文里标 ``FAIL``，由调用方决定是否让流水线失败。
+    """
+    stats: list[tuple[float, float]] = []
+
+    def row(tag: str, block: BlockDeltas) -> tuple[str, bool]:
+        de = design_effect(block)
+        wr = width_ratio(block, B=B, alpha=alpha, seed=seed)
+        ratio = wr["ratio"]
+        deff = de["deff"]
+        gap = (ratio ** 2 - deff) / deff if deff > 0 else float("nan")
+        ok = bool(ratio > 1.0 and abs(gap) < deff_tol)
+        stats.append((deff, ratio))
+        line = (f"{tag:<10} {block.n_paired:>7,} {deff:>6.3f} "
+                f"{wr['cluster_width']:>12.5f} {wr['iid_width']:>11.5f} "
+                f"{ratio:>6.3f} {ratio ** 2:>8.3f} {np.sqrt(deff):>9.3f} "
+                f"{gap:>+8.1%}   {'PASS' if ok else 'FAIL'}")
+        return line, ok
+
+    body: list[str] = []
+    all_ok = True
+    for arm in SELFCHECK_ARMS:
+        if arm not in frames:
+            continue
+        line, ok = row(arm, block_logloss(frames[arm]))
+        body.append(line)
+        all_ok &= ok
+    body.append("")
+    for a, b in pairs:
+        if a not in frames or b not in frames:
+            continue
+        line, ok = row(f"{a}-{b}", block_deltas(frames[a], frames[b]))
+        body.append(line)
+        all_ok &= ok
+
+    deff_lo = min(s[0] for s in stats) if stats else float("nan")
+    deff_hi = max(s[0] for s in stats) if stats else float("nan")
+    r_lo = min(s[1] for s in stats) if stats else float("nan")
+    r_hi = max(s[1] for s in stats) if stats else float("nan")
+    out = [
+        "bootstrap self-check（验收项 7 · 块级 vs 逐场重采样）",
+        "生成命令：python -m src.eval.run_m2（src.eval.bootstrap.selfcheck_text）",
+        f"重采样单位：{G_BLOCKS} 个 (league, season) 块；B = {B:,}；区间 = {1 - alpha:.0%}；"
+        f"seed = {seed}；分位法，无偏差校正",
+        "",
+        "口径（v1.4 订正）：ratio ≈ √deff。deff 只由「块间方差 / 逐场方差」决定，",
+        "      因此宽度比不是自由参数；要 3–5 倍须 deff 9–25（等于假设同一块内",
+        "      ≈349 场比赛几乎完全同质），与本数据的簇结构不符。",
+        f"      本次实测：deff ∈ [{deff_lo:.2f}, {deff_hi:.2f}]，ratio ∈ [{r_lo:.2f}, {r_hi:.2f}]。",
+        "",
+        f"{'arm/paired':<10} {'n':>7} {'deff':>6} {'width_block':>12} {'width_iid':>11} "
+        f"{'ratio':>6} {'ratio^2':>8} {'sqrt(deff)':>9} {'rel.err':>8}   verdict",
+    ]
+    out += body
+    out += [
+        "",
+        f"总判定：{'PASS' if all_ok else 'FAIL'}（逐行 ratio > 1 且 ratio² 与 deff 相对误差 < "
+        f"{deff_tol:.0%}）",
+        "说明：ratio 与 deff 都随 arm 变化（不同 arm 的块间异质性不同），故逐行报而不报一个总数。",
+    ]
+    return "\n".join(out) + "\n"

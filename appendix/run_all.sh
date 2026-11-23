@@ -84,7 +84,7 @@ mkdir -p "$REPO_ROOT/results/logs"
     echo "--- [4/6] S5: coverage matrix CSV + heatmap PNG ---"
     "$PY" src/coverage.py
 
-    echo "--- [5/6] M2: B6/B6r + market_gap + table_main + H1-H4 ---"
+    echo "--- [5/6] M2: B6/B6r + market_gap + table_main + bootstrap 自检 + H1-H4/C1/C2 ---"
     "$PY" -m src.eval.run_m2
 
     echo "--- [6/6] full pytest ---"

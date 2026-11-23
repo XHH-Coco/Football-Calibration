@@ -153,29 +153,49 @@ def reliability_curve(p: np.ndarray, y: np.ndarray, n_bins: int = 10):
 
 
 def reliability_curve_smooth(p: np.ndarray, y: np.ndarray,
-                             grid: int = 64, bandwidth: float | None = None):
+                             grid: int = 64, bandwidth: float | None = None,
+                             min_ess: float = 20.0, tail_q: float = 0.01):
     """逐类别**局部平滑**可靠性曲线（Nadaraya–Watson 高斯核，W7 局部平滑落点）。
 
     对每一类，在预测概率的支撑上取 ``grid`` 个点，用核加权局部均值估计
-    ``E[1{y=k} | p_k]``。``bandwidth=None`` 时用 Scott 规则 ``n^{-1/5}`` 的启发式。
+    ``E[1{y=k} | p_k]``。
+
+    ``bandwidth=None`` 时用 **Scott 规则按类估计**：``h_k = 1.06 · sd(p_k) · n^{-1/5}``，
+    下限 ``0.01``（概率量纲）。（v1.4 订正：旧实现取 ``max(n^{-1/5}, 0.02) = 0.143``，
+    那是**概率量纲**上的 0.143，在 n = 16,728 时等于几乎全局平均——平局类平滑曲线极差
+    只剩 0.056，会把「市场对平局有信息」画成一条水平线。）
+
+    两处稳健化（否则窄带宽会在稀疏尾部炸出竖直尖峰）：
+    ① 网格只取 ``[tail_q, 1−tail_q]`` 分位区间，不去支撑的极尾（那里只有个位数样本）；
+    ② 每个网格点报**有效样本量** ``ess = (Σw)² / Σw²``，``ess < min_ess`` 的点丢弃。
+    返回列：``class, pred, bandwidth, smoothed_freq, ess``。
     """
     import pandas as pd
     p, y = _check(p, y)
     o = _onehot(y)
     n = len(y)
-    h = bandwidth if bandwidth is not None else max(n ** (-1.0 / 5.0), 0.02)
     rows = []
     for k in CLASSES:
         x = p[:, k]
         ok = o[:, k]
-        xs = np.linspace(x.min(), x.max(), grid)
+        if bandwidth is None:
+            h = max(1.06 * float(np.std(x, ddof=1)) * n ** (-1.0 / 5.0), 0.01)
+        else:
+            h = float(bandwidth)
+        lo, hi = np.quantile(x, [tail_q, 1.0 - tail_q])
+        if hi <= lo:
+            lo, hi = float(x.min()), float(x.max())
+        xs = np.linspace(lo, hi, grid)
         for xq in xs:
             w = np.exp(-0.5 * ((x - xq) / h) ** 2)
             sw = w.sum()
             if sw < 1e-12:
                 continue
-            rows.append({"class": k, "pred": float(xq),
-                         "smoothed_freq": float((w * ok).sum() / sw)})
+            ess = float(sw * sw / (w * w).sum())
+            if ess < min_ess:
+                continue
+            rows.append({"class": k, "pred": float(xq), "bandwidth": h,
+                         "smoothed_freq": float((w * ok).sum() / sw), "ess": ess})
     return pd.DataFrame(rows)
 
 

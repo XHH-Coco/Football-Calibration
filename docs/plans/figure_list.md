@@ -9,11 +9,11 @@
 | fig01 | `fig01_ladder.png` | 阶梯 / C1·C2 | 蓝本 §4（手绘/矩阵） | 模型阶梯示意（B0–B6 + B6r，标出两次单因素变更） | B0–B6+B6r 九臂排成阶梯，B4→B5a 只换模型类（C1）、B5a→B5b 只换信息（C2），是仅有的两次单因素归因 | M5 | ☑ 已生成 |
 | fig02 | `fig_data_coverage.png` | 数据质量 | `results/coverage_matrix.csv` | 覆盖率热图（联赛 × 赛季 × 关键列） | 六联赛 × 22 季 46,507 场覆盖完整；仅评估窗射门列缺 1 场（0.999940），以射门为特征的 arm 须显式处理 NaN | M1 | ☑ 已交付 |
 | fig03 | `fig03_arms.png` | 主结果 | `results/table_main.csv` | 9 个 arm 的 log loss + 90% 区间 | B0 1.074 → B4 0.994 单调改善，但仍比 B6 0.959 高 0.0353 nats（90% CI 0.031–0.040）——阶梯逼近但够不到市场 | M5 | ☑ 已存在 |
-| fig04 | `fig04_c_equivalence.png` | C1 | `analysis/c1_model_class.ipynb` | 等价性区间（±0.02 边界 + 四种结局） | C1：B4−B5a=0.0142 nats（90% CI 0.0078–0.0207），上界越过 +0.02 → 分辨率不足、不下结论；C2：B5b−B5a=0.0053，落在 ±0.02 内 → 实际等价 | M5 | ☑ 已存在 |
+| fig04 | `fig04_c_equivalence.png` | C1 | `analysis/c1_model_class.ipynb` | 等价性区间（±0.02 边界 + 四种结局） | C1：B4−B5a=0.0142 nats（90% CI 0.0078–0.0207），区间不含 0（差异可分）但上界越过 +0.02 → 跨边界、不作实用性宣称；C2：B5b−B5a=0.0053，落在 ±0.02 内 → 实际等价 | M5 | ☑ 已存在 |
 | fig05 | `fig05_model_reliability.png` | H1（模型侧） | `results/preds/preds_B*.csv` | 可靠性曲线，三类结果分开，局部平滑 | B4 三类校准斜率 0.92/0.78/0.94 全 <1（over-dispersed / 过度自信），与市场（>1，under-dispersed）方向相反；平局最差 | M5 | ☑ 已生成 |
-| fig06 | `fig06_market_calibration.png` | H1（市场侧） | `preds_B6.csv` + 三法去抽水 | 市场校准斜率 / 偏差 vs 预测概率 + FLB 尾箱 | 市场斜率 1.086（90% CI 1.047–1.124）>1：低概率高估、高概率低估（FLB），H1 主判据支持 | M2 出数 / M5 排版 | ☑ 已生成 |
+| fig06 | `fig06_market_calibration.png` | H1（市场侧） | `preds_B6.csv` + 三法去抽水 | 市场校准斜率 / 偏差 vs 预测概率 + FLB 尾箱 | 比例法斜率 1.086（90% CI 1.047–1.124）>1：低概率高估、高概率低估（FLB），H1 主判据支持；Shin 1.052 / power 1.030（区间跨 1）→ 方向一致、量级依赖去抽水口径 | M2 出数 / M5 排版 | ☑ 已生成 |
 | fig07 | `fig07_market_gap.png` | H2 | 3 种去抽水 × 8 臂 + `B6` | 与市场的配对 ΔLL 及 95% 区间 | B4 与 B6 配对 ΔLL 三法同号同量级（0.0353–0.0355 nats，95% CI 0.030–0.041）：H2 支持，透明模型追不上市场 | M2 | ☑ 已交付 |
-| fig08 | `fig08_localisation_recal.png` | H3 + H4 | `preds_B6.csv` vs `preds_B6r.csv` + 局部化回归 | 双面板：左＝升班马 / 前 6 轮系数与 sweep；右＝B6 vs B6r 重校准前后 gap | H3 仅描述（early 系数 −0.0108 为负，与假设方向相反）；H4 重校准前后 gap 相对变化 0.0017（90% 上界 0.011<0.25）→ 差距是信息而非校准 | M5 排版 | ☑ 已生成 |
+| fig08 | `fig08_localisation_recal.png` | H3 + H4 | `preds_B6.csv` vs `preds_B6r.csv` + 局部化回归 | 双面板：左＝升班马 / 前 6 轮系数与 sweep；右＝B6 vs B6r 重校准前后 gap | H3 仅描述（early 系数 −0.0114 为负，与假设方向相反；min 口径主版）；H4 重校准前后 gap 相对变化 0.0017（90% 上界 0.011<0.25）→ 差距是信息而非校准 | M5 排版 | ☑ 已生成 |
 
 > fig07 的「8 臂」= `B0`–`B5b`（7 个）+ `B6r`（1 个）；`B6` 是配对差的分母，不单列为臂。
 

@@ -97,3 +97,34 @@ def test_threshold_constants_are_locked():
     assert EQUIV_MARGIN == 0.02
     assert H4_REL_THRESHOLD == 0.25
     assert H4_MIN_DENOM == 0.01
+
+
+def test_indeterminate_distinguishes_excludes_zero_from_no_resolution():
+    """v1.4：区间不含 0 但跨 ±0.02 = 「差异可分、不作实用性宣称」，不是「分辨率不足」。
+
+    C1 就是这样：90% CI 0.0078–0.0207 不含 0（B4 确实更好），只是上界越过 +0.02。
+    """
+    v = c1_verdict(0.0142, 0.0078, 0.0207)
+    assert v["decision"] == "跨边界，不下结论"
+    assert "不含 0" in v["reason"] and "不作实用性宣称" in v["reason"]
+    # 真正测不出方向（区间跨 0）才叫分辨率不足
+    v2 = c1_verdict(0.0, -0.03, 0.03)
+    assert v2["decision"] == "分辨率不足，不下结论"
+    # 等价分支不受影响
+    assert c1_verdict(0.001, -0.01, 0.01)["decision"] == "实际等价"
+
+
+def test_verdict_envelope_carries_interval_and_n_paired():
+    """§7.7 要求判定返回「用到的区间与 n_paired」，M5 据此自动倒查。"""
+    v = c2_verdict(-0.0053, -0.0093, -0.0015, n_paired=16_728)
+    assert v["interval"] == [-0.0093, -0.0015]
+    assert v["n_paired"] == 16_728
+    h2 = h2_verdict(0.0353, 0.0300, 0.0410, 0.0309, 0.0401, n_paired=16_728)
+    assert h2["interval"] == [0.0309, 0.0401]          # 主区间 = 90%
+    assert h2["interval_95"] == [0.0300, 0.0410]
+    h3 = h3_verdict(-0.05, -0.08, -0.02, 0.03, 0.01, 0.05, n_paired=16_728)
+    assert set(h3["intervals"]) == {"promoted", "early"}
+    # 所有 verdict 都带这两个键（不能只在部分函数里有）
+    for vv in (h1_verdict(1.05, 1.02, 1.10), h1_ordering_verdict(0.02, 0.01, 0.03),
+               c1_verdict(0.0, -0.03, 0.03), h4_verdict(0.1, 0.05, 0.2, 0.05)):
+        assert "interval" in vv and "n_paired" in vv

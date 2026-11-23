@@ -1,9 +1,10 @@
 # M2 评估框架规格与预注册判定规则（`src/eval/` 接口契约）
 
-> **版本 v1.3 · 2026-11-11 · 状态：实现已落地（H1/H2/H4 支持、H3 描述性、C1/C2 已判）；待签字（M2 主签 + M4/M5 会签，11/13 `harness-v1.0` 冻结前；M3 已于 2026-11-11 会签）**
+> **版本 v1.4 · 2026-11-23 · 状态：实现已落地（H1/H2/H4 支持、H3 描述性、C1 跨边界不下结论、C2 实际等价）；待签字（M2 主签 + M4/M5 会签，11/13 `harness-v1.0` 冻结前；M3 已于 2026-11-11 会签）**
 > 主责 M2 · 备份人 M1 · 依据 `08_小组分工实施方案_v1.3.md` §3.2 / §5.1 / §5.3 / §5.5、`Team-32-Proposal_v3.0.md` §2 / §5、`docs/plans/data_interface.md` v1.7
 > **本文件是「尺子」的唯一书面说明。** 冻结之后只修 bug，不改口径；改口径须 M2 主签 + M5 会签并在 `CHANGELOG_structure.md` 记一笔。
 > **本文件不含任何代码**：§3 是模块与函数签名契约，§7 是跑数前必须落进代码分支的判定规则。
+> v1.4 是**订正版**（不是改口径）：把「宽度比 3–5 倍」这条写错的验收标准改成由 `deff` 决定的形式（§3.4）；补齐规范早已要求、实现却没给的返回值（§7.7）；H3 主版回到预注册的 `min(matchday_home, matchday_away)`（§7.4）；H1 增列逐类斜率（§7.2）。判定阈值与四分支结构一字未动。
 
 ---
 
@@ -77,9 +78,9 @@
 | `log_loss(p, y)` | `p: (n,3)` 概率矩阵、`y: (n,)` ∈{0,1,2} | 逐场 `−(log p_true)` 向量 | 与 `sklearn.metrics.log_loss` 差 **< 1e-9**；全 1/3 → 1.0986 |
 | `brier(p, y)` | 同上 | 逐场 `Σ_k (p_k − 1{y=k})²` | 范围 [0,2] |
 | `rps(p, y)` | 同上 | 逐场累积式排序概率分 | 类别按 **H→D→A 有序**（`y` 的 0/1/2 即顺序） |
-| `murphy_decomposition(p, y, bins=10)` | 同上 | `(reliability, resolution, uncertainty)` | 三者之和 ≈ `mean(brier)` |
+| `murphy_decomposition(p, y, bins=10)` | 同上 | `(reliability, resolution, uncertainty, within_bin_var)` **四项** | `reliability − resolution + uncertainty + within_bin_var` ≈ `mean(brier)`（v1.4：连续预测下教科书的三项恒等式不成立，加箱内方差才精确） |
 | `ece(p, y, bins=10)` | 同上 | 标量 | 单元用 **实测频率**加权，不是等权 |
-| `reliability_curve(p, y, smooth="w7")` | 同上 | 分箱中心 + 实测频率 + 箱内 n | 硬分箱 + **W7 局部平滑**两版都要（H1 主图用平滑版） |
+| `reliability_curve(p, y, n_bins=10)` / `reliability_curve_smooth(p, y, grid=64, bandwidth=None, min_ess=20)` | 同上 | 曲线表（`class, pred_mean, obs_freq, count` / `class, pred, bandwidth, smoothed_freq, ess`） | 硬分箱与**高斯核局部平滑**两版都要（H1 主图用平滑版）；v1.4：带宽 `bandwidth=None` 一律按 **Scott 规则逐类** `h_k = 1.06·sd(p_k)·n^{-1/5}`（下限 0.01），且网格取 1%–99% 分位、逐点 `ess = (Σw)²/Σw² ≥ 20` 才出点——否则窄带宽会在平局类的稀疏尾部炸出竖直尖峰 |
 | `bias_vs_pred(p, y, ...)` | 同上 | `pred − freq` 对 `pred` 的曲线 | H1「低概率区在对角线下方」的落点（§7.2） |
 
 **聚合口径（全项目统一，最容易分歧的一条）**
@@ -93,7 +94,7 @@
 | 函数 | 算法 | 备注 |
 |---|---|---|
 | `proportional(o)` | `p_i = (1/o_i) / Σ_j (1/o_j)` | **B6 主基准** |
-| `power(o)` | 解 `k` 使 `Σ_i (1/o_i)^k = 1`（`brentq`，k ∈ [1e-3, 10]） | 抽水视为乘性 |
+| `power(o)` | 解 `k` 使 `Σ_i (1/o_i)^k = 1`（`brentq`，k ∈ **[1, 100]**） | 抽水视为乘性。**根必在 `(1, ∞)`**：`b_i=1/o_i<1` ⇒ 和式对 k 严格递减，且 `k=1` 处等于 `B>1`、`k→∞` 趋于 0。本面板实测 `k ∈ [1.001, 1.207]`；v1.4 前的 `[1e-3, 10]` 数值等价但下界不成立（`B<1` 时会返回负 k） |
 | `shin(o)` | 对 z（内幕交易比例）一维求根，按 Štrumbelj (2014) 的目标函数 | 三法中最依赖假设 |
 | `check_odds(o)` | 过滤 `o_i > 1`，任一列 ≤1 或 NaN → 该场丢弃并计数 | **禁止回填** |
 
@@ -122,7 +123,8 @@
 | `cluster_bootstrap(values, weights, B=10_000, alpha=0.10, seed=20261110)` | 有放回抽 48 个块（同一块可重复），重算加权 pooled 统计量，返回 `(point, lo, hi, se_boot)` |
 | `cluster_robust_se(values, weights, G=48)` | 块稳健标准误（解析式，与 bootstrap 交叉核对） |
 | `design_effect(values, weights)` | `deff = Var_cluster / Var_iid` |
-| `iid_resample_ci(...)` | **仅作对照**，用来跑「块级 vs 逐场」宽度比的自检 |
+| `iid_bootstrap(block, B=10_000, alpha=0.10, seed=20261110)` | **仅作对照**，按「比赛」重抽样（错误做法），用来跑宽度比自检；v1.4 起统一这个名字（旧文档写的 `iid_resample_ci` 不存在） |
+| `width_ratio(block, ...)` / `selfcheck_text(frames, ...)` | 宽度比 + 生成 `bootstrap_selfcheck.txt` 正文（验收项 7 的证据） |
 
 **精确算法（冻结，避免各人写出不同区间）**
 
@@ -132,7 +134,9 @@
 - 主区间 `α = 0.10`（90%）；H2 判据 (a) 另用 `α = 0.05`（95%）。
 - 块稳健 SE：`Var_cluster(Δ̂) = G/(G−1) · Σ_b (n_b/N)² (δ_b − Δ̂)²`，`N = Σ_b n_b`，`G = 48`。
 - 对照 iid SE：`Var_iid(Δ̂) = s²/N`，`s²` 为逐场 δ 的样本方差。
-- **自检断言**：块级与逐场重采样的 90% 区间宽度比 ∈ **[3, 5]**；`deff` 与宽度比一致（`deff ≈ 宽度比²`）。
+- **自检断言（v1.4 订正）**：块级与逐场重采样的 90% 区间宽度比满足 **`ratio ≈ √deff` 且 `ratio > 1`**，并逐行核对 `|ratio² − deff| / deff < 25%`。
+  **原文写的「∈ [3, 5]」是错的**：宽度比不是自由参数，它由 `deff` 唯一决定；而本面板的 `deff` 只有 1.31–2.28（B0 1.32 / B6 1.51 / B4 2.08 / B4−B6 2.28），对应 `ratio` 1.15–1.49。要 3–5 倍须 `deff` 9–25，等于假设同一块内 ≈349 场比赛几乎完全同质——那与「同赛季比赛共享球队状态与裁判尺度」的建模前提自相矛盾。
+  证据落盘 `results/logs/bootstrap_selfcheck.txt`（种子、B、48 块、逐 arm/逐配对的 `deff`、两种宽度、`ratio`、`ratio²` vs `√deff` 偏差与逐行判定），由 `python -m src.eval.run_m2` 第 [4] 步生成，任一行为 `FAIL` 即让流水线抛异常。
 - 种子固定 `20261110`（`appendix/seed.py::DEFAULT_SEED`）；`B = 10,000`。
 
 ### 3.5 `market_gap.py` / `calibration.py` / `recalibrate.py`
@@ -178,7 +182,7 @@ B6r 的具体口径（写成断言，不是注释）：
 |---|---|---|
 | 90% 区间完全落在 (−0.02, +0.02) | 「实际等价（区间完全落在 ±0.02 的等价边际内）」 | 「无差异」 |
 | 90% 区间完全在 +0.02 以上（或 −0.02 以下） | 「点估计 Δ = x（90% CI a–b），方向明确且超出等价边际」 | 「显著优于」（不报区间时） |
-| 区间跨边界，或宽度 > 0.04 | 「**分辨率不足，不做判定**；点估计为 x」 | 「没有差异」「不显著」 |
+| 区间跨边界，或宽度 > 0.04 | 「**只报估计与区间，不作实用性宣称**；点估计为 x」；若区间**不含 0**，必须同时写明「差异可分，但上界越过 ±0.02 等价边际」（C1 就属这一格） | 「没有差异」「不显著」「分辨率不足」（在区间不含 0 时用这四个字自相矛盾） |
 | 作为分母的 gap < 0.01 nats | 改报**绝对差**并说明比值不稳 | 硬算相对变化百分比 |
 
 ---
@@ -199,6 +203,8 @@ B6r 的具体口径（写成断言，不是注释）：
 
 - **判定量**：三种去抽水下 B6 的 one-vs-rest 重校准斜率 `b_k`（报 pooled 斜率），以及尾箱偏差。
 - **主判据**：`b_proportional ≤ 1` → **H1 被证伪**；`b > 1` 且 90% 区间下界 > 1 → 支持。
+- **逐类斜率（v1.4 必报项）**：主斜率是三类斜率的块内平均，会把「只有某一类 under-dispersed」稀释掉，因此除主斜率外必须同时报**逐类斜率 + 90% 簇区间**（`results/logs/h1_slope_by_class.csv`，由 `h1_slope_by_class()` 生成）。实测：只有**客胜类**在三种去抽水下都 > 1（prop 1.087 / power 1.044 / shin 1.054），平局类在 power 下跨 1。
+- **措辞约束（v1.4）**：三种去抽水的结论是「**方向一致、量级依赖去抽水口径**」（比例法 1.086 / Shin 1.052 / power 1.030，后者区间跨 1）。禁止写「市场显著保守」这类无限定语的句子；必须同时说明次判据暴露的 confound——**比例法的偏差本身最大，而比例法去抽水已知会残留 favorite–longshot bias**，故「斜率 > 1」里有多少来自市场、多少来自方法，本设计分不开；H2/H4 不受影响（三法 gap 差 < 2e-4）。
 - **次判据（预注册排序）**：`|b−1|_proportional − |b−1|_Shin` 的 90% 区间**下界 > 0** 才宣称「比例法偏差最大」；否则三法只作描述性对照。三法声明为**同一稳健性族**，不做多重比较校正。
 - **符号断言（必须写进代码）**：`b > 1` ⇒ 可靠性曲线在**低概率区位于对角线下方**、高概率区位于上方。**提交版此处写反**，照文字写断言会得到反号结论。
 
@@ -220,6 +226,7 @@ B6r 的具体口径（写成断言，不是注释）：
   `β1·promoted_i + β2·early_i + 联赛×赛季固定效应` 回归（OLS）。
   `promoted_i = is_promoted_home ∨ is_promoted_away`；`early_i = 1{min(matchday_home, matchday_away) ≤ 6}`
   （**敏感性**：`max(...)` 与「仅用主队 matchday」两版作描述性对照，正文只报主版）。
+- **轮次来源（v1.4 修正）**：两队 matchday 均由 panel 自身算出——同联赛同赛季同队按日期累计出场数 +1（`localisation.team_matchday()`），0 缺失。旧实现只用主队 matchday 并标成「已声明局限」，属**无必要偏离预注册**：两口径 early 标记不同的场次 1,025 场，early 系数 −0.0114（min，主版）vs −0.0108（仅主队），结论不变。三版对照落 `results/logs/h3_sensitivity.csv`。
 - **判定**：`β1 > 0` 且 `β2 > 0`，**且各自 90% 簇区间下界均 > 0** → 支持；**任一区间跨 0** → 两个系数都只作描述，既不宣称成立也不宣称证伪（提交版「任一 ≤ 0 即证伪」与联合估计矛盾，已修正）。
 - 轮次窗 1–3 / 1–6 / 1–10 的 sweep 是**跑数前声明的描述性稳健曲线**，不携带显著性主张，不进主推断。
 - 指示变量只能来自季前名单与赛程（M1 的 T1.9 打乱测试已保证）。
@@ -236,6 +243,7 @@ B6r 的具体口径（写成断言，不是注释）：
 | 其他（跨 25%，或区间宽到无法分辨） | 只报估计与区间，不下判定，写明分辨率不足 |
 
 - 前提断言：B6r 参数 train-only（§3.5）+ 每折 `n_fit` 已记录；`preds_B6r.csv` 与 B6 同一批 16,728 场。
+- **oracle 上界（v1.4 补充证据）**：另跑一支「用 test 标签拟合」的重校准——**逐块**（48 组 `c, d`，共 96 个自由度）拟合后在同一批 test 上评估。它不是可上线的模型（含过拟合），作用是把「我们的 B6r 恰好没拟合好」这个异议提前堵死：实测市场 LL 只能从 0.958536 改善到 0.955763（+0.00277），gap 反而从 0.0353 涨到 0.0381，`rel = +7.9% ≪ 25%`。即**即使允许作弊，校准也只能解释不到 8% 的差距**。落盘 `results/logs/h4_oracle_bound.csv`（`recalibrate.oracle_bound()`）。
 
 ### 7.6 C1 / C2 — 受控比较（不是假设）
 
@@ -249,11 +257,12 @@ B6r 的具体口径（写成断言，不是注释）：
 | 完全在 −0.02 以下 | 后一级更好 |
 | 跨边界，或宽度 > 0.04 | 只报估计，不下结论 |
 
-- 报告里**不写「H1 成立」**这类措辞（C1/C2 是结果不是假设）。**已判（2026-11-11，M4 的 B5a/B5b 到位后）**：C1 分辨率不足（Δ=+0.0142，90% CI 0.0078–0.0207）、C2 实际等价（Δ=−0.0053，90% CI −0.0093~−0.0015）。
+- 报告里**不写「H1 成立」**这类措辞（C1/C2 是结果不是假设）。**已判（2026-11-11 出数、v1.4 措辞订正）**：C1 **跨边界，不下结论**（Δ=+0.0142，90% CI 0.0078–0.0207 —— **区间不含 0，差异可分**，但上界越过 +0.02 的等价边际，故只报估计、不作实用性宣称；旧措辞「分辨率不足」与「区间不含 0」自相矛盾）、C2 实际等价（Δ=−0.0053，90% CI −0.0093~−0.0015）。
+- 第四分支在代码里的实现要求：`controlled_verdict` 必须区分两种跨边界——(i) 区间不含 0（差异可分）→ `跨边界，不下结论`；(ii) 区间跨 0（真的测不出）→ `分辨率不足，不下结论`。判定**阈值与四分支结构不变**，只是把理由说准。
 
 ### 7.7 判定层实现要求
 
-- 每个 `*_verdict(...)` 返回 `(判定字符串, 一句话理由, 用到的区间与 n_paired)`，报告 §5 可逐条倒查。
+- 每个 `*_verdict(...)` 返回 **dict**：`{"decision", "reason", "interval": [lo, hi] | None, "n_paired": int | None}`。四个键**恒存在**（不适用的值写 `None`），可直接落 CSV；H2 另带 `interval_95` 与 `point`，H3 另带 `intervals = {promoted: [lo,hi], early: [lo,hi]}`。全部判定由 `run_m2` 汇总成 `results/logs/m2_verdicts.csv`（8 行：H1 主/次、H2、H3 ×2、H4、C1、C2），M5 的「报告 §5 数字可倒查」因此变成一条 join 而不是人眼抽 5 个。
 - 判定阈值集中在 §7.1，**函数体内不得出现裸数字**；`tests/test_decisions.py` 用构造的极端区间把 4×5 个分支全部走一遍。
 - 判定规则在 `harness` 冻结的同一次提交里定稿；之后任何改动须 M2 主签 + M5 会签，并在报告里说明。
 
@@ -280,7 +289,11 @@ B6r 的具体口径（写成断言，不是注释）：
 | `products/figures/fig07_market_gap.png` | 三法 × 8 arm 的 gap 森林图 |
 | `results/logs/b6r_n_fit.csv` | 每折 `n_fit`（B6r 拟合样本数） |
 | `results/logs/b6_devig_disagreement.csv` | 两法差 > 0.05 的场次审计 |
-| `results/logs/bootstrap_selfcheck.txt` | 块级 vs 逐场区间宽度比、deff、种子与 B |
+| `results/logs/bootstrap_selfcheck.txt` | 块级 vs 逐场区间宽度比、deff、种子与 B（由 `selfcheck_text()` 生成，逐行 PASS/FAIL） |
+| `results/logs/h1_slope_by_class.csv` | 三法 × 三类校准斜率 + 90% 簇区间（H1 口径依赖的证据，v1.4） |
+| `results/logs/h3_sensitivity.csv` | `min` / `max` / 仅主队三种 `early` 定义的系数对照（v1.4） |
+| `results/logs/h4_oracle_bound.csv` | 逐块用 test 标签拟合的 oracle 上界（LL、gap、rel、c/d 范围，v1.4） |
+| `results/logs/m2_verdicts.csv` | 全部判定一行一条：`hypothesis, decision, point, lo, hi, n_paired, detail`（v1.4） |
 
 ---
 
@@ -294,11 +307,11 @@ B6r 的具体口径（写成断言，不是注释）：
 | 4 9 个空壳 arm 单折 < 20 分钟 | §3.3 | 自查（计时） |
 | 5 `inner_split` 验证集严格早于外层 test | §3.3 | 断言 |
 | 6 三种去抽水各自和为 1、互差 < 0.01 | §3.2 | 自动：`tests/test_devig.py` |
-| 7 块级 vs 逐场区间宽度差 3–5 倍 | §3.4 | 自动 + `bootstrap_selfcheck.txt` |
+| 7 块级 vs 逐场区间宽度比 `≈ √deff` 且 > 1（实测 1.15–1.49） | §3.4 | 自动 + `bootstrap_selfcheck.txt`（逐行 PASS/FAIL，FAIL 即中断） |
 | 8 C1 四分支在代码里 | §7.6 | code review（M5） |
 | 9 `table_main.csv` 每行有区间与 deff | §8.1 | 检查 9 行 |
 | 10 H2 表 3 法 × 8 臂同号同量级 | §7.3 | 人眼 + 备注 |
-| 11 报告 §5 数字可在 `table_main.csv` 找到 | §7.7 倒查 | 抽 5 个（M5） |
+| 11 报告 §5 数字可在 `table_main.csv` / `m2_verdicts.csv` 找到 | §7.7 倒查 | 抽 5 个（M5），区间与 `n_paired` 已结构化 |
 | 12 「显著/不显著」措辞与区间一致 | §6 措辞模板 | 全文搜（M5） |
 
 ---
@@ -307,7 +320,7 @@ B6r 的具体口径（写成断言，不是注释）：
 
 | 风险 | 触发信号 | 对策（本文件已写死） |
 |---|---|---|
-| 按场重采样 → 假显著 | 区间窄得可疑 | §3.4 断言宽度比 3–5 倍；`deff` 随行落盘 |
+| 按场重采样 → 假显著 | 区间窄得可疑 | §3.4 断言 `ratio ≈ √deff > 1`（实测 1.15–1.49）；`deff` 随行落盘，`bootstrap_selfcheck.txt` 逐行判定 |
 | 配对行数不对 | `n_paired` ≠ 16,728 | §4 强制内连接 + 表注写 `n_paired` |
 | 两套 schema 并存 | 9 个 arm 在 G1 对不齐 | §3.3 上提 `PRED_COLS` / `check_pred`，**11/13 前合** |
 | B6r 用 test 拟合 | H4 的 rel 异常变小 | §3.5 train-only 断言 + `n_fit` 日志 |
@@ -327,6 +340,8 @@ B6r 的具体口径（写成断言，不是注释）：
 | **M1（知会）** | `match_id` / ISO 日期 / 块归属口径未变（沿用 `data_interface.md` §1.0、`splits.json`） | ☐ 待知会 |
 | **M5（会签）** | §6 措辞模板与 §8.1 表列名满足报告 §5 取数需求 | ☐ 待签 |
 
+> **v1.4 订正项的签字要求**：①–⑧ 中只有 §3.4（宽度比口径）属于**口径订正**，必须 M2 主签 + M5 会签；其余是实现回填（把代码已做的事写对）与新增产物，M2 主签即可。签字栏沿用上表，不另开表；未签之前，v1.4 的结论一律按「M2 复核版」引用，不得当作冻结口径。
+
 ---
 
 ## 12. 修订记录
@@ -337,6 +352,7 @@ B6r 的具体口径（写成断言，不是注释）：
 | v1.1 | 2026-11-11 | 落地登记（契约不变）：§2 交付物 4 明确 design effect 并入 `bootstrap.py`；§3.3 `inner_split(train)` 签名与 M3 `tune_b4.py` 一致。实现已完成：`src/eval/` 十模块、`preds_B6.csv` / `preds_B6r.csv`、`table_main.csv`、`market_gap.csv`、`fig07`、四个执行过的 notebook、9 个测试文件。H1/H2/H4 支持、H3 只作描述、C1 待 M4 的 B5a。 |
 | v1.2 | 2026-11-11 | **M3 会签（契约不变）**：§11 M3 两行由 ☐ 改为 ✅，依据是在 `939e3da` 上的实测——全量 **183 passed**；用 `harness.inner_split()` 重跑 48 折后 `preds_B3.csv` / `preds_B4.csv` 与入库版逐字节相同（两个 log 仅 `elapsed_s` 变化），即 `PRED_COLS` / `check_pred` 上提与内层切分切换均为行为中性。**M2 主签与 M4/M5 会签仍待签。** |
 | v1.3 | 2026-11-11 | **C1/C2 判定落地（契约不变）**：§7.6 补实测结论——C1 分辨率不足（Δ=+0.0142，90% CI 0.0078–0.0207）、C2 实际等价（Δ=−0.0053，90% CI −0.0093~−0.0015）；`decisions.py` 把 `c1_verdict` 重构为通用 `controlled_verdict(before, after, …)` 并新增 `c2_verdict`（修掉 C2 复用 C1 标签的隐患）；`table_main.csv` 补齐 9 行、`market_gap.csv` 扩到 8 arm × 3 法、`c1_model_class.ipynb` 写入真实结果。 |
+| v1.4 | 2026-11-23 | **复核后订正（阈值与四分支结构未动）**：① §3.4 宽度比口径由「∈[3,5]」改为「`ratio ≈ √deff` 且 > 1」，实测 1.15–1.49，并补 `selfcheck_text()` 与 `bootstrap_selfcheck.txt`（验收项 7 此前无证据）；② §7.2 增列逐类斜率（`h1_slope_by_class.csv`）与「方向一致、量级依赖口径」的措辞约束；③ §7.4 H3 主版回到预注册的 `min(matchday_home, matchday_away)`（`team_matchday()` 由 panel 自算，0 缺失）+ `h3_sensitivity.csv`；④ §7.5 补 oracle 上界（逐块 test 标签拟合，rel +7.9% ≪ 25%）；⑤ §7.6 第四分支拆成「跨边界（区间不含 0）」与「分辨率不足（跨 0）」；⑥ §7.7 返回值补 `interval` / `n_paired`，新增 `m2_verdicts.csv`；⑦ §3.1 平滑带宽改 Scott 规则逐类（原 0.143 严重过平滑）、§3.2 power 求根区间订正为 `[1,100]`；⑧ §8.2 补四个新日志。全量 `pytest -q` **191 passed**；`run_m2` 重跑后 `table_main.csv` / `preds_B6r.csv` 仅末位浮点差（≤1e-13，无实质变化）。 |
 
 ---
 

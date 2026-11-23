@@ -1,4 +1,4 @@
-"""M2 / T2.6 + T2.12 簇 bootstrap 验收：点估计复现、deff ≥ 1、宽度比 3–5 倍。"""
+"""M2 / T2.6 + T2.12 簇 bootstrap 验收：点估计复现、deff ≥ 1、宽度比 ≈ √deff。"""
 
 from __future__ import annotations
 
@@ -97,7 +97,8 @@ def test_width_ratio_consistent_with_design_effect():
     wr = width_ratio(blk, B=2000)
     de = design_effect(blk)
     # 簇重采样区间必须明显宽于逐场重采样（假显著之源），且宽度比 ≈ √deff。
-    # 「3–5 倍」是真实足球数据上的验收目标（M2 卡验收项 7），不在合成数据上硬断。
+    # v1.4 订正：验收口径是「ratio ≈ √deff > 1」，不是「3–5 倍」——真实 48 块上
+    # deff 只有 1.3–2.3，ratio 落在 1.17–1.50（见 results/logs/bootstrap_selfcheck.txt）。
     assert wr["ratio"] > 2.0
     assert wr["ratio"] == pytest.approx(np.sqrt(de["deff"]), rel=0.05)
 
@@ -106,3 +107,25 @@ def test_iid_bootstrap_narrower_than_cluster():
     blk = _block_correlated()
     cb = cluster_bootstrap(blk, B=2000)
     assert (cb["hi"] - cb["lo"]) > 0.02       # 块级区间明显更宽
+
+
+def test_selfcheck_text_reports_rows_and_verdict():
+    """``bootstrap_selfcheck.txt`` 是验收项 7 的证据：必须逐行给 deff / 宽度比 / 判定。"""
+    from src.eval.bootstrap import selfcheck_text
+
+    rng = np.random.default_rng(3)
+    per_block = 4
+    ls = []
+    for b in range(48):
+        lg = ["E0", "SP1", "I1", "D1", "F1", "N1"][b % 6]
+        ss = f"20{b // 6 + 17}/{b // 6 + 18}"
+        ls += [(lg, ss)] * per_block
+    y = rng.integers(0, 3, len(ls))
+    pa = np.full((len(ls), 3), 1 / 3)
+    pb = np.clip(pa + rng.normal(0, 0.05, pa.shape), 1e-3, None)
+    pb /= pb.sum(axis=1, keepdims=True)
+    frames = {"B4": _make_preds(pa, ls, y), "B6": _make_preds(pb, ls, y)}
+    text = selfcheck_text(frames, pairs=(("B4", "B6"),), B=500, seed=1)
+    assert "sqrt(deff)" in text and "B4" in text and "B4-B6" in text
+    assert "seed = 1" in text and "B = 500" in text
+    assert ("PASS" in text) or ("FAIL" in text)

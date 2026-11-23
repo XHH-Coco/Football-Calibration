@@ -11,6 +11,9 @@
 
 产物：``results/preds/preds_B6r.csv``（16,728 行，与 B6 同一批比赛）、
 ``results/logs/b6r_n_fit.csv``（48 行）。
+
+另有 ``oracle_bound()``：用 test 标签拟合同一族映射，给出「两参数重校准最多能解释
+多少 gap」的**上界**（不可上线，只作 H4 的兜底论证，见规范 §7.5）。
 """
 
 from __future__ import annotations
@@ -113,3 +116,44 @@ def run_b6r(out_path: str | Path | None = None,
         nf.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(fit_rows).to_csv(nf, index=False, encoding="utf-8")
     return out
+
+
+def oracle_bound(b4: pd.DataFrame, b6: pd.DataFrame) -> dict[str, float]:
+    """H4 的 **oracle 上界**：**在每个 (联赛, 赛季) 块内**用该块 test 自己的标签拟合
+    ``(c, d)``，再在同一批 test 上评估（48 组参数，共 96 个自由度）。
+
+    这不是一个可上线的模型（参数用了 test 标签 ⇒ 含过拟合成分），用途只有一个：
+    给「校准最多能解释多少 gap」一个**上界**。之所以按块拟而不按全样本拟：H4 问的是
+    「市场自己的校准缺陷能否解释差距」，而 B6r 的逐折温度明确按联赛分层（德甲 0.96 /
+    意甲 1.13），按块拟才是同一种「校准」机制的最强版本；全样本两参数只是一个共享
+    温度的受限模型，会把上界压低到 0.5%，失去「上界」的意义。
+
+    返回 ``ll_B6 / ll_B6r_oracle / gap_B6 / gap_oracle / rel / n / n_blocks / c_* / d_*``。
+    """
+    m = b4[["match_id", "league", "season", "y", "p_home", "p_draw", "p_away"]].merge(
+        b6[["match_id", "p_home", "p_draw", "p_away"]],
+        on="match_id", suffixes=("_b4", "_b6"))
+    y = m["y"].to_numpy()
+    p4 = m[["p_home_b4", "p_draw_b4", "p_away_b4"]].to_numpy(dtype=float)
+    p6 = m[["p_home_b6", "p_draw_b6", "p_away_b6"]].to_numpy(dtype=float)
+    block = (m["league"] + "|" + m["season"]).to_numpy()
+
+    p6o = np.empty_like(p6)
+    cs, ds = [], []
+    for b in np.unique(block):
+        idx = block == b
+        c, d = fit_recalibration(p6[idx], y[idx])
+        p6o[idx] = apply_recalibration(p6[idx], c, d)
+        cs.append(c)
+        ds.append(d)
+
+    def ll(p: np.ndarray) -> float:
+        return float(-np.log(np.clip(p[np.arange(len(y)), y], CLIP, None)).mean())
+
+    gap6, gap_o = ll(p4) - ll(p6), ll(p4) - ll(p6o)
+    return {"n": int(len(y)), "n_blocks": int(len(cs)),
+            "ll_B6": ll(p6), "ll_B6r_oracle": ll(p6o),
+            "gap_B6": gap6, "gap_oracle": gap_o,
+            "rel": (gap_o - gap6) / gap6 if gap6 else float("nan"),
+            "c_min": float(np.min(cs)), "c_max": float(np.max(cs)),
+            "d_min": float(np.min(ds)), "d_max": float(np.max(ds))}
