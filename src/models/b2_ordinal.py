@@ -46,7 +46,10 @@ def fit(train_df: pd.DataFrame, sample_weight=None):
     formula = "ycat ~ " + " + ".join(xf.columns)
     res = (OrderedModel.from_formula(formula, data=data, distr="logit")
            .fit(method="lbfgs", maxiter=1000, disp=False))
-    multi = LogisticRegression(multi_class="multinomial", max_iter=2000)
+    # v1.5 修复：``multi_class`` 在 scikit-learn 1.7 已移除（requirements 锁 1.9.1），
+    # 传它直接 TypeError——即 B2 在锁定环境里根本跑不起来，而 pytest 没有任何一项
+    # import 本模块，所以 CI 一直是绿的。1.9 里 multinomial 已是默认，不用再指定。
+    multi = LogisticRegression(max_iter=2000)
     multi.fit(xf.to_numpy(), train_df["y"].to_numpy())
     return {"res": res, "multi": multi, "builder": builder}
 
@@ -65,11 +68,6 @@ def predict_proba(test_df: pd.DataFrame, state, x_test: pd.DataFrame | None = No
     order_hda = [internal.index(k) for k in ["H", "D", "A"]]
     p = p_ord[:, order_hda]
     assert np.allclose(p.sum(axis=1), 1.0, atol=1e-9)
-
-    p_multi = state["multi"].predict_proba(xf.to_numpy())
-    internal_m = list(state["multi"].classes_)
-    order_m = [internal_m.index(k) for k in [0, 1, 2]]
-    p_multi = p_multi[:, order_m]
     return p
 
 

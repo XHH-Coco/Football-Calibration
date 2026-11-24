@@ -171,6 +171,56 @@ def trend_se_inflation(n_sim: int = 4000, seed: int = 0) -> pd.DataFrame:
     return pd.DataFrame(rows).round(5)
 
 
+def trend_sensitivity() -> pd.DataFrame:
+    """A1-a 趋势的稳健性：同一批 γ̂ 在四种切法 + 等权 OLS 下的斜率（v1.5 新增）。
+
+    动机：22 个点的 WLS 权重是 1/se²，而 se 从 0.027 掉到 0.0055 ⇒ 最后一季的权重
+    是 2003/04 的约 130 倍，这条线实质上是"最近六年 + 一个长尾"。审稿人一定会问
+    "下滑是不是疫情那一年造成的"，这张表就是提前堵住它。
+
+    切法子集内部的 ``t`` 仍从 0 起算（每点 = 一季），因此 ``slope_per_decade`` 是
+    "每 10 季"的斜率；子集删去中间两年后，时间轴被压缩 2/22，量级影响 < 1e-3，
+    与报告结论无关，但不要拿它去和"真实日历十年"做精确换算。
+    """
+    g = _read("gamma_by_season")
+
+    def fit(d: pd.DataFrame, equal: bool) -> dict:
+        y = d["gamma_pooled"].to_numpy(float)
+        se = d["se_pooled"].to_numpy(float)
+        t = np.arange(len(y), dtype=float)
+        x = np.column_stack([np.ones_like(t), t])
+        if equal:                                   # 等权 OLS：σ² 由残差估，不是"se 已知"
+            b = np.linalg.lstsq(x, y, rcond=None)[0]
+            resid = y - x @ b
+            s2 = float(resid @ resid) / (len(y) - 2)
+            s = float(np.sqrt(s2 * np.linalg.inv(x.T @ x)[1, 1]))
+        else:
+            w = 1.0 / se ** 2
+            inv = np.linalg.inv(x.T @ (w[:, None] * x))
+            b = inv @ (x.T @ (w * y))
+            s = float(np.sqrt(inv[1, 1]))
+        return {"slope_per_year": float(b[1]),
+                "lo95_year": float(b[1] - Z95 * s),
+                "hi95_year": float(b[1] + Z95 * s)}
+
+    specs = (
+        ("all 22 seasons (reported)", g, False),
+        ("excluding 2020/21 and 2021/22", g.loc[~g["season"].isin(["2020/21", "2021/22"])], False),
+        ("before 2020/21 only", g.loc[g["season"] < "2020/21"], False),
+        ("2020/21 onwards only", g.loc[g["season"] >= "2020/21"], False),
+        ("all 22 seasons, equal weights", g, True),
+    )
+    rows = []
+    for tag, d, equal in specs:
+        r = fit(d, equal)
+        rows.append({"scope": tag, "n_seasons": len(d),
+                     "weighting": "equal" if equal else "1/se^2", **r,
+                     "slope_per_decade": r["slope_per_year"] * 10,
+                     "lo95_decade": r["lo95_year"] * 10,
+                     "hi95_decade": r["hi95_year"] * 10})
+    return pd.DataFrame(rows).round(6)
+
+
 def empty_window() -> pd.DataFrame:
     w = _read("gamma_empty_window")
     rows = []
@@ -229,6 +279,7 @@ BUILDERS = {
     "t4_2_paired_summary": lambda: paired()[1],
     "t4_2_paired_folds": lambda: paired()[0],
     "tA1_gamma_trend": gamma_trend,
+    "tA1_trend_sensitivity": trend_sensitivity,
     "tA1_trend_se_inflation": trend_se_inflation,
     "tA1_empty_window": empty_window,
     "tA1_extrapolation": extrapolation,

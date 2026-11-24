@@ -12,13 +12,15 @@ The shortfall is measured in three parts.
 
 ### 5.4.1 Why the ladder is not monotone (and why that does not rescue the model)
 
-The model column of `table_main.csv` is not ordered by complexity: B2 = 0.9856, B1 = 0.9926, B4 = 0.9939, B3 = 0.9986, B5a = 1.0081, B5b = 1.0028. **B2 beats B4 by 0.0083 nats (90% paired CI 0.0041–0.0127, excluding zero)** — a difference the pre-registered design does not anticipate, because B4 was fixed in advance as the H2 protagonist.
+The model column of `table_main.csv` is not ordered by complexity: B2 = 0.9855, B1 = 0.9926, B4 = 0.9939, B3 = 0.9986, B5a = 1.0081, B5b = 1.0028. **B2 beats B4 by 0.0084 nats (90% paired CI 0.0042–0.0127, excluding zero)** — a difference the pre-registered design does not anticipate, because B4 was fixed in advance as the H2 protagonist.
 
 Two consequences, one of which we state as a caveat and one as a finding.
 
-*The caveat:* the headline gap of 0.035 is attached to B4, not to the best arm. Using B2 instead gives **0.027 (90% CI 0.0242–0.0298; 95% CI 0.0237–0.0304)**, i.e. B4's shortfall overstates "what a transparent model can do" by about 23%. The H2 verdict is unchanged — 0.027 is still entirely above the +0.02 equivalence margin, and its 95% interval still excludes zero — but the honest sentence is "the best transparent model trails the market by at least 0.027 nats", not "by 0.035".
+*The caveat:* the headline gap of 0.035 is attached to B4, not to the best arm. Using B2 instead gives **0.027 (90% CI 0.0241–0.0298; 95% CI 0.0236–0.0303)**, i.e. B4's shortfall overstates "what a transparent model can do" by about 23%. The H2 verdict is unchanged — 0.027 is still entirely above the +0.02 equivalence margin, and its 95% interval still excludes zero — but the honest sentence is "the best transparent model trails the market by at least 0.027 nats", not "by 0.035".
 
 *The finding:* more complexity buys nothing here, and the controlled comparisons say why. On 16,728 matches an Elo difference plus an ordinal logit on five features already captures most of what is predictable from pre-match information; Dixon–Coles adds a low-score correction ρ and a time-decay ξ whose per-fold estimates are noisy enough to cancel their own benefit; and the two boosted arms add thirty-odd columns on the same information set and land at 1.0028–1.0081. C2 is the controlled evidence: holding the model class and hyper-parameters fixed and only widening the information set (B5a → B5b) is **practically equivalent** (−0.0053, 90% CI −0.0093 to −0.0015, entirely inside ±0.02). The extra features do not carry usable signal at this sample size; they carry variance.
+
+*Rebuild note (v1.5).* `preds_B2.csv` was regenerated in the locked environment on 2026-11-24 after `b2_ordinal.py` was found to pass the removed `multi_class` argument to `LogisticRegression` (sklearn 1.9.1). The rebuild is byte-identical across repeated runs and moves pooled log loss from 0.985554 to 0.985497 (−5.7 × 10⁻⁵ nats); individual match probabilities move by up to 6 × 10⁻², so the *file* is not reproduced, but every downstream number in this section is recomputed from the rebuilt file. No verdict changes.
 
 ### 5.4.2 A league-level pattern that does not transfer
 
@@ -26,4 +28,4 @@ B6r's fitted temperature is systematically league-specific and stable across all
 
 But when those parameters are applied to the *next* season's matches — which is exactly what B6r does — the total effect is 6.1 × 10⁻⁵ nats (90% CI −4.0 × 10⁻⁴ to 2.8 × 10⁻⁴, covering zero). The pattern is real, league-level and slow-moving, and yet worth nothing for forecasting the next match. This is a clean illustration of why H4 comes out as it does: the market's residual calibration defect is a *style*, not a tradable error, so repairing it cannot close an information gap.
 
-*Sources: `results/table_main.csv` (B4−B6 = 0.0353; B2−B4 = −0.0083; B2−B6 = 0.0270), `results/market_gap.csv` (three methods; B6r row), `results/logs/b6r_n_fit.csv` (per-fold `c`, `d`, `n_fit`), `analysis/h4_information.ipynb` (H4 relative change 0.0017, 90% upper 0.011), `results/logs/h4_oracle_bound.csv` (oracle +7.9%).*
+*Sources: `results/table_main.csv` (B4−B6 = 0.0353; B2−B4 = −0.0084; B2−B6 = 0.0270), `results/market_gap.csv` (three methods; B6r row), `results/logs/b6r_n_fit.csv` (per-fold `c`, `d`, `n_fit`), `analysis/h4_information.ipynb` (H4 relative change 0.0017, 90% upper 0.011), `results/logs/h4_oracle_bound.csv` (oracle +7.9%).*

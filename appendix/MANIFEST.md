@@ -1,6 +1,6 @@
 # 源码附录 · 复现清单 MANIFEST
 
-> 版本 **v1.1 · 2026-11-11**（M1 / T1.7 / S5 + M2 复现）· 维护人 M1（M2 段落 M2）
+> 版本 **v1.2 · 2026-11-24**（M1 / T1.7 / S5 + M2 复现 + M3 复核）· 维护人 M1（M2 / M3 段落各自负责）
 > 对应 `docs/plans/08_小组分工实施方案_v1.3.md` §3.1 T1.7 / §3.2、根目录 README §5.3
 > **一句话**：`data/raw/` 的 132 个 CSV 已随 Git 入库，复现包从这里起跑，全程不联网；
 > v1.1 起 `run_all.sh` / `run_all.ps1` 追加 M2 一步（`python -m src.eval.run_m2`），
@@ -86,6 +86,14 @@ M2 的 `preds_B6.csv` / `preds_B6r.csv`（各 16,728 行）、`table_main.csv`�
 | **M2**：H3 只作描述（early 系数 −0.0114，`min(home,away)` 主版；与假设方向相反） | `src/eval/localisation.py::h3_coefficients()` | `python -m src.eval.run_m2`；`results/logs/h3_sensitivity.csv`；`pytest -q tests/test_localisation.py` |
 | **M2**：H4 重校准相对变化 0.0017（90% 上界 < 25%，信息而非校准）；oracle 上界 +7.9% | `src/eval/recalibrate.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`results/logs/h4_oracle_bound.csv`；`pytest -q tests/test_recalibrate.py` |
 | **M2**：H1–H4/C1 判定规则在代码里（阈值 `EQUIV_MARGIN=0.02` 等） | `src/eval/decisions.py` | `pytest -q tests/test_decisions.py` |
+| **M3**：B3 0.9986 / B4 0.9939；B3→B4 = 0.0048（90% CI −0.0007~+0.0099，**含 0**，按 ±0.02 规则属「实际等价」） | `src/models/{b3_poisson,b4_dixon_coles,run_b4}.py` | `python -m src.models.run_b4`；`python -m src.models.m3_report_tables`；`pytest -q tests/test_m3_report.py` |
+| **M3**：ξ 33/48 在网格中间、ρ 23/48 在两端；48 折 0 失败 | `src/models/tune_b4.py` | `python -m src.models.run_b4`；`results/logs/xi_rho_by_block.csv`；决策备忘 `results/logs/xi_rho_decision_2026-11-11.txt` |
+| **M3 复核**：固定网格中心 0.9903 **优于**逐折选中 0.9939（−0.0036 [−0.0060, −0.0013]，29/48 折） | `src/models/sens_b4_fixed_hp.py` | `python -m src.models.sens_b4_fixed_hp`；`results/logs/b4_fixed_hp_contrasts.csv` |
+| **M3 复核**：三季验证集 0.99065（比交付好 0.0032，但与固定中心差 0.0004、区间含 0） | `src/models/sens_b4_valwindow.py` | `python -m src.models.sens_b4_valwindow`；`results/logs/b4_val3_window.csv` |
+| **M3 复核**：ρ 物理下界 −0.154~−0.278；外扩到 −0.35 后 test **变差 0.0003** | `src/models/sens_b4_rho_grid.py` | `python -m src.models.sens_b4_rho_grid`；`results/logs/b4_rho_extension.csv` |
+| **M3 复核**：收敛为真（Δnll ≤ 1e-4、Δtest log loss ≤ 5e-6） | `src/models/b4_dixon_coles.py --polish` | `python -m src.models.b4_dixon_coles --polish --folds 3`；`results/logs/b4_polish_2026-11-24.txt` |
+| **M3**：A1 γ 22 季 −0.090/十年（95% CI −0.096~−0.084）、六联赛同向；剔除疫情季 −0.090 不变 | `src/models/a1_gamma.py` + `m3_report_tables.py::trend_sensitivity()` | `python -m src.models.a1_gamma`；`python -m src.models.m3_report_tables`；`products/tables/tA1_trend_sensitivity.csv` |
+| **M4**：B2 可在锁定环境重建（0.985497） | `src/models/b2_ordinal.py`（`multi_class` 已移除） | `python -m src.models.b2_ordinal`；`python -m src.models.check_m4`（**11/11 PASS**） |
 
 ---
 

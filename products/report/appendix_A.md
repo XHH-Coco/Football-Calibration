@@ -49,7 +49,7 @@ The pooled series is shown in `products/figures/fig_a1_gamma.png`. Early points 
 | empty − pre | −0.139 | 0.031 | [−0.199, −0.078] | −4.50 | −13.0% |
 | empty − post | −0.109 | 0.030 | [−0.168, −0.050] | −3.61 | −10.3% |
 
-Both contrasts are negative in all six leagues (`tA1_empty_window.csv`, rows with `scope = league`). The drop is 0.139 log points, against an ordinary year-to-year standard deviation of 0.0177 computed on the 19 season-to-season changes that do not cross the empty period; that is 7.8 times the normal fluctuation. `products/figures/fig_a1_empty_stadium.png` shows the shaded window on the 22-season series and the three window means.
+Both contrasts are negative in all six leagues (`tA1_empty_window.csv`, rows with `scope = league`). The drop is 0.139 log points, against an ordinary year-to-year standard deviation of 0.0177 computed on the 19 season-to-season changes that do not cross the empty period; that is 7.8 times the normal fluctuation. The 22 seasons give 21 changes, so the yardstick drops exactly the two that span the empty window (2019/20→2020/21 and 2020/21→2021/22); removing them also lowers the denominator slightly, so 7.8 should be read as "against ordinary fluctuation *excluding those two transitions*", not against the full 21-change series. `products/figures/fig_a1_empty_stadium.png` shows the shaded window on the 22-season series and the three window means.
 
 **Table A-c. Stale versus oracle γ on 2024/25** (source: `products/tables/tA1_extrapolation.csv`). ΔLL is stale minus oracle, so a positive value means the frozen γ costs log loss.
 
@@ -65,11 +65,23 @@ Both contrasts are negative in all six leagues (`tA1_empty_window.csv`, rows wit
 
 Across the six leagues the oracle γ improves log loss in five, by 0.0028 nats per match when pooled over 2,058 matches. The stale γ overstates home advantage on average (0.213 against 0.196) and predicts a 44.3% home-win share against an actual 42.5%; the oracle predicts 43.7%. The per-league direction is mixed: Δγ is positive in three leagues (E0, I1, D1) and negative in three (SP1, F1, N1), so this is a directional check consistent with the decline in A1-a, not a hypothesis test.
 
+**Table A-d. Robustness of the trend** (source: `products/tables/tA1_trend_sensitivity.csv`). Same 22 fitted γ̂ values, five different ways of summarising them. The last row replaces the 1/se² weights with equal weights, which is the honest thing to do if one does not trust the early-season standard errors.
+
+| Scope | Seasons | Weighting | Slope / decade | 95% CI |
+|---|---:|---|---:|---|
+| All 22 seasons (reported) | 22 | 1/se² | −0.090 | [−0.096, −0.084] |
+| Excluding 2020/21 and 2021/22 | 20 | 1/se² | −0.090 | [−0.097, −0.083] |
+| Before 2020/21 only | 17 | 1/se² | −0.058 | [−0.068, −0.048] |
+| 2020/21 onwards only | 5 | 1/se² | +0.003 | [−0.033, +0.039] |
+| All 22 seasons, equal weights | 22 | equal | −0.071 | [−0.088, −0.055] |
+
+Two rows matter. **Dropping the two seasons that straddle the pandemic leaves the slope unchanged** (−0.090 against −0.090), which answers the first question any reader will ask. **Splitting the sample says the shape is not a line**: the pre-2020 segment falls at −0.058 per decade, the post-2020 segment is flat with a very wide interval, and the equal-weight fit is shallower than the inverse-variance one because the recent, precisely-measured seasons carry so much of the weight in the reported estimate. The direction survives all five variants; only the shape changes.
+
 ### A.4 What this appendix can and cannot say
 
 1. **The trend intervals are too narrow, not too wide.** Consecutive points share most of their matches, so their errors are positively correlated; the weighted least-squares interval treats them as independent. A simulation with AR(1) errors calibrated to the 22 standard errors (`products/tables/tA1_trend_se_inflation.csv`, 4,000 draws, seed 0) finds the true slope standard deviation is 1.7 times the naive one at ρ = 0.5 and 3.3 times at ρ = 0.9. Even the larger factor leaves the pooled slope 8.7 standard errors from zero, so the sign and the league-by-league agreement survive, but the quoted 95% interval should be read as optimistic.
 2. **The empty-stadium window is descriptive.** It contains one season and is confounded by the suspension, the compressed calendar and the substitution-rule change. The 7.8-times-normal drop is large and one-sided across leagues, but it cannot be attributed to crowd absence alone.
-3. **The decline is a trend, not a monotone law.** Pooled γ falls from 0.182 in 2020/21 to 0.176 in 2024/25, but it rises in between, to 0.225 in 2022/23, and two leagues (F1, N1) rise in the final season. A single linear slope summarises the direction, not the path.
+3. **The decline is a slow drift plus one step, not a monotone law.** Pooled γ falls from 0.182 in 2020/21 to 0.176 in 2024/25, but it rises in between, to 0.225 in 2022/23, and two leagues (F1, N1) rise in the final season. Table A-d separates this: the pre-2020 segment falls at −0.058 per decade, the post-2020 segment is flat at +0.003 (interval −0.033 to +0.039, five points), so the single linear slope of −0.090 per decade describes the average of a drift and a level shift and **overstates a continuing decline**. The level does not return to its pre-2020 path, which is consistent with the empty-stadium step in Table A-b; but a reader should not read −0.090 as "home advantage is still falling at this rate".
 4. **ξ is fixed.** All 22 points use ξ = 0.0019 and no low-score correction. Changing ξ requires re-running the whole series and the trend together; it is not a per-season choice, and no value was selected by looking at the slope.
 
 The appendix supports one claim only: the home-advantage term in B3/B4 is not constant over the sample, and its decline is large relative to ordinary season-to-season variation. It does not identify why, and it does not enter any hypothesis test.

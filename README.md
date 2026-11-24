@@ -81,7 +81,7 @@ Football-Calibration/
 │   ├── eval/                        #   ★ M2：harness / metrics / devig / bootstrap / decisions / calibration / recalibrate / market_gap / table_main / localisation / run_m2（一键复现入口）
 │   └── .gitkeep
 │
-├── tests/                           # pytest 单测（17 个文件）
+├── tests/                           # pytest 单测（22 个文件）
 │   ├── test_read_raw.py             #   ★ M1 / S1：read_raw() 验收（10 条，含 r2 溢出断言）
 │   ├── test_s2_clean.py             #   ★ M1 / S2：字段统一验收（15 条，含 T1.9 打乱不变性）
 │   ├── test_panel_counts.py         #   ★ M1 / S3：T1.3-a 场次核查 + 总表契约验收（15 条）
@@ -106,7 +106,7 @@ Football-Calibration/
 │   ├── coverage_matrix.csv          #   ★ M1 / S5：132 行 × 18 列覆盖率矩阵（入库，M5 数据页引用）
 │   ├── table_main.csv               #   ★ M2 / T2.8：9 行主推断表（log loss + 90% 簇区间 + deff + 与 B4/B6 配对差）
 │   ├── market_gap.csv               #   ★ M2 / T2.9：H2 市场差距（三法 × 可用臂）
-│   ├── logs/                        #   收敛表、参数轨迹、S0–S5 自检记录（含 s5_coverage / s5_handover 两张验收单；*.txt 入库，*.log 忽略；M2 追加 b6r_n_fit / b6_devig_* / m2_decisions_*）
+│   ├── logs/                        #   收敛表、参数轨迹、S0–S5 自检记录（含 s5_coverage / s5_handover 两张验收单；*.txt 入库，*.log 忽略；M2 追加 b6r_n_fit / b6_devig_* / m2_decisions_* / bootstrap_selfcheck / m2_verdicts；M3 追加 convergence / xi_rho_* / b4_fixed_hp_* / b4_rho_extension / b4_val3_window / b4_polish_*，及 sensitivity/ 下的复核底稿预测）
 │   └── .gitkeep
 │
 ├── analysis/                        # H1–H4 / 消融分析 notebook
@@ -495,6 +495,7 @@ pip install -r appendix/requirements.txt
 | v3.0 | 2026-11-11 | **新增 M2 评估框架规格（非目录变更之外的文档同步，`requirements.txt` / `.gitignore` 均不变）**：① 新增 `docs/plans/m2_harness_spec.md`（v1.0）——`src/eval/` 六个模块的函数签名契约、pooled-vs-fold 聚合口径、48 块簇 bootstrap 精确算法、`table_main.csv` 9 行列定义、H1–H4 / C1 预注册判定规则与措辞模板、签字区，11/13 `harness-v1.0` 冻结；② §2.1 结构树、顶部版本号、§7 同步。**不含任何代码**。 |
 | v3.1 | 2026-11-11 | **M2 评估框架与 H1–H4 判定落地（新增 10 个源码模块 / 9 个测试文件 / 4 个 notebook / 多个产物，未新增目录；`requirements.txt` 恒 8 行、`.gitignore` 未动）**：① `src/eval/` 补齐 `metrics / devig / bootstrap / harness / decisions / calibration / recalibrate / market_gap / table_main / localisation`（schema 唯一真相源上提至 `harness.py`，`run_b4.py` 改 import）；② 预测 `results/preds/preds_B6.csv`（16,728，比例法）、`preds_B6r.csv`（16,728，train-only 两参数重校准）+ `results/logs/b6r_n_fit.csv` / `b6_devig_{power,shin,disagreement}.csv` / `m2_decisions_*.txt`；③ 产物 `results/table_main.csv`（9 行 + deff）、`results/market_gap.csv`、`products/figures/fig07_market_gap.png`；④ 四个执行过的 notebook `analysis/{h1_market,h3_localisation,h4_information,c1_model_class}.ipynb`；⑤ 新增 9 个测试文件，全量 **176 passed**（另 7 个 `tmp_path` 用例在本机沙箱受限环境下报错，正常 shell 下通过）。**H1/H2/H4 判据支持、H3 只作描述（early 系数为负，与假设方向相反，如实保留）；C1 待 M4 的 B5a**。§2.1 结构树与 §7 同步。 |
 | v3.2 | 2026-11-11 | **M2 复现入口入库（非目录变更，`requirements.txt` / `.gitignore` 均不变）**：① 新增 `src/eval/run_m2.py`（`python -m src.eval.run_m2` 一键重建 B6/B6r、`table_main.csv`、`market_gap.csv`、`fig07` 与 H1–H4 判定日志，不依赖被忽略的 `scripts/`）；② `appendix/run_all.sh` / `run_all.ps1` 追加 M2 一步并升为 6 步，`appendix/MANIFEST.md` 升 v1.1 并补 M2 倒查行；③ `docs/plans/roles/README.md` §1 回填 M2 交付状态（索引 v2.1）；④ §2.1 结构树 / §5.3 / 顶部版本号 / §7 同步。 |
+| v3.4 | 2026-11-24 | **M2 / M3 交付复核订正（新增 3 个复核脚本 + 1 个测试文件 + 5 张证据表，未新增目录；`requirements.txt` 恒 8 行、`.gitignore` 未动、九臂定义与判定阈值均不变）**：① **M3 核心发现：逐折调参是负收益**——固定网格中心 (ξ=0.0019, ρ=0) 池化 test log loss **0.9903 优于交付版 0.9939**（90% 配对区间 [0.0013, 0.0060]，29/48 折），三个固定配置全部优于逐折 argmin；根因是验证集仅 1 季、信噪比 0.3。② §4.2 结论句补 90% 区间 [−0.0007, +0.0099]（含 0，按项目规则属「实际等价」），新增 §4.2.5 量化选参代价、§4.2.6 补 ρ 物理下界（τ>0 ⇒ ρ ≥ −1/max(λ,ν)，实测 −0.154~−0.278）；§4.2.2「fitted twice」订正为 31 次；§4.2.4 的平坦梯度论证由循环论证换成 `b4_dixon_coles --polish` 实测（Δnll ≤ 1e-4）。③ 附录 A1 新增 5 种切法的稳健性表（剔除疫情季 −0.090 不变；2020 前 −0.058 / 后 +0.003），§A.4 第 3 条改为「缓降+台阶」，`a1_gamma.py` 的「偏保守」订正为「偏窄」。④ **`b2_ordinal.py` 的 `multi_class` 已修（sklearn 1.9 移除）**，B2 现可在锁定环境重建，`check_m4.py` **11/11 PASS**；`preds_B2.csv` 重建后池化 0.985497（旧 0.985554），`table_main.csv` / `market_gap.csv` / §5.4 已重算（B2−B4 0.0084 [0.0042, 0.0127]）。⑤ 新增 `src/models/sens_b4_fixed_hp.py` / `sens_b4_rho_grid.py` / `sens_b4_valwindow.py` 与 `tests/test_m3_sensitivity.py`，产物 `results/logs/b4_fixed_hp_{by_fold,contrasts,downstream}.csv` / `b4_rho_extension.csv` / `b4_val3_window.csv` / `b4_polish_2026-11-24.txt`与 `products/tables/tA1_trend_sensitivity.csv`；`score_matrix()` 的写状态副作用移入 `count_new_teams()`。⑥ 文档：`m2_harness_spec.md` v1.4（M2 复核）、`M2_评估与推断.md` v1.3、**`M3_结构化统计模型.md` v1.2**、`roles/README.md` 索引 v2.2、`products/report/{section_4_2_model,section_5_4_h2,appendix_A}.md`、`results/logs/xi_rho_decision_2026-11-11.txt`（追加第六节复核订正）。**两条改口径提案（固定超参 / 三季验证集）已登记在 M3 卡 §6，未落地，须 M2 主签 + M5 会签**。 |
 
 ---
 

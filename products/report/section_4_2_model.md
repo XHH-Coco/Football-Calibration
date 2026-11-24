@@ -1,10 +1,12 @@
 # §4.2 Structured score models: B3 (independent Poisson) and B4 (Dixon–Coles)
 
-**One-sentence conclusion.** Adding exponential time decay and a low-score correction to an independent Poisson model lowers pooled out-of-sample log loss from 0.9986 to 0.9939 nats per match over 16,733 matches, but the decay parameter is weakly identified: 33 of 48 folds place it in the interior of the grid and 15 sit at the longest-memory end, with no fold at the short-memory end.
+**One-sentence conclusion.** Adding exponential time decay and a low-score correction moves pooled out-of-sample log loss from 0.9986 to 0.9939 nats per match over 16,733 matches, but the paired 90% interval over the 48 blocks is [−0.0007, +0.0099]: it contains zero and is a quarter of the ±0.02 equivalence margin, so under the pre-registered rule the two patches are **practically equivalent to B3**. The shortfall is created by the tuning rule, not by the patches: fixing the two hyper-parameters at the grid centre instead gives 0.9903 and a gain of 0.0084 [0.0037, 0.0128] (§4.2.5). The decay parameter is also weakly identified — 33 of 48 folds place it in the interior and 15 sit at the longest-memory end, with no fold at the short-memory end.
 
 ### 4.2.1 What this section answers
 
-This section builds **B4**, the transparent model used as the subject of H2 and as the base model for the localisation analysis in H3 and the information decomposition in H4. It is a model-construction section, not a hypothesis test: it reports how B3 and B4 are specified and fitted, whether the fitted models are numerically sound, and how much the two B4 patches are worth out of sample. All paired intervals and all comparisons against the market in §4.4 and §4.5 are computed by M2 from the prediction files described here; the point estimates below are descriptive.
+This section builds **B4**, the transparent model used as the subject of H2 and as the base model for the localisation analysis in H3 and the information decomposition in H4. It is a model-construction section, not a hypothesis test: it reports how B3 and B4 are specified and fitted, whether the fitted models are numerically sound, and how much the two B4 patches are worth out of sample.
+
+The B3 → B4 paired interval in this section is the same cluster bootstrap M2 uses everywhere else, taken from the `B3` row of `results/table_main.csv` (48 blocks, 10,000 resamples, seed 20261110). The hyper-parameter sensitivity of §4.2.5 is computed by `src/models/sens_b4_fixed_hp.py` and stored in `results/logs/b4_fixed_hp_{by_fold,contrasts,downstream}.csv`; it does not move any arm and does not touch the nine-model table. All comparisons against the market in §4.4 and §4.5 are computed by M2 from the prediction files described here.
 
 B3 and B4 sit on the "score-generating mechanism" rung of the ladder. The step B3 → B4 changes two things at once (time weights and the low-score correction), so it is not used for attribution. The only rungs interpreted causally in this report are B4 → B5a (model class) and B5a → B5b (information set).
 
@@ -23,11 +25,11 @@ where goals scored by each side are Poisson with those rates, α is attack, β i
 
 **B4.** Two patches on B3. First, each training match receives weight `w = exp(−ξ·Δdays)`, normalised to mean one within the fold, where Δdays is measured from the first day of the target season. Second, the four low-score cells (0-0, 1-0, 0-1, 1-1) are multiplied by the Dixon–Coles τ(ρ) correction and the score matrix is renormalised. With ρ = 0 and all weights equal to one, B4 reproduces B3 to machine precision; `src/models/b4_dixon_coles.py --degeneracy` runs that check and four further degeneracy checks.
 
-**Fitting.** Both models maximise the weighted log likelihood with L-BFGS-B using an analytic gradient. Each fold is fitted twice: once on the inner training segment to select (ξ, ρ), and once on the full training window with the selected values. The inner validation segment is the last season inside the training window, so the target season never enters selection. Every one of the 30 (ξ, ρ) candidates converged in every fold, and successive candidates are warm-started from the previous fit.
+**Fitting.** Both models maximise the weighted log likelihood with L-BFGS-B using an analytic gradient. Each fold is fitted **31 times**: the 30 (ξ, ρ) candidates are fitted on the inner training segment, the best one is carried forward, and the model is then refitted once on the full training window. The inner validation segment is the last season inside the training window, so the target season never enters selection. Every one of the 30 (ξ, ρ) candidates converged in every fold, and successive candidates are warm-started from the previous fit.
 
 **Grids.** ξ ∈ {0.0005, 0.0010, 0.0019, 0.0030, 0.0050, 0.0080} days⁻¹, corresponding to half-lives from 3.80 years down to 0.24 years; ρ ∈ {−0.15, −0.05, 0, 0.05, 0.15}.
 
-**Code.** `src/models/b3_poisson.py` (shared likelihood and gradient), `src/models/b4_dixon_coles.py` (B4 patches and degeneracy checks), `src/models/tune_b4.py` (grid search), `src/models/run_b4.py` (48 folds). Tables in this section are regenerated by `python -m src.models.m3_report_tables` from the artefacts of `python -m src.models.run_b4`.
+**Code.** `src/models/b3_poisson.py` (shared likelihood and gradient), `src/models/b4_dixon_coles.py` (B4 patches and degeneracy checks), `src/models/tune_b4.py` (grid search), `src/models/run_b4.py` (48 folds), `src/models/sens_b4_fixed_hp.py` (hyper-parameter sensitivity of §4.2.5). Tables in this section are regenerated by `python -m src.models.m3_report_tables` from the artefacts of `python -m src.models.run_b4`.
 
 ### 4.2.3 Results
 
@@ -45,6 +47,8 @@ where goals scored by each side are Poisson with those rates, α is attack, β i
 
 The fold-level difference has mean 0.0048 and standard deviation 0.0218, and B4 is better in 34 of 48 folds. The gain is concentrated in E0 (+0.0172) and I1 (+0.0100); SP1 is the one league where B4 is worse than B3 (−0.0101). Both arms fall inside the pre-specified 0.96–1.06 band, and neither is close to the 0.90 leakage alarm.
 
+**The paired interval for these 0.0048 nats is [−0.0007, +0.0099]** (90%, 48 blocks, design effect 4.19). It contains zero, and its upper end is less than half the ±0.02 equivalence margin. Read against the four-branch rule of §4.4, that is the "practically equivalent" branch — the same branch as C2 — not a demonstrated improvement. §4.2.5 shows that this is a property of the tuning rule, and that the patches are worth roughly twice as much once selection noise is removed.
+
 **Table 4.2-b. Selected hyper-parameters across the 48 folds** (source: `products/tables/t4_2_hyperparameters.csv` and `t4_2_paired_folds.csv`).
 
 | ξ (day⁻¹) | Half-life (years) | Folds | | ρ | Folds |
@@ -59,7 +63,7 @@ The fold-level difference has mean 0.0048 and standard deviation 0.0218, and B4 
 
 The selected ξ has median half-life 1.90 years and ranges from 0.38 to 3.80 years. The distribution is piled up on **one** side only: 15 folds choose the longest-memory grid point and none choose the shortest. ρ behaves differently, with 20 folds at −0.15 and 3 at +0.15.
 
-**Numerical diagnostics.** All 48 folds converged in both arms; there are no failed fits. B4 needs a median of 140 iterations (maximum 268) and B3 a maximum of 107. The largest infinity-norm gradient across all 96 fits is 0.86. Because the per-block losses recomputed from the prediction files match `convergence.csv` to below 1e-12 nats, the flat gradient reflects a flat likelihood near the optimum rather than an unconverged fit.
+**Numerical diagnostics.** All 48 folds converged in both arms; there are no failed fits. B4 needs a median of 140 iterations (maximum 268) and B3 a maximum of 107. The largest infinity-norm gradient across all 96 fits is 0.86. A flat gradient at the reported solution is checked directly rather than inferred: `python -m src.models.b4_dixon_coles --polish` restarts from the reported parameters with `ftol = 1e-16` and `gtol = 1e-12`, and finds the negative log likelihood falls by at most 1.0 × 10⁻⁴ (2 × 10⁻⁸ per match) while test log loss moves by at most 5 × 10⁻⁶ nats (`results/logs/b4_polish_2026-11-24.txt`). The optimum is a genuine one; the surface is flat around it.
 
 ### 4.2.4 Error analysis: why the boundary pile-up is not a failure
 
@@ -69,23 +73,69 @@ The natural worry about Table 4.2-b is that ξ is being pushed to a boundary bec
 - Across all folds the median absolute difference to that neighbour is 0.0014 nats, against a median paired standard error of 0.0034 nats; the median |t| is 0.42.
 - Against the best of all 29 other candidates, no fold reaches significance (maximum |t| = 1.00).
 
-The reading we adopt, and record in `results/logs/xi_rho_decision_2026-11-11.txt`, is that ξ is weakly identified in most folds, but the boundary values are not arbitrary: where the data do discriminate, they prefer longer memory. We therefore keep the selection rule unchanged and report the paired standard errors alongside the distribution, rather than replacing the rule with a tie-break toward the grid centre or with a global fixed ξ. A tie-break toward the centre would push more folds to smaller ξ and worsen the pile-up; a global fixed ξ would remove fold-specific selection that the H2 design depends on.
+Two things follow, and they point in opposite directions. The **identification** reading holds: ξ is weakly identified in most folds, and where the data do discriminate they prefer longer memory, so the boundary values are not arbitrary. The **decision** reading does not automatically hold: weak identification is exactly the condition under which a per-fold argmin stops being a decision rule and becomes a draw. Five significant folds out of 48 is also what one expects by chance at the 5% level (2.4 expected) when all of them point the same way. §4.2.5 quantifies what that draw costs.
 
-The same comparison explains why ρ sits at −0.15 so often: the validation set rarely separates neighbouring ρ values either, and the negative corner is where the low-score correction is largest.
+We therefore keep the selection rule unchanged in the reported arm — the pre-registered rule is what produced B4, and changing it after seeing the test set would break the design — and report the cost separately. Two alternatives were considered and rejected for the reported arm: a tie-break toward the grid centre would resolve near-ties toward ξ → 0 in the standard Occam direction, and since ξ = 0 is the nested B3 this would push more folds to *longer* memory, i.e. it would worsen the pile-up rather than relieve it; a global fixed ξ would remove fold-specific selection that the H2 design conditions on.
 
-### 4.2.5 Limitations
+The same comparison explains why ρ sits at −0.15 so often: the validation set rarely separates neighbouring ρ values either, and where it does separate them the negative corner is where the low-score correction is largest.
 
-1. **Weak identification of ξ.** Two-thirds of folds (33/48) lie in the interior, below the 90% acceptance target of 44/48. This is a property of the data window (about 4,000 to 8,000 training matches with strong season-to-season turnover), not of the optimiser. Downstream intervals condition on the fitted (ξ̂, ρ̂) and do not re-select them inside the cluster bootstrap, so they understate selection uncertainty. Because the selection differences are mostly within one paired standard error, we expect this effect to be small, but it is not quantified here.
-2. **One league moves the wrong way.** B4 is worse than B3 in SP1 by 0.0101 nats. We report this as measured; it is not averaged away or reframed.
-3. **Promoted teams.** The 48 folds contain 25 team-season instances where a team has no history in the training window. These are handled by the league-average prior plus the ridge penalty, not by a dedicated cold-start model.
-4. **What this section cannot say.** It does not say that B4 is better than the market, nor that the B3 → B4 step is worth 0.0048 nats *because* of time decay or *because* of the low-score correction: the two patches are applied together, and separating them is outside the pre-registered ladder. It also says nothing about calibration, which is estimated in §4.4 from the same prediction files.
+### 4.2.5 The selection rule costs more than it earns
+
+The fold-level argmin is run on a validation set of one season — 306 to 380 matches. The true difference between adjacent ξ values is about 0.001 nats, while the paired standard error of that difference is 0.0034 nats (Table 4.2-b, middle bullet): a signal-to-noise ratio of about 0.3. Selecting the minimum of 30 noisy scores at that ratio is close to a draw, and the draw is biased toward the corners, because the candidate whose noise happens to be favourable is the one that wins.
+
+To measure the cost directly, `src/models/sens_b4_fixed_hp.py` refits all 48 folds with **no selection at all** — one (ξ, ρ) pair reused in every fold — and compares against the delivered arm. Nothing else changes: same training windows, same likelihood, same evaluation set.
+
+| Configuration | Pooled log loss | vs delivered (90% CI) | vs B3 (90% CI) | Folds better than delivered |
+|---|---:|---|---|---:|
+| delivered (per-fold argmin) | 0.9939 | — | +0.0048 [−0.0007, +0.0099] | — |
+| fixed (0.0019, 0) — grid centre | **0.9903** | **−0.0036 [−0.0060, −0.0013]** | **+0.0084 [0.0037, 0.0128]** | 29/48 |
+| fixed (0.0019, −0.05) | 0.9896 | −0.0042 [−0.0067, −0.0020] | +0.0090 [0.0044, 0.0135] | 34/48 |
+| fixed (0.0005, 0) — most-selected ξ | 0.9918 | −0.0021 [−0.0063, +0.0018] | +0.0069 [0.0049, 0.0088] | 23/48 |
+| fixed (0, 0) — degenerates to B3 | 0.9986 | +0.0048 [−0.0007, +0.0099] | 0.0000 | 14/48 |
+
+Three fixed configurations beat the tuned arm, and the two centred ones do so with intervals that exclude zero. The fourth row is the degeneracy control: with ξ = ρ = 0 the script reproduces B3 exactly (difference 0.00e+00), which confirms that the refit path is the same one used by the delivered arm and that the comparison is not an artefact of a different pipeline.
+
+**What this does and does not say.** It does not say the patches are worthless — it says they are worth **0.0084 nats, not 0.0048**, and that about 0.0036 nats of the patch value is being consumed by selection noise. It does not license replacing the arm: the delivered B4 is the pre-registered object, the H2 test is run on it, and swapping in a fixed-ξ B4 after seeing the test set would be exactly the kind of post-hoc choice the design forbids. What it does is bound the direction of the bias: **the reported B4 is a conservative version of B4**, so H2's market gap is overstated, not understated.
+
+**Downstream consequences** (source: `results/logs/b4_fixed_hp_downstream.csv`; same cluster bootstrap as §4.4, 48 blocks, 10,000 resamples):
+
+| Comparison | delivered (selected) | grid centre | Changes a verdict? |
+|---|---|---|---|
+| B3 → B4 gain | 0.0048 [−0.0007, 0.0099] — contains 0 | **0.0084 [0.0037, 0.0128] — excludes 0** | Yes, and in B4's favour |
+| H2 gap (B4 vs market) | 0.0353 [0.0309, 0.0401] | 0.0318 [0.0278, 0.0359] | No — still far above +0.02 |
+| B2 − B4 | 0.0084 [0.0042, 0.0127] | 0.0048 [0.0014, 0.0085] | No, but halved (§5.4) |
+| C1 (B5a − B4) | 0.0142 [0.0078, 0.0207] | 0.0178 [0.0115, 0.0241] | No — still crosses +0.02 |
+| H4 rel (B6r) | +0.17% | +0.19% | No — both far below 25% |
+
+The H2 row is the one to keep in mind when reading §5.4: a reader who wants the strongest case against the model should use 0.035, and a reader who wants the most favourable case that is still defensible should use 0.032. Both exceed the equivalence margin, so the verdict does not depend on the choice.
+
+**What would actually fix the rule.** The validation window, not the grid, is the binding constraint — and that diagnosis can be tested rather than asserted. `src/models/sens_b4_valwindow.py` re-runs the complete 48-fold pipeline with the inner validation set widened from one season to three (median 1,140 matches per fold instead of 306–380), keeping the target season out of selection exactly as before.
+
+| Variant | Pooled log loss | vs delivered (90% CI) | vs fixed centre (90% CI) |
+|---|---:|---|---|
+| delivered (1-season window) | 0.99386 | — | +0.0036 [0.0013, 0.0060] |
+| 3-season window | 0.99065 | −0.0032 [−0.0069, −0.00002] | +0.0004 [−0.0018, +0.0023] |
+| fixed centre (0.0019, 0) | 0.99029 | −0.0036 [−0.0060, −0.0013] | — |
+
+The paired standard error falls from 0.0034 to 0.0020 and the median signal-to-noise ratio rises from 0.42 to 0.95, which is what the diagnosis predicted. But the reward is only **to stop losing**: the three-season window recovers 0.0032 of the 0.0036 penalty and is statistically indistinguishable from simply fixing the hyper-parameters at the grid centre (+0.0004, interval containing zero). And it costs more than fixing them — a changed pre-registered rule, a full re-run of `convergence.csv`, `preds_B4.csv` and every downstream table, and a fresh signature from M2 and M5.
+
+So the recommendation is not "widen the window". If the arm is to be changed at all, **fixing the two hyper-parameters is simpler, at least as good, and easier to defend**, because its justification does not depend on the validation set behaving better than it does. Both routes are logged as unsigned proposals in `docs/plans/roles/M3_结构化统计模型.md` §6; neither is applied here.
+
+### 4.2.6 Limitations
+
+1. **Weak identification of ξ.** Two-thirds of folds (33/48) lie in the interior, below the 90% acceptance target of 44/48. This is a property of the data window (about 4,000 to 8,000 training matches with strong season-to-season turnover), not of the optimiser. Downstream intervals condition on the fitted (ξ̂, ρ̂) and do not re-select them inside the cluster bootstrap, so they understate selection uncertainty. §4.2.5 bounds that understatement from above rather than ignoring it: the tuned arm is 0.0036 nats worse than a configuration chosen without looking at the validation folds at all, which is the size of the selection penalty.
+2. **One league moves the wrong way.** B4 is worse than B3 in SP1 by 0.0101 nats. We report this as measured; it is not averaged away or reframed. Under the fixed-centre configuration SP1 remains the only league where B4 loses, which suggests the SP1 loss is not a selection artefact.
+3. **ρ sits at its lower endpoint, and the endpoint is partly a hard constraint.** 23 of 48 folds select ρ = −0.15, which could mean truncation rather than flatness. Unlike ξ, ρ has a *physical* floor: τ(0,1) = 1 + λρ and τ(1,0) = 1 + νρ must stay positive, so ρ ≥ −1/max(λ, ν) match by match. Across the 48 folds that floor ranges from −0.154 to −0.278, i.e. in the tightest fold the pre-registered −0.15 is already at the edge of the feasible region. `src/models/sens_b4_rho_grid.py` re-runs the selection with the grid extended to −0.35, discarding any candidate that would make τ negative (447 of 2,304 candidates are discarded this way, a median of 9 per fold): **12 of 48 folds then move to a more negative ρ and none move the other way**, so the pile-up is partly truncation, not only flatness. But the extension does **not** help out of sample — pooled test log loss rises by 0.0003 nats and only 18 of 48 folds improve. The likelihood wants to go further into the negative corner; prediction does not improve when it does. The reported arm keeps the pre-registered grid.
+4. **Promoted teams.** The 48 folds contain 25 team-season instances where a team has no history in the training window. These are handled by the league-average prior plus the ridge penalty, not by a dedicated cold-start model.
+5. **What this section cannot say.** It does not say that B4 is better than the market, nor that the B3 → B4 step is worth 0.0048 nats *because* of time decay or *because* of the low-score correction: the two patches are applied together, and separating them is outside the pre-registered ladder. It also says nothing about calibration, which is estimated in §4.4 from the same prediction files.
 
 ---
 
 **Self-check**
 
-- [x] Every number above traces to a row in `products/tables/t4_2_*.csv`, generated by `src/models/m3_report_tables.py` from `results/preds/` and `results/logs/`.
-- [ ] Cluster-bootstrap intervals are not reported in this section; they belong to §4.4 and are computed by M2 over the 48 league-season blocks.
+- [x] Every number above traces to a row in `products/tables/t4_2_*.csv` (generated by `src/models/m3_report_tables.py`) or to `results/logs/b4_fixed_hp_*.csv` (generated by `src/models/sens_b4_fixed_hp.py`).
+- [x] The B3 → B4 interval is the `B3` row of `results/table_main.csv`, i.e. the same cluster bootstrap M2 uses in §4.4; it is not recomputed with a different method here.
 - [x] Log loss is the only accuracy metric used; no accuracy figure appears.
-- [x] No test-season information enters fitting or selection: the grid is scored on the last inner season only.
+- [x] No test-season information enters fitting or selection: the grid is scored on the last inner season only, and the fixed-hyper-parameter refits use no validation data at all.
+- [x] The selection penalty is reported as a bound on the delivered arm, not used to replace it; the arm-level change is logged as a proposal in the M3 role card §6 and left unsigned.
 - [ ] Terminology still to be aligned with the glossary in `docs/plans/08_小组分工实施方案_v1.3.md` during M5 consolidation.

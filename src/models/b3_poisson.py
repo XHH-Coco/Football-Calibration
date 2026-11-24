@@ -226,8 +226,12 @@ def _init_theta(train: pd.DataFrame, teams: tuple[str, ...],
 def fit(train: pd.DataFrame, *, xi: float = 0.0, rho: float = 0.0,
         ref_date: str | None = None, sample_weight: np.ndarray | None = None,
         l2: float = DEFAULT_L2, init: dict | None = None,
-        maxiter: int = 500, tol: float = 1e-9) -> PoissonModel:
-    """加权极大似然。``xi=0, rho=0`` 即 B3；B4 由 ``b4_dixon_coles.py`` 调用同一函数。"""
+        maxiter: int = 500, tol: float = 1e-9, gtol: float = 1e-7) -> PoissonModel:
+    """加权极大似然。``xi=0, rho=0`` 即 B3；B4 由 ``b4_dixon_coles.py`` 调用同一函数。
+
+    ``tol`` / ``gtol`` 只在复核"解是否真的停在最优点"时才会收紧
+    （见 ``b4_dixon_coles.py --polish``）；默认值就是交付时的值，不要改。
+    """
     import time
     t0 = time.perf_counter()
 
@@ -246,7 +250,7 @@ def fit(train: pd.DataFrame, *, xi: float = 0.0, rho: float = 0.0,
     theta = _init_theta(train, teams, init)
     res = minimize(_nll_grad, theta, args=(hi, ai, yh, ya, w, rho, l2, n),
                    jac=True, method="L-BFGS-B",
-                   options={"maxiter": maxiter, "ftol": tol, "gtol": 1e-7})
+                   options={"maxiter": maxiter, "ftol": tol, "gtol": gtol})
 
     alpha, beta, mu, gamma = _unpack(res.x, n)
     model = PoissonModel(
@@ -273,12 +277,21 @@ def _team_params(model: PoissonModel, names: pd.Series) -> tuple[np.ndarray, np.
     return alpha, beta
 
 
+def count_new_teams(model: PoissonModel, home: pd.Series, away: pd.Series) -> int:
+    """**诊断用**：预测集里有多少场出现训练窗口内没见过的队（升班马）。
+
+    v1.5 从 ``score_matrix`` 里搬出来：原实现每调一次预测就往模型对象上写
+    ``n_new_team``，属于读路径带副作用。预测不需要这个数——它只用于日志核对，
+    而 ``splits.json`` 的 ``n_new_team`` 才是 ``convergence.csv`` 的口径。
+    """
+    return int((~home.isin(model.teams) | ~away.isin(model.teams)).sum())
+
+
 def score_matrix(model: PoissonModel, home: pd.Series, away: pd.Series,
                  max_goals: int = MAX_GOALS) -> np.ndarray:
     """(m, G+1, G+1) 的比分概率矩阵，已乘 τ 并按行归一化。"""
     a_h, b_h = _team_params(model, home)
     a_a, b_a = _team_params(model, away)
-    model.n_new_team = int((~home.isin(model.teams) | ~away.isin(model.teams)).sum())
 
     eta_h = np.clip(model.mu + model.gamma + a_h - b_a, -_ETA_CLIP, _ETA_CLIP)
     eta_a = np.clip(model.mu + a_a - b_h, -_ETA_CLIP, _ETA_CLIP)

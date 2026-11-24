@@ -32,6 +32,7 @@ from src.models.b3_poisson import (  # noqa: E402
     predict_proba,
     score_matrix,
 )
+from src.splits import load_splits, resolve_split  # noqa: E402
 
 XI_GRID: tuple[float, ...] = (0.0005, 0.0010, 0.0019, 0.0030, 0.0050, 0.0080)
 RHO_GRID: tuple[float, ...] = (-0.15, -0.05, 0.0, 0.05, 0.15)
@@ -45,12 +46,17 @@ def half_life_years(xi: float) -> float:
 
 def fit(train: pd.DataFrame, *, xi: float, rho: float, ref_date: str | None = None,
         sample_weight: np.ndarray | None = None, l2: float = DEFAULT_L2,
-        init: dict | None = None) -> PoissonModel:
-    """B4 的一折拟合。参数合法性与收敛信息都留在返回对象里，供 convergence.csv。"""
+        init: dict | None = None, maxiter: int = 500, tol: float = 1e-9,
+        gtol: float = 1e-7) -> PoissonModel:
+    """B4 的一折拟合。参数合法性与收敛信息都留在返回对象里，供 convergence.csv。
+
+    ``maxiter`` / ``tol`` / ``gtol`` 默认就是交付口径；只有 ``--polish`` 复核会收紧。
+    """
     if xi < 0 or rho <= -1.0 or rho >= 1.0:
         raise ValueError(f"非法超参：xi={xi}, rho={rho}")
     model = fit_poisson(train, xi=xi, rho=rho, ref_date=ref_date,
-                        sample_weight=sample_weight, l2=l2, init=init)
+                        sample_weight=sample_weight, l2=l2, init=init,
+                        maxiter=maxiter, tol=tol, gtol=gtol)
     model.extra["model"] = MODEL_NAME
     model.extra["half_life_years"] = half_life_years(xi)
     return model
@@ -123,12 +129,69 @@ def degeneracy_check(season: str = "2010/11", league: str = "E0",
             "b3": b3, "b4": b4_decay}
 
 
+def polish_check(n_folds: int = 3, atol_ll: float = 1e-5) -> dict:
+    """复核 M3 P2-4：报告说的"似然面平坦"到底是平坦，还是没收敛。
+
+    原论证是循环的：*"逐块损失与 convergence.csv 差 < 1e-12"* 只能证明
+    **预测与参数自洽**，不能证明**参数是最优点**。正确做法是把收敛容差压到机器
+    极限、从报告解出发再优化一次，看 nll 还能降多少：
+
+    - 若 nll 只降 1e-3 量级（每场 ~2e-7）、test log loss 不动 ⇒ 真收敛；
+    - 若 nll 明显下降 ⇒ 原容差下的解只是"L-BFGS 认为够了"。
+
+    取 ``n_folds`` 折（默认前 3 折）跑，打印每折的 Δnll 与 Δtest log loss。
+    """
+    panel = load_panel()
+    blocks = load_splits()["blocks"][:n_folds]
+    rows = []
+    for b in blocks:
+        train, test = resolve_split(panel, b)
+        rec = pd.read_csv(ROOT / "results" / "logs" / "convergence.csv") \
+            .set_index("block_id").loc[b["block_id"]]
+        base = fit(train, xi=float(rec["xi"]), rho=float(rec["rho"]),
+                   ref_date=b["test_start"])
+        polish = fit(train, xi=float(rec["xi"]), rho=float(rec["rho"]),
+                     ref_date=b["test_start"],
+                     init={"teams": base.teams, "alpha": base.alpha,
+                           "beta": base.beta, "mu": base.mu, "gamma": base.gamma},
+                     maxiter=5000, tol=1e-16, gtol=1e-12)
+        y = test["y"].to_numpy()
+        ll_base = log_loss(predict_proba(base, test), y)
+        ll_pol = log_loss(predict_proba(polish, test), y)
+        rows.append({"block_id": b["block_id"], "nll_before": base.nll,
+                     "nll_after": polish.nll, "dnll": polish.nll - base.nll,
+                     "dnll_per_match": (polish.nll - base.nll) / len(train),
+                     "ll_before": ll_base, "ll_after": ll_pol,
+                     "dll": ll_pol - ll_base,
+                     "grad_before": base.grad_norm, "grad_after": polish.grad_norm,
+                     "iter_extra": int(polish.n_iter)})
+    df = pd.DataFrame(rows)
+    df["flat_ok"] = df["dll"].abs() < atol_ll
+    return {"table": df, "all_flat": bool(df["flat_ok"].all())}
+
+
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="B4 Dixon–Coles 退化检验")
+    ap = argparse.ArgumentParser(description="B4 Dixon–Coles 退化检验 / 收敛复核")
     ap.add_argument("--degeneracy", action="store_true")
+    ap.add_argument("--polish", action="store_true",
+                    help="从报告解出发、容差压到机器极限再优化（P2-4）")
+    ap.add_argument("--folds", type=int, default=3)
     ap.add_argument("--league", default="E0")
     ap.add_argument("--season", default="2010/11")
     a = ap.parse_args(argv)
+
+    if a.polish:
+        out = polish_check(a.folds)
+        tf: pd.DataFrame = out["table"]
+        print("=" * 78)
+        print(f"B4 收敛复核（严格容差再优化，前 {a.folds} 折）")
+        print("-" * 78)
+        print(tf.round(8).to_string(index=False))
+        print("-" * 78)
+        print(f"最大 Δnll {tf['dnll'].max():.3e}（每场 {tf['dnll_per_match'].max():.2e}）· "
+              f"最大 |Δtest log loss| {tf['dll'].abs().max():.2e}")
+        print(f"总判定：{'PASS（真收敛）' if out['all_flat'] else 'FAIL（疑似未收敛）'}")
+        return 0 if out["all_flat"] else 1
 
     out = degeneracy_check(a.season, a.league)
     print("=" * 72)

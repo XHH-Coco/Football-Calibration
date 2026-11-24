@@ -32,6 +32,8 @@
 | 2026-11-11 | **v3.2** | **新增文件（未新增目录）**：`src/eval/run_m2.py`（M2 一键复现入口，`python -m src.eval.run_m2`）；`appendix/run_all.sh` / `run_all.ps1` 追加 M2 一步（升为 6 步）、`appendix/MANIFEST.md` 升 v1.1 补 M2 倒查行；`docs/plans/roles/README.md` §1 回填 M2 交付状态。 | 否 | M2 | — |
 | 2026-11-11 | **v3.3** | **M3 会签（无文件增删、契约不变）**：`docs/plans/m2_harness_spec.md` §11 的 M3 两行由 ☐ 改为 ✅——① `PRED_COLS` / `check_pred` 上提到 `src/eval/harness.py`、`run_b4.py` 改 import；② `inner_split()` 与 `tune_b4.py` 现用口径同构。依据：在 `939e3da` 上全量 `pytest -q tests/` **183 passed**，`python -m src.models.run_b4` 重跑 48 折后 `preds_B3.csv` / `preds_B4.csv` 与入库版**逐字节相同**（两个 log 仅 `elapsed_s` 变化）。该文件升 **v1.2**；**M2 主签与 M4/M5 会签仍待签**。 | 否 | M3 | — |
 
+| 2026-11-24 | **v3.4** | **新增文件（未新增目录）**：`src/models/sens_b4_fixed_hp.py` / `sens_b4_rho_grid.py` / `sens_b4_valwindow.py`（M3 复核的三个只读敏感性脚本）、`tests/test_m3_sensitivity.py`（7 条）、`results/logs/b4_fixed_hp_{by_fold,contrasts,downstream}.csv` / `b4_rho_extension.csv` / `b4_val3_window.csv` / `b4_polish_2026-11-24.txt`、`results/logs/sensitivity/`（复核底稿预测，**不是第 10 个 arm**）、`products/tables/tA1_trend_sensitivity.csv`。`results/logs/` 与 `products/tables/` 均在既有目录内，结构树不变。同步 README §2.1（tests 计数 17→22、logs 注释）、M3 卡 v1.2、`roles/README.md` 索引 v2.2。**`requirements.txt` / `.gitignore` 均未动；九臂定义与判定阈值不变** | 否 | M3 | — |
+
 ## 追加模板
 
 ```
