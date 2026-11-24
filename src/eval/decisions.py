@@ -49,15 +49,28 @@ def _branch(point: float, lo: float, hi: float,
 
 def controlled_verdict(before: str, after: str, delta: float, lo: float,
                        hi: float, n_paired: int | None = None) -> dict:
-    """受控比较四分支（C1/C2 通用）：``Δ = LL(after) − LL(before)``，正 = before 更好。"""
+    """受控比较五分支（C1/C2 通用）：``Δ = LL(after) − LL(before)``，正 = before 更好。
+
+    2026-11-24 订正：等价带内部再分两格。区间**不含 0** 说明方向可辨、只是差距小于
+    实用边际，报「差异可分但实际等价」；区间**跨 0** 才是真测不出方向，报「实际等价」。
+    原先把两者都压成「实际等价」，于是 C1（+0.0055，90% 区间 0.0009–0.0099，不含 0）
+    与 C2（−0.0015，区间跨 0）在判定表里长得一样，而报告正文一直按两者不同来写。
+    ``sens_b5_grid._branch`` 早就是这个五分支口径，两处此前不一致。
+    """
     b = _branch(delta, lo, hi)
+    detectable = lo > 0.0 or hi < 0.0
     if b == "equivalent":
-        decision, reason = "实际等价", "90% 区间完全落在 ±0.02 内"
+        if detectable:
+            decision = "差异可分但实际等价"
+            reason = ("90% 区间不含 0（方向可辨），但整体落在 ±0.02 内 → "
+                      "差异真实、量级无实用意义")
+        else:
+            decision, reason = "实际等价", "90% 区间完全落在 ±0.02 内且跨 0"
     elif b == "above":
         decision, reason = f"{before} 更好", "90% 区间完全在 +0.02 之上"
     elif b == "below":
         decision, reason = f"{after} 更好", "90% 区间完全在 −0.02 之下"
-    elif lo > 0.0 or hi < 0.0:
+    elif detectable:
         # 区间不含 0 = 差异可分，只是跨过 ±0.02 这条**实用**边界：两件事不能混为一谈
         decision = "跨边界，不下结论"
         reason = ("90% 区间不含 0（差异可分），但整体跨过 ±0.02 等价边际 → "

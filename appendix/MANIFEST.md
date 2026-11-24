@@ -1,6 +1,6 @@
 # 源码附录 · 复现清单 MANIFEST
 
-> 版本 **v1.2 · 2026-11-24**（M1 / T1.7 / S5 + M2 复现 + M3 复核）· 维护人 M1（M2 / M3 段落各自负责）
+> 版本 **v1.3 · 2026-11-24**（M1 / T1.7 / S5 + M2 复现 + M3 复核 + M4 复核 + M5 数字校验）· 维护人 M1（M2 / M3 / M4 / M5 段落各自负责）
 > 对应 `docs/plans/08_小组分工实施方案_v1.3.md` §3.1 T1.7 / §3.2、根目录 README §5.3
 > **一句话**：`data/raw/` 的 132 个 CSV 已随 Git 入库，复现包从这里起跑，全程不联网；
 > v1.1 起 `run_all.sh` / `run_all.ps1` 追加 M2 一步（`python -m src.eval.run_m2`），
@@ -100,6 +100,12 @@ M2 的 `preds_B6.csv` / `preds_B6r.csv`（各 16,728 行）、`table_main.csv`�
 | **M4**：C1 = +0.0055（0.0009–0.0099，差异可分但实际等价）；C2 = −0.0015（−0.0032~+0.0001，实际等价） | `src/eval/run_m2.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`results/logs/m2_verdicts.csv` |
 | **M4**：赛季内刷新额度 B2 +0.0116 / B5a +0.0102 / B5b +0.0145（冻结结果类特征） | `src/models/sens_refresh_parity.py` | `python -m src.models.sens_refresh_parity`；`results/logs/sens_refresh_parity.csv` |
 | **M4**：B1 逐行重建与入库 CSV 一致（单场概率最大绝对差 ≤ 1e-6） | `src/models/check_m4.py` 第 8–9 项 | `python src/models/check_m4.py`（**14/14 PASS**） |
+| **M5**：报告正文的每个关键数字都等于产物 CSV（31 条规则：摘要 / §5.1 / §5.2 / §5.4 / 幻灯片；负向测试确认注入旧错值 0.035 立即失败） | `src/report/m5_report_tables.py` | `python -m src.report.m5_report_tables`；`pytest -q tests/test_m5_numbers.py` |
+| **M5**：模型侧校准斜率 B4 0.940/0.944/0.964、B5a 0.528、B5b 0.566、B6 1.061/1.092/1.076（斜率是唯一判定统计量，ECE 仅附表） | `analysis/h1_calibration.ipynb` | `results/logs/m5_calibration_slopes.csv`、`m5_ece.csv` |
+| **M5**：尾箱偏差与 M2 `calibration.tail_bin_bias` 逐格一致（十分位两端断言绝对差 < 1e-12） | 同上 | `results/logs/m5_tail_bias.csv`（8 臂 × 3 类 × 五分位/十分位） |
+| **M5**：T5.4 第三刀（分联赛平局偏差）——B4 六联赛全负（−0.001 ~ −0.034），市场五负一正、同向 | 同上 | `results/logs/m5_league_bias.csv` |
+| **M5**：fig05 / fig06 走 M2 的平滑器（Scott 逐类 + 1%–99% 网格 + ESS ≥ 20），不再向无样本区间外推 | `src/eval/metrics.py::reliability_curve_smooth` | `analysis/h1_calibration.ipynb`；`products/figures/fig05_model_reliability.png`、`fig06_market_calibration.png` |
+| **M5**：fig08 有生成器（此前全仓无脚本，图上数字长期过期） | `src/eval/plots_h3h4.py` | `python -m src.eval.plots_h3h4`；或由 `python -m src.eval.run_m2` 出口自动重建 |
 
 ---
 

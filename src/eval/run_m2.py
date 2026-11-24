@@ -60,6 +60,7 @@ from src.eval.localisation import (  # noqa: E402
     h3_sweep,
 )
 from src.eval.market_gap import build_market_gap, plot_market_gap  # noqa: E402
+from src.eval.plots_h3h4 import plot_localisation_recal  # noqa: E402
 from src.eval.plots_main import plot_arms, plot_c_equivalence  # noqa: E402
 from src.eval.recalibrate import oracle_bound, run_b6r  # noqa: E402
 from src.eval.table_main import build_table_main  # noqa: E402
@@ -273,7 +274,12 @@ def run() -> None:
     # fig04 的标题里印着 C1/C2 的点估计与区间，必须从刚写的判定表读，不能手抄。
     plot_c_equivalence(pd.DataFrame(verdicts),
                        out_path=ROOT / "products" / "figures" / "fig04_c_equivalence.png")
-    emit("图：fig03_arms.png（← table_main）、fig04_c_equivalence.png（← m2_verdicts）")
+    # fig08 此前没有生成脚本，于是 2026-11-24 之后图上三个数字全部过期（early −0.0108 /
+    # H4 上界 0.011 / 点 0.0017）。接到出口后它和 fig03/fig04 一样跟着 CSV 走。
+    plot_localisation_recal(pd.DataFrame(verdicts),
+                            out_path=ROOT / "products" / "figures" / "fig08_localisation_recal.png")
+    emit("图：fig03_arms.png（← table_main）、fig04_c_equivalence.png（← m2_verdicts）、"
+         "fig08_localisation_recal.png（← h3_sensitivity / h4_oracle_bound / m2_verdicts）")
 
     log = LOGS / f"m2_decisions_{date.today()}.txt"
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
