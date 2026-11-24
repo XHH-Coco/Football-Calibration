@@ -1,0 +1,38 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
+        ATTRIBUTION · C1 / C2
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        C1 and C2 — the only two attributions we own
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 17, color: '#4A5568', alignSelf: 'flex-start' }}>
+            Both comparisons are a change in log loss, read against the ±0.02 equivalence margin.
+        </Text>
+
+        <Image src="assets/fig04.png" style={{ width: 1140, height: 308, marginTop: 16 }} />
+
+        <Box style={{ width: 1140, padding: '18px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 20 }}>
+            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.6 }}>
+                C1 costs <span style={{ fontWeight: 'bold' }}>0.0055</span> nats and its interval excludes zero —
+                real, but far inside the margin. C2 buys back{' '}
+                <span style={{ fontWeight: 'bold' }}>0.0015</span> with an interval that crosses zero.
+                The top of the ladder did not buy better predictions.
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 4/10</Text>
+    </Box>
+</Slide>

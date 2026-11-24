@@ -1,0 +1,96 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
+        INFERENCE · UNIT OF EVALUATION
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        48 blocks, not 16,733 matches
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 48, marginTop: 8 }}>
+        <Box style={{ width: 600 }}>
+            <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
+                One refit per league-season, trained only on earlier matches
+            </Text>
+
+            <Box style={{ marginTop: 20 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ width: 72, fontSize: 14, color: '#4A5568' }}>2017/18</Text>
+                    <Box style={{ flex: 24, height: 30, background: '#D6DCE5' }} />
+                    <Box style={{ width: 36, height: 30, background: '#1E4FA8', marginLeft: 3 }} />
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ width: 72, fontSize: 14, color: '#4A5568' }}>2018/19</Text>
+                    <Box style={{ flex: 32, height: 30, background: '#D6DCE5' }} />
+                    <Box style={{ width: 36, height: 30, background: '#1E4FA8', marginLeft: 3 }} />
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ width: 72, fontSize: 14, color: '#4A5568' }}>2019/20</Text>
+                    <Box style={{ flex: 40, height: 30, background: '#D6DCE5' }} />
+                    <Box style={{ width: 36, height: 30, background: '#1E4FA8', marginLeft: 3 }} />
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ width: 72, fontSize: 14, color: '#4A5568' }}>2020/21</Text>
+                    <Box style={{ flex: 48, height: 30, background: '#D6DCE5' }} />
+                    <Box style={{ width: 36, height: 30, background: '#1E4FA8', marginLeft: 3 }} />
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ width: 72, fontSize: 14, color: '#4A5568' }}>2024/25</Text>
+                    <Box style={{ flex: 62, height: 30, background: '#D6DCE5' }} />
+                    <Box style={{ width: 36, height: 30, background: '#1E4FA8', marginLeft: 3 }} />
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', gap: 24, marginTop: 16 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 16, height: 14, background: '#D6DCE5' }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>training window</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 16, height: 14, background: '#1E4FA8' }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>test block (one league-season)</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ width: 512, justifyContent: 'center' }}>
+            <Box>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#1E4FA8' }}>48</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
+                    independent units — 8 seasons × 6 leagues
+                </Text>
+            </Box>
+            <Box style={{ marginTop: 18 }}>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#1E4FA8' }}>16,733</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
+                    matches scored inside them, never resampled one by one
+                </Text>
+            </Box>
+            <Box style={{ marginTop: 18 }}>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#D9534F' }}>1.32–1.89</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
+                    design effect, measured: intervals are √deff ≈ 1.15–1.37× the naive width
+                </Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '16px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
+            Matches inside a block share teams and fixtures. Resampling them as independent would
+            understate uncertainty, so every interval here re-draws whole blocks — 10,000 times.
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 5/10</Text>
+    </Box>
+</Slide>

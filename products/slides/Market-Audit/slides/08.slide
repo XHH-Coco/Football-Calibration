@@ -1,0 +1,59 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
+        H4 · RQ2 — IS THE GAP A CALIBRATION DEFECT?
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        Information, not calibration
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 44, alignItems: 'center' }}>
+        <Box style={{ width: 616 }}>
+            <Text style={{ fontSize: 15, color: '#4A5568' }}>
+                Change in the gap after re-calibrating the market against itself
+            </Text>
+            <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 6 }}>
+                <Text style={{ fontSize: 46, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.05 }}>0.0019</Text>
+                <Text style={{ fontSize: 17, color: '#4A5568' }}>relative, 90% CI [−0.0085, +0.0127]</Text>
+            </Box>
+            <Text style={{ fontSize: 17, color: '#1A2230', marginTop: 10, lineHeight: 1.5 }}>
+                The whole interval sits below the 0.25 decision line — re-calibration explains
+                almost none of the gap.
+            </Text>
+
+            <Box style={{ marginTop: 22, padding: '14px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#8B97A8' }}>8.7%</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>upper bound, open-book oracle</Text>
+                </Box>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                    Fitting both parameters on the test labels — cheating — still recovers less than a
+                    tenth of the gap. So the gap is information the models do not have.
+                </Text>
+            </Box>
+        </Box>
+
+        <Box style={{ width: 500, justifyContent: 'center' }}>
+            <Image src="assets/fig08_right.png" style={{ width: 440, height: 344 }} />
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '12px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            If the gap were a calibration defect, fixing the market's own calibration would close it.
+            It does not: 0.0019 against a 0.25 decision line, and 8.7% even with the test labels.
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 8/10</Text>
+    </Box>
+</Slide>
