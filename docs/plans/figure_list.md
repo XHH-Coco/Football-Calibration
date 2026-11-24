@@ -8,12 +8,12 @@
 |---|---|---|---|---|---|---|---|
 | fig01 | `fig01_ladder.png` | 阶梯 / C1·C2 | 蓝本 §4（手绘/矩阵） | 模型阶梯示意（B0–B6 + B6r，标出两次单因素变更） | B0–B6+B6r 九臂排成阶梯，B4→B5a 只换模型类（C1）、B5a→B5b 只换信息（C2），是仅有的两次单因素归因 | M5 | ☑ 已生成 |
 | fig02 | `fig_data_coverage.png` | 数据质量 | `results/coverage_matrix.csv` | 覆盖率热图（联赛 × 赛季 × 关键列） | 六联赛 × 22 季 46,507 场覆盖完整；仅评估窗射门列缺 1 场（0.999940），以射门为特征的 arm 须显式处理 NaN | M1 | ☑ 已交付 |
-| fig03 | `fig03_arms.png` | 主结果 | `results/table_main.csv` | 9 个 arm 的 log loss + 90% 区间 | 阶梯**非单调**：B2 0.9855 最好，B4 0.9903 次之，B5a/B5b 反而 1.0061/1.0033；最好的透明臂仍比 B6 0.9585 高 0.0270 nats（90% CI 0.024–0.030），B4 高 0.0317（0.028–0.036） | M5 | ☑ 已存在；**脚本** `src/eval/plots_main.py::plot_arms`，由 `run_m2` 出口调用 |
-| fig04 | `fig04_c_equivalence.png` | C1 | `results/logs/m2_verdicts.csv` | 等价性区间（±0.02 边界 + 四种结局） | C1：B5a−B4=0.0158 nats（90% CI 0.0109–0.0209），区间不含 0（差异可分）但上界越过 +0.02 → 跨边界、不作实用性宣称；C2：B5b−B5a=−0.0028（−0.0062~+0.0005），落在 ±0.02 内**且跨 0** → 实际等价 | M5 | ☑ 已存在；**脚本** `src/eval/plots_main.py::plot_c_equivalence`，由 `run_m2` 出口调用 |
-| fig05 | `fig05_model_reliability.png` | H1（模型侧） | `results/preds/preds_B*.csv` | 可靠性曲线，三类结果分开，局部平滑 | 模型侧普遍 <1（过度自信），市场 >1，方向相反。**最差的平局在校准来自两个 boosted 臂**（0.357/0.369）；B4 只有 0.944——ρ 固定为 0 之后它不再是「平局最差」的那一档 | M5 | ☑ 已生成；重跑 `analysis/h1_calibration.ipynb` |
+| fig03 | `fig03_arms.png` | 主结果 | `results/table_main.csv` | 9 个 arm 的 log loss + 90% 区间 | 阶梯**非单调**：B2 0.9855 最好，B4 0.9903 次之，B1 0.9926，两个 GBM 臂 0.9942/0.9957 已优于 B3 0.9986 但仍劣于 B4；最好的透明臂仍比 B6 0.9585 高 0.0270 nats（90% CI 0.024–0.030），B4 高 0.0317（0.028–0.036）。注：B2 的领先含 +0.0116 的赛季内刷新额度，拉平后 B4 反超 0.0068（报告 §5.1.6） | M5 | ☑ 已存在；**脚本** `src/eval/plots_main.py::plot_arms`，由 `run_m2` 出口调用 |
+| fig04 | `fig04_c_equivalence.png` | C1 | `results/logs/m2_verdicts.csv` | 等价性区间（±0.02 边界 + 四种结局） | C1：B5a−B4=0.0055 nats（90% CI 0.0009–0.0099），区间不含 0（B4 确实更好）但整段落在 ±0.02 内 → 差异可分但实际等价；C2：B5b−B5a=−0.0015（−0.0032~+0.0001），落在 ±0.02 内**且跨 0** → 实际等价 | M5 | ☑ 已存在；**脚本** `src/eval/plots_main.py::plot_c_equivalence`，由 `run_m2` 出口调用 |
+| fig05 | `fig05_model_reliability.png` | H1（模型侧） | `results/preds/preds_B*.csv` | 可靠性曲线，三类结果分开，局部平滑 | 平局类所有模型都 <1（过度自信），市场 1.092 >1，方向相反；**最差的平局校准来自两个 boosted 臂**（0.528/0.566），B4 为 0.944。boosted 臂的 home/away 反而 >1（1.08–1.11），B4 三类都略 <1 | M5 | ☑ 已生成；重跑 `analysis/h1_calibration.ipynb` |
 | fig06 | `fig06_market_calibration.png` | H1（市场侧） | `preds_B6.csv` + 三法去抽水 | 市场校准斜率 / 偏差 vs 预测概率 + FLB 尾箱 | 比例法斜率 1.086（90% CI 1.047–1.124）>1：低概率高估、高概率低估（FLB），H1 主判据支持；Shin 1.052 / power 1.030（区间跨 1）→ 方向一致、量级依赖去抽水口径 | M2 出数 / M5 排版 | ☑ 已生成 |
-| fig07 | `fig07_market_gap.png` | H2 | 3 种去抽水 × 8 臂 + `B6` | 与市场的配对 ΔLL 及 95% 区间 | B4 与 B6 配对 ΔLL 三法同号同量级（0.0353–0.0355 nats，95% CI 0.030–0.041）：H2 支持，透明模型追不上市场 | M2 | ☑ 已交付 |
-| fig08 | `fig08_localisation_recal.png` | H3 + H4 | `preds_B6.csv` vs `preds_B6r.csv` + 局部化回归 | 双面板：左＝升班马 / 前 6 轮系数与 sweep；右＝B6 vs B6r 重校准前后 gap | H3 仅描述（early 系数 −0.0114 为负，与假设方向相反；min 口径主版）；H4 重校准前后 gap 相对变化 0.0017（90% 上界 0.011<0.25）→ 差距是信息而非校准 | M5 排版 | ☑ 已生成 |
+| fig07 | `fig07_market_gap.png` | H2 | 3 种去抽水 × 8 臂 + `B6` | 与市场的配对 ΔLL 及 95% 区间 | B4 与 B6 配对 ΔLL 三法同号同量级（0.0317–0.0319 nats，95% CI 0.0271–0.0366）：H2 支持，透明模型追不上市场 | M2 | ☑ 已交付 |
+| fig08 | `fig08_localisation_recal.png` | H3 + H4 | `preds_B6.csv` vs `preds_B6r.csv` + 局部化回归 | 双面板：左＝升班马 / 前 6 轮系数与 sweep；右＝B6 vs B6r 重校准前后 gap | H3 仅描述（early 系数 −0.0107 为负，与假设方向相反；min 口径主版）；H4 重校准前后 gap 相对变化 0.0019（90% 上界 0.013<0.25）→ 差距是信息而非校准 | M5 排版 | ☑ 已生成 |
 
 > fig07 的「8 臂」= `B0`–`B5b`（7 个）+ `B6r`（1 个）；`B6` 是配对差的分母，不单列为臂。
 

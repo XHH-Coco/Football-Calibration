@@ -70,7 +70,12 @@ clf.fit(X_train, y_train, sample_weight=w)
 |---|---|---|
 | M3 | 本清单（信息集 + 权重口径） | ✅ 2026-11-11 出具 |
 | M2 | 主签（与 `splits.json`、9 arm schema、H3 两列四项一并） | 待签 |
-| M4 | 会签 `configs/feature_whitelist_b5a.csv`（文件由 M4 产出） | 待文件到位 |
-| M3 | 逐条核对白名单 + 权重规则 | 待文件到位 |
+| M4 | 会签 `configs/feature_whitelist_b5a.csv`（文件由 M4 产出） | ✅ 2026-11-13 产出（9 行，4 列齐全） |
+| M3 | 逐条核对白名单 + 权重规则 | ✅ 2026-11-24 核对（M4 复盘 §3）：9 列全部落在 B4 信息集内，无射门/休息/旅行/赔率；权重归一后与 `b3_poisson.decay_weights` 逐元素一致（max\|Δw\| = 3.55e-15，`check_m4.py` 第 6 项现场断言）；`sample_weight_rule` 文案已按固定 ξ 口径订正 |
 
 > 冻结后任何口径改动走 PR，PR 描述里写明受影响的模型与已产出的预测文件，并在群里 @全员。
+>
+> **2026-11-24 口径变更（B4 固定超参 / B5 固定超参）已落地**：`xi` 不再是逐块估计，
+> 而恒为 0.0019；`xi_rho_by_block.csv` 的 48 行现在携带同一个常量（`selection=fixed`），
+> 逐块估计的历史值归档在 `results/logs/selection_diagnostic/xi_rho_by_block_argmin.csv`。
+> 白名单本身未改一列，只是 `sample_weight_rule` 的措辞随之订正。

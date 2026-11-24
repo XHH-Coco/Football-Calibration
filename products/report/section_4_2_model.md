@@ -104,10 +104,12 @@ Three fixed configurations beat the retired rule, and the two centred ones do so
 | B3 → B4 | 0.0084 [0.0038, 0.0129] — excludes 0 | 0.0048 [−0.0007, 0.0099] — contains 0 |
 | H2 gap (B4 vs market) | 0.0317 [0.0278, 0.0359] | 0.0353 [0.0309, 0.0401] |
 | B2 − B4 | 0.0048 [0.0013, 0.0084] | 0.0084 [0.0042, 0.0127] |
-| C1 (B5a − B4) | 0.0158 [0.0109, 0.0209] | 0.0142 [0.0078, 0.0207] |
+| C1 (B5a − B4) | 0.0055 [0.0009, 0.0099] | 0.0142 [0.0078, 0.0207] |
 | H4 rel (B6r) | +0.19% | +0.17% |
 
 The H2 row is the one to keep in mind when reading §5.4: the retired rule overstated the market gap by 0.0036 nats, because selection noise made B4 look worse than it is. Both numbers exceed the equivalence margin, so the H2 verdict never depended on the choice — but the direction of the bias is now known and corrected rather than merely bounded.
+
+> **Read the C1 row with care.** Its two columns differ by *two* changes, not one: B4's hyper-parameter rule (this section) and B5's (the boosted arms were moved to a fixed configuration on the same day, §4.3.6). The 0.0142 in the second column was measured with both arms under per-fold selection; the 0.0055 in the first is both arms fixed. B4's own change is worth far less to C1 than B5's, which is why §5.1.4 reports the six configurations separately instead of attributing the whole move to one of them.
 
 **The alternative that was tested and rejected: a longer validation window.** The binding constraint was diagnosed as the validation window, not the grid, and that diagnosis can be tested rather than asserted. `src/models/sens_b4_valwindow.py` re-runs the complete 48-fold pipeline with the inner validation set widened from one season to three (median 1,140 matches per fold instead of 306–380), keeping the target season out of selection exactly as before.
 

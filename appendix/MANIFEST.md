@@ -83,8 +83,8 @@ M2 的 `preds_B6.csv` / `preds_B6r.csv`（各 16,728 行）、`table_main.csv`�
 | **M2**：主推断表 9 行 + deff；B3 0.9986 / B4 0.9903 / B6 0.9585 / B6r 0.9585 | `src/eval/table_main.py::build_table_main()` | `python -m src.eval.run_m2`；`pytest -q tests/test_table_main.py` |
 | **M2**：H1 比例法斜率 1.086（90% CI 1.047–1.124，under-dispersed 支持；power 1.030 跨 1，逐类见 `h1_slope_by_class.csv`） | `src/eval/calibration.py::h1_pipeline()` / `h1_slope_by_class()` | `python -m src.eval.run_m2`；`pytest -q tests/test_calibration.py` |
 | **M2**：H2 B4−B6 = 0.0317 nats（95% CI 0.027–0.037，判据 a/b 均支持） | `src/eval/market_gap.py` + `src/eval/bootstrap.py` | `python -m src.eval.run_m2`；`results/market_gap.csv` |
-| **M2**：H3 只作描述（early 系数 −0.0114，`min(home,away)` 主版；与假设方向相反） | `src/eval/localisation.py::h3_coefficients()` | `python -m src.eval.run_m2`；`results/logs/h3_sensitivity.csv`；`pytest -q tests/test_localisation.py` |
-| **M2**：H4 重校准相对变化 0.0017（90% 上界 < 25%，信息而非校准）；oracle 上界 +7.9% | `src/eval/recalibrate.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`results/logs/h4_oracle_bound.csv`；`pytest -q tests/test_recalibrate.py` |
+| **M2**：H3 只作描述（early 系数 −0.0107，`min(home,away)` 主版；与假设方向相反） | `src/eval/localisation.py::h3_coefficients()` | `python -m src.eval.run_m2`；`results/logs/h3_sensitivity.csv`；`pytest -q tests/test_localisation.py` |
+| **M2**：H4 重校准相对变化 0.0019（90% 上界 0.013 < 25%，信息而非校准）；oracle 上界 +8.7% | `src/eval/recalibrate.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`results/logs/h4_oracle_bound.csv`；`pytest -q tests/test_recalibrate.py` |
 | **M2**：H1–H4/C1 判定规则在代码里（阈值 `EQUIV_MARGIN=0.02` 等） | `src/eval/decisions.py` | `pytest -q tests/test_decisions.py` |
 | **M3**：B3 0.9986 / B4 0.9903；B3→B4 = 0.0084（90% CI 0.0038~0.0129，**不含 0** 但整段落在 ±0.02 内 → 「可分但不大」）；B4 用**固定超参** (ξ=0.0019, ρ=0)，48 折无在线选择 | `src/models/{b3_poisson,b4_dixon_coles,run_b4,tune_b4}.py` | `python -m src.models.run_b4`；`python -m src.models.m3_report_tables`；`pytest -q tests/test_m3_report.py tests/test_m3_sensitivity.py` |
 | **M3**：48 折 0 失败；主口径 48/48 折共用常量 (0.0019, 0)；**被放弃的** argmin 规则当年选出的 ξ 33/48 在网格中间、ρ 23/48 在两端 | `src/models/tune_b4.py` | `python -m src.models.run_b4`（固定口径）；`python -m src.models.run_b4 --selection argmin`（诊断，写 `results/logs/selection_diagnostic/`）；决策备忘 `results/logs/xi_rho_decision_2026-11-11.txt` |
@@ -93,7 +93,13 @@ M2 的 `preds_B6.csv` / `preds_B6r.csv`（各 16,728 行）、`table_main.csv`�
 | **M3 复核**：ρ 物理下界 −0.154~−0.278；外扩到 −0.35 后 test **变差 0.0003** | `src/models/sens_b4_rho_grid.py` | `python -m src.models.sens_b4_rho_grid`；`results/logs/b4_rho_extension.csv` |
 | **M3 复核**：收敛为真（Δnll ≤ 1e-4、Δtest log loss ≤ 5e-6） | `src/models/b4_dixon_coles.py --polish` | `python -m src.models.b4_dixon_coles --polish --folds 3`；`results/logs/b4_polish_2026-11-24.txt` |
 | **M3**：A1 γ 22 季 −0.090/十年（95% CI −0.096~−0.084）、六联赛同向；剔除疫情季 −0.090 不变 | `src/models/a1_gamma.py` + `m3_report_tables.py::trend_sensitivity()` | `python -m src.models.a1_gamma`；`python -m src.models.m3_report_tables`；`products/tables/tA1_trend_sensitivity.csv` |
-| **M4**：B2 可在锁定环境重建（0.985497） | `src/models/b2_ordinal.py`（`multi_class` 已移除） | `python -m src.models.b2_ordinal`；`python -m src.models.check_m4`（**11/11 PASS**） |
+| **M4**：B2 / B1 均可在锁定环境重建（0.985497 / 0.992637） | `src/models/b2_ordinal.py`、`b1_elo.py`（`multi_class` 均已移除） | `python -m src.models.b2_ordinal`；`python -m src.models.b1_elo`；`python -m src.models.check_m4`（**14/14 PASS**，含 5 arm 活体重建与产物逐行比对） |
+| **M4**：B5a 0.9957 / B5b 0.9942（固定超参 leaf=3, lr=0.01，48 折同一组） | `src/models/b5_gbm.py --selection fixed` | `python -m src.models.b5_gbm`；`results/logs/b5_params.csv`（48 行，全为 3/0.01） |
+| **M4**：交付网格的 argmin 贴边（leaf=7 占 46/48、lr=0.03 占 37/48）；扩到 20 格后仍贴新边（leaf=3 占 37/48） | `src/models/sens_b5_grid.py` | `python -m src.models.sens_b5_grid`；`results/logs/sens_b5_grid_{val,test}.csv` |
+| **M4**：扩网格值 0.0067、把逐折选参换成常量再值 0.0037（配对 90% CI 0.0016–0.0060） | 同上（表 C） | `python -m src.models.sens_b5_grid --rebuild`（约 17 分钟） |
+| **M4**：C1 = +0.0055（0.0009–0.0099，差异可分但实际等价）；C2 = −0.0015（−0.0032~+0.0001，实际等价） | `src/eval/run_m2.py` + `src/eval/decisions.py` | `python -m src.eval.run_m2`；`results/logs/m2_verdicts.csv` |
+| **M4**：赛季内刷新额度 B2 +0.0116 / B5a +0.0102 / B5b +0.0145（冻结结果类特征） | `src/models/sens_refresh_parity.py` | `python -m src.models.sens_refresh_parity`；`results/logs/sens_refresh_parity.csv` |
+| **M4**：B1 逐行重建与入库 CSV 一致（单场概率最大绝对差 ≤ 1e-6） | `src/models/check_m4.py` 第 8–9 项 | `python src/models/check_m4.py`（**14/14 PASS**） |
 
 ---
 

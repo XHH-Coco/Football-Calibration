@@ -41,9 +41,16 @@ def _diffs(frame: pd.DataFrame, elo: EloLeague | None = None,
 
 
 def fit(train_df: pd.DataFrame, sample_weight=None) -> tuple[LogisticRegression, EloLeague]:
-    """训练窗内：逐场算分差 → multinomial logistic 拟合（只用 train）。"""
+    """训练窗内：逐场算分差 → multinomial logistic 拟合（只用 train）。
+
+    不传 `multi_class`：该参数在 sklearn 1.7 弃用、1.9 已从构造函数移除，
+    锁定环境里传它会直接 TypeError（B1 因此在 11-13 之后无法重建，只是没人
+    跑过——产物一直在，生成器早已失效）。solver="lbfgs" 对多分类恒走
+    multinomial，与旧写法数学等价；去掉参数后 48 折重建与入库 CSV 差 6e-15。
+    `check_m4.py` 的活体检查（第 8 项）守住同类问题，勿再删。
+    """
     diffs, eng = _diffs(train_df)
-    clf = LogisticRegression(multi_class="multinomial", max_iter=2000)
+    clf = LogisticRegression(solver="lbfgs", max_iter=2000)
     clf.fit(diffs.reshape(-1, 1), train_df["y"].to_numpy())
     return clf, eng
 
