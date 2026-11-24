@@ -36,3 +36,26 @@ B6r's fitted temperature is systematically league-specific and stable across all
 But when those parameters are applied to the *next* season's matches — which is exactly what B6r does — the total effect is 6.1 × 10⁻⁵ nats (90% CI −4.0 × 10⁻⁴ to +2.8 × 10⁻⁴, covering zero). The pattern is real, league-level and slow-moving, and yet worth nothing for forecasting the next match. This is a clean illustration of why H4 comes out as it does: the market's residual calibration defect is a *style*, not a tradable error, so repairing it cannot close an information gap.
 
 *Sources: `results/table_main.csv` (B4−B6 = 0.0317; B2−B4 = −0.0048; B2−B6 = 0.0270), `results/market_gap.csv` (three methods; B6r row), `results/logs/b6r_n_fit.csv` (per-fold `c`, `d`, `n_fit`), `analysis/h4_information.ipynb` (H4 relative change 0.0019, 90% upper 0.013), `results/logs/h4_oracle_bound.csv` (oracle +8.7%).*
+
+### 5.4.3 Where the gap is — and where it is not (H3)
+
+H3 predicted that the shortfall is concentrated where the model's information is stale: matches involving a newly promoted side, and the first six matchdays of a season. Only half of that prediction survives.
+
+**Table 5.4-c. Fixed-effects regression of the per-match gap** (16,728 matches, 48 league–season intercepts, 90% block-bootstrap intervals).
+
+| Regressor | Estimate (nats per match) | 90% CI | Direction vs H3 |
+|---|---:|---|---|
+| `promoted` — either side newly promoted | **+0.0113** | +0.0020 to +0.0208 | as predicted |
+| `early` — `min(matchday_home, matchday_away)` ≤ 6 | **−0.0108** | −0.0175 to −0.0040 | **opposite to prediction** |
+
+The two coefficients are estimated jointly with league–season fixed effects, so neither is contaminated by cross-league differences in how hard the market is to beat (§4.6.1).
+
+**The verdict is "descriptive only", and that is the pre-registered outcome.** H3 required both coefficients positive with both lower bounds above zero. The `promoted` coefficient satisfies that on its own; the `early` coefficient does not — its interval lies entirely *below* zero, so early-season matches are, if anything, where the model does *best*. Under the rule of §2 the hypothesis is therefore not supported in the direction it was stated, and the report says so rather than reporting the half that worked.
+
+**Neither coefficient is an artefact of a measurement choice.** The `early` estimate is −0.0108 under the pre-registered `min` definition, −0.0101 under `max`, and −0.0102 under the home-team-only definition that an earlier delivery used — three definitions that flag 1,025 matches differently and agree to within 0.0007 nats. The matchday-window sweep behaves the same way: −0.0094 at w = 3 (90% CI −0.0175 to −0.0011), −0.0108 at w = 6, −0.0083 at w = 10 (−0.0141 to −0.0026). The sign is stable across every threshold, so the threshold is not doing the work.
+
+**What survives, and what would explain the sign flip.** The `promoted` result is consistent with the mechanism and with the model's own construction: newly promoted teams start at the league mean rather than carrying a division-specific rating (§4.3), so their first-season estimates are weak by design, and the market — which watched them buy players in July — is not. The `early` result runs the other way, and the report does not have an identification strategy that separates the candidates: the market's own prices are least sharp in August (books are still learning the season), so a *smaller* early gap is exactly what one would expect if the market's information advantage is smallest at kick-off and grows as its ratings settle. That reading is speculation, it is not tested here, and it is offered as the reason the sign is not a puzzle rather than as a finding.
+
+**One caveat that limits all of the above.** The two indicators are correlated — promoted sides are over-represented in early fixtures against strong opponents — and joint estimation handles the level of that correlation but not the selection. With 48 clusters the design cannot resolve an interaction between them, so the two coefficients should be read as separate descriptions of where the gap sits, not as a decomposition of it.
+
+*Sources: `results/logs/h3_sensitivity.csv` (three matchday definitions), `results/logs/m2_verdicts.csv` (H3 rows), `src/eval/localisation.py`, `results/logs/m2_decisions_2026-11-24.txt` step [7] (sweep).*

@@ -1,4 +1,4 @@
-"""M5 报告数字校验：把 §5.1 / §5.2 / §5.4、摘要与幻灯片里出现的每个关键数字钉到产物 CSV 上。
+"""M5 报告数字校验：把摘要、§4.1 / §5.1 / §5.2 / §5.3 / §5.4 与幻灯片里的关键数字钉到产物 CSV 上。
 
 **为什么需要它**：2026-11-24 一天之内，同一类事故犯了三次——
 
@@ -13,7 +13,9 @@
 而 §5.2 连 `--check` 都没有。
 
 **做法**：不重算任何模型，只做两件事——
-① 从已落盘 CSV 取出应有的值；② 断言正文里确实写着这个值（正则捕获 + 数值比较）。
+① 从已落盘 CSV 取出应有的值；② 断言正文里确实写着这个值。
+正文用正则捕获 + 数值比较；表格（§4.1 表 4.1-a、§5.3 表 5.3-a）另走逐行解析，
+按 arm 对上 `table_main.csv` / `market_gap.csv` 的同一行，避免「表错了但正文对」漏网。
 每条规则都带出处，失败信息会同时打印「正文写的」与「产物里的」。
 
 用法：
@@ -23,6 +25,7 @@
 
 from __future__ import annotations
 
+import io
 import re
 import sys
 from pathlib import Path
@@ -182,7 +185,8 @@ def build_checks():
          r"比例法斜率 " + NUM + r"（90% CI " + NUM + r"–", (h1.point, h1.lo), t3,
          "m2_verdicts.csv · H1"),
     ]
-    return checks, dict(tm=tm, slopes=slopes, ref=ref, h3=h3, vd=vd, orc=orc)
+    mg = pd.read_csv(ROOT / "results" / "market_gap.csv")
+    return checks, dict(tm=tm, slopes=slopes, ref=ref, h3=h3, vd=vd, orc=orc, mg=mg)
 
 
 def table_checks(tm, slopes):
@@ -208,6 +212,71 @@ def ladder_check(tm):
     order = ["B2", "B4", "B1", "B5b", "B5a", "B3"]
     vals = [tm.loc[a, "log_loss"] for a in order]
     return order, vals
+
+
+
+def _md_table(path: Path, header_marker: str) -> pd.DataFrame:
+    """把 markdown 里以 ``header_marker`` 开头的表格块解析成 DataFrame。
+
+    只用于「表格行 vs 产物」的逐列比对；不做任何 Markdown 语义推断，所以丢掉分隔行后
+    直接交给 ``read_csv(sep="|")``。
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    start = None
+    for i, l in enumerate(lines):
+        if l.lstrip().startswith("|") and header_marker in l:
+            start = i
+            break
+    if start is None:
+        raise ValueError(f"{path.name}: 找不到表头 {header_marker!r}")
+    block = [lines[start]]
+    for l in lines[start + 1:]:
+        if not l.lstrip().startswith("|"):
+            break
+        t = l.strip()
+        if set(t) <= set("|-: ") and "-" in t:      # 分隔行
+            continue
+        block.append(l)
+    df = pd.read_csv(io.StringIO("\n".join(block)), sep="|", skipinitialspace=True)
+    df = df.loc[:, [c for c in df.columns if not str(c).startswith("Unnamed")]]
+    df.columns = [str(c).strip() for c in df.columns]
+    return df
+
+
+def gap_table_check(mg: pd.DataFrame):
+    """§5.3 表 5.3-a：每行的点估计与 90% 区间必须等于 market_gap.csv 的对应行。"""
+    df = _md_table(REPORT / "section_5_3_h2_numbers.md", "| Arm |")
+    out = []
+    for _, r in df.iterrows():
+        arm = str(r["Arm"]).strip("*_ ")
+        row = mg[(mg.arm == arm) & (mg.devig == "proportional")]
+        if row.empty:
+            continue
+        ci = re.findall(NUM, str(r["90% CI"]))
+        point = re.findall(NUM, str(r["Δ log loss, proportional"]))
+        if len(ci) != 2 or not point:
+            continue
+        vals = [_f(point[0])] + [_f(c) for c in ci]
+        want = [float(row.iloc[0].delta_ll), float(row.iloc[0].lo90),
+                float(row.iloc[0].hi90)]
+        out.append((arm, vals, want))
+    return out
+
+
+def ladder_table_check(tm: pd.DataFrame):
+    """§4.1 表 4.1-a：阶梯表的点估计列必须等于 table_main.csv 的 log_loss。"""
+    df = _md_table(REPORT / "section_4_1_ladder.md", "| Rung |")
+    out = []
+    for _, r in df.iterrows():
+        arm = str(r["Rung"]).strip("*_ ")
+        if arm not in tm.index:
+            continue
+        cell = str(r["Pooled log loss (90% CI)"])
+        first = re.findall(NUM, cell)
+        if not first:
+            continue
+        out.append((arm, _f(first[0]), float(tm.loc[arm, "log_loss"])))
+    return out
 
 
 def main(argv: list[str]) -> int:
@@ -295,6 +364,31 @@ def main(argv: list[str]) -> int:
             n_pass += 1
         else:
             print(f"FAIL  {label}：算出 {got:+.3f}，正文写 {want:+.3f}")
+            n_fail += 1
+
+    # §5.3 表 5.3-a：逐行比对 market_gap.csv
+    for arm, vals, want in gap_table_check(ctx["mg"]):
+        if len(vals) != 3:
+            print(f"FAIL  section_5_3 · 表 5.3-a {arm}：解析出 {len(vals)} 列（应为 3）")
+            n_fail += 1
+            continue
+        bad = [(v, w) for v, w in zip(vals, want) if abs(v - w) > 1.5e-4]
+        if bad:
+            print(f"FAIL  section_5_3 · 表 5.3-a {arm}：" +
+                  ", ".join(f"正文 {v:.4f} vs 产物 {w:.4f}" for v, w in bad))
+            n_fail += 1
+        else:
+            print(f"PASS  section_5_3 · 表 5.3-a {arm} = "
+                  + " / ".join(f"{v:.4f}" for v in vals))
+            n_pass += 1
+
+    # §4.1 表 4.1-a：逐行比对 table_main.csv
+    for arm, got, want in ladder_table_check(ctx["tm"]):
+        if abs(got - want) <= 1.5e-4:
+            print(f"PASS  section_4_1 · 表 4.1-a {arm} = {got:.4f}")
+            n_pass += 1
+        else:
+            print(f"FAIL  section_4_1 · 表 4.1-a {arm}：正文 {got:.4f} vs 产物 {want:.4f}")
             n_fail += 1
 
     print(f"\n{n_pass} passed, {n_fail} failed")
