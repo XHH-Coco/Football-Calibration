@@ -75,8 +75,8 @@ def test_contrast_table_has_degenerate_zero():
     d = pd.read_csv(p)
     row = d.loc[(d["config"] == "flat") & (d["vs"] == "B3")].iloc[0]
     assert row["point"] == pytest.approx(0.0, abs=1e-12)
-    # 固定中心 vs 交付版必须为负（更好），且区间不含 0
-    c = d.loc[(d["config"] == "centre") & (d["vs"] == "B4_shifted")].iloc[0]
+    # 固定中心 vs 已放弃的 argmin 必须为负（更好），且区间不含 0
+    c = d.loc[(d["config"] == "centre") & (d["vs"] == "argmin_abandoned")].iloc[0]
     assert c["point"] < 0 and c["hi90"] < 0
 
 
@@ -112,3 +112,25 @@ def test_sensitivity_preds_are_schema_clean():
         s = d[["p_home", "p_draw", "p_away"]].to_numpy().sum(axis=1)
         assert np.allclose(s, 1.0, atol=1e-9), f.name
         assert (d[["p_home", "p_draw", "p_away"]].to_numpy() >= 0).all(), f.name
+
+
+def test_main_pipeline_runs_on_the_fixed_rule():
+    """主口径守门：48 折的 (ξ, ρ) 必须是同一个常量，且记录里标明 fixed。
+
+    这条之所以必要：逐折 argmin 的代码路径还在（`--selection argmin`），一旦谁把
+    `run_b4` 的默认值改回去，`convergence.csv` 会出现多个 ξ 值——主表数字会变，
+    但所有阈值检查仍然通过，属于不会自己报警的静默回归。
+    """
+    p = LOGS / "convergence.csv"
+    _need(p)
+    c = pd.read_csv(p)
+    assert len(c) == 48
+    if "selection" in c.columns:
+        assert set(c["selection"]) == {"fixed"}
+    assert c["xi"].nunique() == 1 and float(c["xi"].iloc[0]) == pytest.approx(0.0019)
+    assert c["rho"].nunique() == 1 and float(c["rho"].iloc[0]) == pytest.approx(0.0)
+    # 主 B4 的池化 loss 必须等于该常量配置在敏感性表里的那一档（同一条拟合路径）
+    by = pd.read_csv(LOGS / "b4_fixed_hp_by_fold.csv")
+    centre = by.loc[by["config"] == "centre"].set_index("block_id")["test_logloss"]
+    assert np.max(np.abs(c.set_index("block_id")["test_logloss_b4"]
+                         - centre.loc[c["block_id"]].values)) < 1e-5

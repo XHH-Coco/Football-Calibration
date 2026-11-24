@@ -25,6 +25,7 @@ from src.models.b4_dixon_coles import RHO_GRID, XI_GRID  # noqa: E402
 from src.models.m3_report_tables import BUILDERS, build_all  # noqa: E402
 
 LOGS = ROOT / "results" / "logs"
+DIAG = LOGS / "selection_diagnostic"
 TABLES = ROOT / "products" / "tables"
 PREDS = ROOT / "results" / "preds"
 
@@ -33,6 +34,14 @@ def _log(name: str) -> pd.DataFrame:
     p = LOGS / f"{name}.csv"
     if not p.exists():
         pytest.skip(f"{name}.csv 未生成")
+    return pd.read_csv(p, encoding="utf-8")
+
+
+def _diag(name: str) -> pd.DataFrame:
+    """被放弃的 argmin 选参规则档案（B4 主口径已改为常量）。"""
+    p = DIAG / f"{name}_argmin.csv"
+    if not p.exists():
+        pytest.skip(f"{name}_argmin.csv 未生成")
     return pd.read_csv(p, encoding="utf-8")
 
 
@@ -96,7 +105,7 @@ def test_hyperparameter_counts_cover_the_grid():
         assert sorted(points["value"].round(6)) == sorted(np.round(grid, 6))
     xi = t.loc[(t["parameter"] == "xi") & (t["kind"] == "interior_4_mid")]
     assert int(xi["n_folds"].iloc[0]) == int(
-        (~_log("convergence")["xi"].isin([XI_GRID[0], XI_GRID[-1]])).sum())
+        (~_diag("xi_rho_by_block")["xi"].isin([XI_GRID[0], XI_GRID[-1]])).sum())
     # 堆积是单侧的：没有折选到网格最大端
     assert t.loc[(t["parameter"] == "xi") & (t["value"] == XI_GRID[-1]), "n_folds"].iloc[0] == 0
 
@@ -104,7 +113,7 @@ def test_hyperparameter_counts_cover_the_grid():
 def test_paired_summary_matches_fold_rows_and_selection():
     folds = _table("t4_2_paired_folds")
     summ = _table("t4_2_paired_summary").iloc[0]
-    sel = _log("xi_rho_by_block").set_index("block_id")
+    sel = _diag("xi_rho_by_block").set_index("block_id")
     assert len(folds) == 48
     assert np.allclose(folds.set_index("block_id")["xi"].sort_index(),
                        sel["xi"].sort_index())

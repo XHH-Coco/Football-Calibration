@@ -154,11 +154,10 @@ def main(argv: list[str] | None = None) -> int:
           f" → 3 季验证集 {np.average(df['test_logloss'], weights=n_test):.5f}")
     print(f"3 季更好：{int((df['test_logloss'] < df['test_logloss_base']).sum())}/48 折")
     print("块级配对 90% 区间（负 = 3 季更好）：")
-    compare("delivered (1 season)", base_pred)
-    centre_p = sens / "preds_B4_centre.csv"
-    if centre_p.exists():
-        compare("fixed centre (0.0019, 0)",
-                pd.read_csv(centre_p, dtype={"match_id": str, "season": str, "date": str}))
+    compare("reported arm", base_pred)
+    # 2026-11-24 起主口径就是常量 (0.0019, 0)，所以「交付版」与「固定中心」是同一条预测，
+    # 不再并列打印两行（那只会打印两次同样的结果，看起来像两个独立证据）。
+    print("    注：主口径已是常量超参，上一行即「固定中心 (0.0019, 0)」本身。")
     print(f"用时 {time.perf_counter() - t0:.0f}s → {a.out}")
     return 0
 

@@ -204,13 +204,18 @@ def test_appendix_A_direction_claims_match_csv():
 
 
 def test_section_4_2_fold_claims_match_xi_rho_log():
-    """验收项 11：正文里点名的折与 (ξ, ρ) 必须能在 xi_rho_by_block.csv 找到原值。"""
+    """验收项 11：正文里点名的折与 (ξ, ρ) 必须能在 argmin 诊断档案找到原值。
+
+    B4 主口径已改为常量 ``(0.0019, 0)``，正文讨论的折点属于「被放弃的选参规则」，
+    故对照 ``results/logs/selection_diagnostic/xi_rho_by_block_argmin.csv``。
+    """
     p = REPORT / "section_4_2_model.md"
     if not p.exists():
         pytest.skip("§4.2 初稿不存在")
     flat = _flat(p.read_text(encoding="utf-8"))
     folds = _table("t4_2_paired_folds")
-    log = pd.read_csv(ROOT / "results" / "logs" / "xi_rho_by_block.csv").set_index("block_id")
+    log = pd.read_csv(ROOT / "results" / "logs" / "selection_diagnostic" /
+                      "xi_rho_by_block_argmin.csv").set_index("block_id")
     idx = {v: i for i, v in enumerate(XI_GRID)}
     pos = folds["xi"].map(idx)
     nbr = folds["xi_neighbour"].map(idx)

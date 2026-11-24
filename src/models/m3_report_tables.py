@@ -23,11 +23,17 @@ from src.models.a1_gamma import LEAGUES, Z95, trend  # noqa: E402
 from src.models.b4_dixon_coles import RHO_GRID, XI_GRID  # noqa: E402
 
 LOGS = ROOT / "results" / "logs"
+DIAG = LOGS / "selection_diagnostic"
 TABLES = ROOT / "products" / "tables"
 
 
 def _read(name: str) -> pd.DataFrame:
     return pd.read_csv(LOGS / f"{name}.csv")
+
+
+def _read_diag(name: str) -> pd.DataFrame:
+    """读「被放弃的 argmin 选参规则」的档案（B4 主口径改成常量后，诊断证据在这里）。"""
+    return pd.read_csv(DIAG / f"{name}_argmin.csv")
 
 
 def _match_loss(d: pd.DataFrame) -> np.ndarray:
@@ -72,8 +78,13 @@ def model_fit() -> pd.DataFrame:
 
 
 def hyperparameters() -> pd.DataFrame:
-    """ξ/ρ 的网格分布 + 中间值合计；``kind`` 区分单点与汇总行。"""
-    c = _read("convergence")
+    """**被放弃的**逐折 argmin 规则在网格上的实际落点 + 中间值合计。
+
+    主口径已改为常量 ``(0.0019, 0)``，所以这张表读的是
+    ``selection_diagnostic/xi_rho_by_block_argmin.csv``——它回答的是「那条规则当初选出了
+    什么、为什么不可信」，而不是「B4 现在用什么」。``kind`` 区分单点与汇总行。
+    """
+    c = _read_diag("xi_rho_by_block")
     rows = []
     for p, grid, lo, hi, fmt in (("xi", XI_GRID, XI_GRID[0], XI_GRID[-1], "{:.4f}"),
                                  ("rho", RHO_GRID, RHO_GRID[0], RHO_GRID[-1], "{:.2f}")):
@@ -94,10 +105,13 @@ def hyperparameters() -> pd.DataFrame:
 
 
 def paired() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """逐折配对比较 + 汇总。t>0 表示“选中更好”（差 = 对手 loss − 选中 loss）。"""
-    p = _read("xi_rho_paired_summary").sort_values("block_id")
-    sel = _read("xi_rho_by_block")[["block_id", "xi_half_life_years",
-                                    "val_logloss", "n_candidates_converged"]]
+    """逐折配对比较 + 汇总。t>0 表示“选中更好”（差 = 对手 loss − 选中 loss）。
+
+    同 ``hyperparameters()``：读诊断档案，用来证明 argmin 在验证集上**分不出**候选。
+    """
+    p = _read_diag("xi_rho_paired_summary").sort_values("block_id")
+    sel = _read_diag("xi_rho_by_block")[["block_id", "xi_half_life_years",
+                                        "val_logloss", "n_candidates_converged"]]
     p = p.merge(sel, on="block_id", how="left", validate="one_to_one")
     keep = ["block_id", "league", "season", "xi", "rho", "xi_half_life_years",
             "val_logloss", "n_candidates_converged", "xi_interior",

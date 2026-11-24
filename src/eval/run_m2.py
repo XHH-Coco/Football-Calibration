@@ -60,6 +60,7 @@ from src.eval.localisation import (  # noqa: E402
     h3_sweep,
 )
 from src.eval.market_gap import build_market_gap, plot_market_gap  # noqa: E402
+from src.eval.plots_main import plot_arms, plot_c_equivalence  # noqa: E402
 from src.eval.recalibrate import oracle_bound, run_b6r  # noqa: E402
 from src.eval.table_main import build_table_main  # noqa: E402
 from src.models.b3_poisson import load_panel  # noqa: E402
@@ -118,6 +119,8 @@ def run() -> None:
     tm = build_table_main(out_path=ROOT / "results" / "table_main.csv")
     emit(tm[["arm", "n_matches", "log_loss", "ll_lo90", "ll_hi90", "deff",
              "delta_vs_B6", "n_paired_vs_B6", "note"]].to_string(index=False))
+    # fig03 画的就是这张表；放在这里，图与表永远同一个出口，不会各自过期。
+    plot_arms(tm, out_path=ROOT / "products" / "figures" / "fig03_arms.png")
 
     emit("[4] bootstrap 自检（验收项 7：块级 vs 逐场区间宽度比）")
     frames = {a: _load(a) for a in ("B0", "B2", "B4", "B5a", "B6", "B6r")}
@@ -267,6 +270,10 @@ def run() -> None:
 
     pd.DataFrame(verdicts).to_csv(LOGS / "m2_verdicts.csv", index=False, encoding="utf-8")
     emit(f"\n判定表：results/logs/m2_verdicts.csv（{len(verdicts)} 行）")
+    # fig04 的标题里印着 C1/C2 的点估计与区间，必须从刚写的判定表读，不能手抄。
+    plot_c_equivalence(pd.DataFrame(verdicts),
+                       out_path=ROOT / "products" / "figures" / "fig04_c_equivalence.png")
+    emit("图：fig03_arms.png（← table_main）、fig04_c_equivalence.png（← m2_verdicts）")
 
     log = LOGS / f"m2_decisions_{date.today()}.txt"
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")

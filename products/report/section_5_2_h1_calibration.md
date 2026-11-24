@@ -41,25 +41,27 @@ The proportional lower bound (1.047) is above one and the tail bins carry the pr
 | Arm | Home | Draw | Away |
 |---|---:|---:|---:|
 | B1 (Elo) | 1.019 | 1.097 | 1.014 |
-| B2 (ordinal logit) | 0.976 | 0.795 | 1.006 |
+| B2 (ordinal logit) | 0.976 | 0.797 | 1.006 |
 | B3 (Poisson) | 1.018 | 0.952 | 1.057 |
-| **B4 (Dixon–Coles)** | **0.918** | **0.775** | **0.943** |
-| B5a (HGB, B4 info) | 0.892 | 0.323 | 0.884 |
-| B5b (HGB, +shots/rest) | 0.896 | 0.378 | 0.887 |
+| **B4 (time-decayed DC)** | **0.940** | **0.944** | **0.964** |
+| B5a (HGB, B4 info) | 0.904 | 0.357 | 0.888 |
+| B5b (HGB, +shots/rest) | 0.919 | 0.369 | 0.911 |
 | B6 (market) | 1.061 | 1.092 | 1.076 |
 
-Two features stand out. First, the market's slopes are all above one while almost every model slope is below one — the market compresses probabilities toward the middle, the models spread them too wide. Second, the defect concentrates in the **draw** class and worsens as the model gets "stronger": Elo is well calibrated on draws (1.097), B4 is over-dispersed (0.775), and the two boosted arms collapse to 0.32–0.38 with draw ECE of ≈ 0.04 — the worst of the whole ladder. The reliability curves are shown in `products/figures/fig05_model_reliability.png` (models, three classes separated) and the market slope and tail bias in `fig06_market_calibration.png`.
+Two features stand out. First, the market's slopes are all above one while almost every model slope is below one — the market compresses probabilities toward the middle, the models spread them too wide. Second, the defect concentrates in the **draw** class and gets worse with model capacity, not better: Elo is well calibrated on draws (1.097) and B4 is mildly over-dispersed (0.944), but the two boosted arms collapse to 0.36–0.37 with draw ECE of ≈ 0.04 — the worst of the whole ladder. The reliability curves are shown in `products/figures/fig05_model_reliability.png` (models, three classes separated) and the market slope and tail bias in `fig06_market_calibration.png`.
+
+> **B4's draw calibration changed when the hyper-parameter rule changed.** Under the retired per-fold argmin, 20 of 48 folds selected ρ = −0.15, and the resulting low-score correction pushed the draw slope down to 0.775. With ρ fixed at zero the draw slope is 0.944 and draw ECE falls from 0.030 to 0.018. The correction was therefore *hurting* draw calibration rather than helping it, which the pooled log loss alone (0.9939 → 0.9903) already hinted at. This is the clearest single example in the report of a miscalibration that belonged to the estimation rule, not to the model class.
 
 > **A note on two estimators of the same quantity.** The market's per-class slopes in the model-side table above (1.061 / 1.092 / 1.076) are single-equation estimates on the pooled 16.7k matches, whereas the per-class table earlier in §5.2.3 is block-pooled (1.068 / 1.104 / 1.087). The two differ by up to 0.012 because averaging block-level logit slopes is not the same functional as one pooled logit fit (non-collapsibility). The pre-registered H1 statistic is the block-pooled one; the model-side table is kept for shape comparison across arms and is not used in any verdict.
 
 
 ### 5.2.4 Error analysis: two opposite calibration failures, and one confound we own
 
-The market is under-dispersed because a bookmaker's margin is removed by a single global rescaling, which over-weights the longshot tail (FLB; Ali 1977). The models are over-dispersed for a different reason: Dixon–Coles and especially the boosted arms assign very low probability to outcomes they are unsure about, and draws are the class where evidence is thinnest. The two failures are therefore not mirror images of a shared cause, which is exactly why H4 matters — it tests whether the model–market gap is a *calibration* defect the market could itself shed (it is not; §5.4, H4).
+The market is under-dispersed because a bookmaker's margin is removed by a single global rescaling, which over-weights the longshot tail (FLB; Ali 1977). The models are over-dispersed for a different reason: the boosted arms in particular assign very low probability to outcomes they are unsure about, and draws are the class where evidence is thinnest. The two failures are therefore not mirror images of a shared cause, which is exactly why H4 matters — it tests whether the model–market gap is a *calibration* defect the market could itself shed (it is not; §5.4, H4).
 
 **The confound we cannot separate.** Proportional de-vigging is itself known to leave a residual favourite–longshot bias, and our own pre-registered secondary criterion identifies proportional as the *most* deviant of the three methods (by 0.020 nats, interval excluding zero). Those two facts point the same way: part of the 1.086 is a property of the *method*, not of the market. This is why we state H1 as **direction-consistent with a de-vigging-dependent magnitude** rather than as "the market is significantly conservative", and why the per-class table matters — the away class survives all three methods, the home class does not.
 
-This does **not** propagate to H2 or H4: the model–market gap is 0.0353 / 0.0355 / 0.0355 nats under proportional / Shin / power (spread < 2 × 10⁻⁴), so no conclusion about the gap depends on which de-vigging is chosen.
+This does **not** propagate to H2 or H4: the model–market gap is 0.0317 / 0.0319 / 0.0319 nats under proportional / Shin / power (spread < 1.5 × 10⁻⁴), so no conclusion about the gap depends on which de-vigging is chosen.
 
 ### 5.2.5 Limitations
 

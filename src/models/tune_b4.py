@@ -1,10 +1,26 @@
-"""B4 的 ξ/ρ 网格搜索（M3 / T3.3）：48 折 × 6 ξ × 5 ρ，**只在内层验证集上选**。
+"""B4 的超参口径（M3 / T3.3）：**主口径是固定超参**，逐折网格搜索降级为诊断。
 
-内层切分优先用 M2 的 ``src.eval.harness.inner_split()``；该函数 11/13 才交付，所以本文件
-在它还不存在时用完全同构的本地兜底（把该块 train 里最后一个赛季整段留作验证集），
-M2 落地后自动切换，调用点不变。
+## 现行主口径（2026-11-24 总负责人裁定，取代预注册的逐折 argmin）
 
-红线：目标赛季（外层 test）**一次都不进这里**。选参只看 train 内部的最后一段历史。
+``ξ = 0.0019``（半衰期 ln2/ξ ≈ 365 天）、``ρ = 0``，48 折共用同一组值，**不做任何在线选择**。
+
+依据（``results/logs/b4_fixed_hp_contrasts.csv``）：在每折验证集只有 1 个赛季（约 306–380 场）
+的条件下，相邻 ξ 的真实差异约 0.001 nats 而配对 SE 中位 0.0034（信噪比 0.3），argmin 近似
+抽签。把规则换成常量后池化 test log loss 由 0.9939 降到 0.9903，配对差
+−0.0036 [−0.0060, −0.0013]，29/48 折更好；另两个固定配置同样优于 argmin。
+
+事前合理性（不依赖任何 test 表现）：365 天半衰期对应「球队实力约一年翻新一次」这一
+足球建模的常见尺度；ρ=0 意味着不加低比分修正，于是 **B3→B4 的差异纯粹来自时间衰减**，
+归因比原来更干净。
+
+## 被放弃的规则（仍可复现，作诊断）
+
+``tune_block()`` 保留不动：48 折 × 6 ξ × 5 ρ 在内层验证集上 argmin。它现在的用途是
+产出「为什么这条规则不可信」的证据（验证集内 30 个候选两两分不出来、ξ 堆在网格边界），
+由 ``run_b4.py --selection argmin`` 写入 ``results/logs/selection_diagnostic/``，
+**不再写入主产物**。
+
+红线不变：目标赛季（外层 test）**一次都不进选参**。固定口径更进一步——连验证集都不碰。
 """
 
 from __future__ import annotations
@@ -35,6 +51,58 @@ try:                                    # M2 交付后自动启用，本地兜�
     from src.eval.harness import inner_split as _m2_inner_split
 except (ImportError, AttributeError, ModuleNotFoundError):
     _m2_inner_split = None
+
+
+# ── 主口径：固定超参，不做在线选择 ────────────────────────────────────────────
+# 0.0019 是预注册网格 (0.0005, 0.0010, 0.0019, 0.0035, 0.0065, 0.0120) 的正中间那个值，
+# 也是复盘 §4.2.5 里四个固定配置中最优的那个；选它的理由写在模块 docstring，
+# 与任何 test 表现无关。
+FIXED_XI: float = 0.0019
+FIXED_RHO: float = 0.0
+FIXED_HP: tuple[float, float] = (FIXED_XI, FIXED_RHO)
+SELECTIONS: tuple[str, ...] = ("fixed", "argmin")
+
+
+# 被放弃的 argmin 规则钉在**历史容差**上（b3_poisson.fit 在 2026-11-24 收紧之前的值）。
+# 理由：归档目录里的 preds_B4_argmin.csv 是用这组容差跑出来的，改了就再也复现不了；
+# 而这条规则本身已经是只供诊断的死路径，没有理由跟着主口径一起"升级"。
+LEGACY_FIT_OPTS = {"maxiter": 500, "tol": 1e-9, "gtol": 1e-7}
+
+
+def fit_fixed(train: pd.DataFrame, block: dict,
+              xi: float = FIXED_XI, rho: float = FIXED_RHO) -> tuple[dict, object]:
+    """固定口径：不做选择，直接用在**完整 train** 上拟合 ``(xi, rho)``。
+
+    ``train`` 由调用方用 ``resolve_split`` 切好（外层 test 从不进来）。返回的记录与
+    ``tune_block()`` 同 schema，便于两者写同一张逐折表；只在内层验证相关的字段上置
+    ``NaN`` / ``0``——本口径压根没有内层切分，填 0 会谎称"验证过"。
+    """
+    t0 = time.perf_counter()
+    final = fit(train, xi=xi, rho=rho, ref_date=block["test_start"], init=None)
+    rec = {
+        "block_id": block["block_id"],
+        "league": block["league"],
+        "season": block["season"],
+        "selection": "fixed",
+        "n_train": int(len(train)),
+        "n_inner": np.nan,
+        "n_val": np.nan,
+        "val_season": "",
+        "xi": xi,
+        "rho": rho,
+        "xi_half_life_years": half_life_years(xi),
+        "val_logloss": np.nan,
+        "n_candidates_converged": 0,
+        "n_new_team": int(block["n_new_team"]),
+        "train_logloss_insample": log_loss(predict_proba(final, train),
+                                           train["y"].to_numpy()),
+        "converged": bool(final.converged),
+        "n_iter": int(final.n_iter),
+        "grad_norm": float(final.grad_norm),
+        "train_nll": float(final.nll),
+        "elapsed_s": time.perf_counter() - t0,
+    }
+    return rec, final
 
 
 def inner_split(train: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -79,7 +147,8 @@ def tune_block(panel: pd.DataFrame, block: dict,
     for xi in xi_grid:
         for rho in rho_grid:
             m = fit(inner, xi=xi, rho=rho, ref_date=ref_inner,
-                    init=prev.warm if (warm and prev is not None) else None)
+                    init=prev.warm if (warm and prev is not None) else None,
+                    **LEGACY_FIT_OPTS)
             prev = m
             if not m.converged:
                 continue
@@ -113,12 +182,14 @@ def tune_block(panel: pd.DataFrame, block: dict,
             })
 
     final = fit(train, xi=best["xi"], rho=best["rho"],
-                ref_date=block["test_start"], init=prev.warm if warm else None)
+                ref_date=block["test_start"], init=prev.warm if warm else None,
+                **LEGACY_FIT_OPTS)
 
     rec = {
         "block_id": block["block_id"],
         "league": block["league"],
         "season": block["season"],
+        "selection": "argmin",
         "n_train": int(len(train)),
         "n_inner": int(len(inner)),
         "n_val": int(len(val)),
@@ -148,31 +219,37 @@ def _grid_table(panel: pd.DataFrame, block: dict,
     rows = []
     for xi in xi_grid:
         for rho in rho_grid:
-            m = fit(inner, xi=xi, rho=rho, ref_date=str(val["date"].min()))
+            m = fit(inner, xi=xi, rho=rho, ref_date=str(val["date"].min()),
+                    **LEGACY_FIT_OPTS)
             rows.append({"xi": xi, "rho": rho, "val_logloss": log_loss(predict_proba(m, val), y_val),
                          "converged": m.converged})
     return pd.DataFrame(rows)
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="B4 ξ/ρ 网格搜索（单折调试）")
+    ap = argparse.ArgumentParser(description="B4 超参调试（固定口径 vs 已放弃的 argmin）")
     ap.add_argument("--block", default="E0|2024/25", help="block_id，如 E0|2024/25")
-    ap.add_argument("--all", action="store_true", help="跑满 48 折（等价于 run_b4.py）")
+    ap.add_argument("--all", action="store_true",
+                    help="48 折跑一遍 argmin 选参，只写 selection_diagnostic/（诊断用）")
     a = ap.parse_args(argv)
 
     panel = load_panel()
     data = load_splits()
     if not a.all:
         block = next(b for b in data["blocks"] if b["block_id"] == a.block)
+        train, _ = resolve_split(panel, block)
         t0 = time.perf_counter()
-        rec, model = tune_block(panel, block)
+        rec_f, _m = fit_fixed(train, block)
+        rec_a, _ = tune_block(panel, block)
         print("=" * 78)
-        print(f"{rec['block_id']} · train {rec['n_train']:,} · "
-              f"inner {rec['n_inner']:,} / val {rec['n_val']:,} ({rec['val_season']})")
-        print(f"选中 ξ={rec['xi']} (半衰期 {rec['xi_half_life_years']:.2f} 年)  "
-              f"ρ={rec['rho']}  val logloss={rec['val_logloss']:.4f}")
-        print(f"最终拟合 收敛 {rec['converged']} · {rec['n_iter']} 次迭代 · "
-              f"|grad|∞ {rec['grad_norm']:.2e} · {time.perf_counter() - t0:.1f}s")
+        print(f"{rec_f['block_id']} · train {rec_f['n_train']:,}")
+        print(f"  固定口径   ξ={rec_f['xi']} (半衰期 {rec_f['xi_half_life_years']:.2f} 年)"
+              f"  ρ={rec_f['rho']}  |grad|∞ {rec_f['grad_norm']:.2e}"
+              f"  收敛 {rec_f['converged']}")
+        print(f"  已放弃     ξ={rec_a['xi']}  ρ={rec_a['rho']}"
+              f"  val logloss={rec_a['val_logloss']:.4f}"
+              f"（内层 {rec_a['n_inner']:,} / val {rec_a['n_val']:,} 赛季 {rec_a['val_season']}）")
+        print(f"  合计 {time.perf_counter() - t0:.1f}s")
         return 0
 
     rows = []
@@ -182,10 +259,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[{i:>2}/48] {rec['block_id']:<12} ξ={rec['xi']:<7} ρ={rec['rho']:<7.2f} "
               f"val_ll={rec['val_logloss']:.4f} {rec['elapsed_s']:.1f}s", flush=True)
     df = pd.DataFrame(rows)
-    out = ROOT / "results" / "logs" / "xi_rho_by_block.csv"
+    out = ROOT / "results" / "logs" / "selection_diagnostic" / "xi_rho_by_block_argmin.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False, encoding="utf-8")
-    print(f"\n已写入 {out.relative_to(ROOT)}（{len(df)} 行）")
+    print(f"\n已写入 {out.relative_to(ROOT)}（{len(df)} 行）——诊断用，不是主产物")
     return 0
 
 

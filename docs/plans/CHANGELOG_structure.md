@@ -34,6 +34,8 @@
 
 | 2026-11-24 | **v3.4** | **新增文件（未新增目录）**：`src/models/sens_b4_fixed_hp.py` / `sens_b4_rho_grid.py` / `sens_b4_valwindow.py`（M3 复核的三个只读敏感性脚本）、`tests/test_m3_sensitivity.py`（7 条）、`results/logs/b4_fixed_hp_{by_fold,contrasts,downstream}.csv` / `b4_rho_extension.csv` / `b4_val3_window.csv` / `b4_polish_2026-11-24.txt`、`results/logs/sensitivity/`（复核底稿预测，**不是第 10 个 arm**）、`products/tables/tA1_trend_sensitivity.csv`。`results/logs/` 与 `products/tables/` 均在既有目录内，结构树不变。同步 README §2.1（tests 计数 17→22、logs 注释）、M3 卡 v1.2、`roles/README.md` 索引 v2.2。**`requirements.txt` / `.gitignore` 均未动；九臂定义与判定阈值不变** | 否 | M3 | — |
 
+| 2026-11-24 | **v3.5** | **新增目录 1 个 + 新增文件 2 个**：`results/logs/selection_diagnostic/`（**新增**，存被放弃的逐折 argmin 规则档案：`preds_B4_argmin.csv` / `convergence_argmin.csv` / `xi_rho_by_block_argmin.csv` / `xi_rho_paired_{se,summary}_argmin.csv`，由 `run_b4 --selection argmin` 一键复现，**不是第 10 个 arm**）；`src/eval/plots_main.py`（fig03/fig04 的生成器，此前只有 PNG、无脚本，口径一变即停在旧数字）；`tests/test_m3_sensitivity.py` 增 1 条主口径守门。`results/logs/xi_rho_paired_{se,summary}.csv` **移动**入上述诊断目录并改名加 `_argmin` 后缀。B4 口径：逐折 argmin → 固定 `(0.0019, 0)`。同步 README §2.1 结构树（models / eval 两行）、顶部版本、§7、M3 卡 §6.1、MANIFEST、图单、`m2_harness_spec.md`、`b4_information_set.md`。**`requirements.txt` / `.gitignore` 均未动；九臂定义与判定阈值不变** | 是（新增 `selection_diagnostic/`） | M3 | — |
+
 ## 追加模板
 
 ```

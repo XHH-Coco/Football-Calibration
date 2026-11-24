@@ -24,10 +24,17 @@ w_t = exp(−ξ̂ · Δdays_t)        Δdays_t = date(test_start) − date(t)   
 w_t = w_t / mean(w_t)           归一化到均值 1（否则 ξ 会与 L2 收缩混在一起）
 ```
 
-- **ξ̂ 逐折取值**：见 `results/logs/xi_rho_by_block.csv` 的 `xi` 列（48 行，与块一一对应）。
-  例：`E0|2024/25` 的 ξ̂ 就用同一行那个值，**不许用全局平均、不许用别的折**。
-- **只用该折 train 内的信息选 ξ̂**：内层验证集 = 该折 train 的最后一个赛季（M2 的
-  `inner_split()` 交付后自动切换，口径不变）。目标赛季一次都不参与选参。
+- **ξ 的取值（2026-11-24 起）**：**常量 0.0019**，48 折相同。见
+  `results/logs/xi_rho_by_block.csv` 的 `xi` 列——该列在常量口径下 48 行同值，
+  `selection` 列为 `fixed`。B5a 照抄该列即可，不要自己指定。
+- **为什么不再逐折估计**：原口径在每折的内层验证集（该折 train 的最后一个赛季）
+  上 argmin 选 ξ̂，但该验证集只有 306–380 场、相邻 ξ 的真实差异约 0.001 nats、
+  配对 SE 0.0034（信噪比 0.3），选出来的值近似抽签，且成本可测（pooled 0.9939 vs
+  常量 0.9903）。裁定记录见 `docs/plans/roles/M3_结构化统计模型.md` §6.1 与
+  `results/logs/xi_rho_decision_2026-11-11.txt` §7。**B4 与 B5a 现在共用同一个常量，
+  锁定关系比原来更强**（原来只是"同一折同一个 ξ̂"，现在是"全项目同一个 ξ"）。
+- 旧的逐折 argmin 证据仍可复现：`python -m src.models.run_b4 --selection argmin`
+  写入 `results/logs/selection_diagnostic/`，不覆盖主产物。
 - B5a 调用：
 
 ```python
@@ -55,7 +62,7 @@ clf.fit(X_train, y_train, sample_weight=w)
 - 休息天数、旅行距离、伤停名单 —— B4 没有这些信息；
 - 目标赛季的任何统计量、全样本标准化、用未来比赛算的滚动量（必须 `shift(1)`）。
 
-**权重列**：`configs/feature_whitelist_b5a.csv` 要有 `feature / source / allowed / sample_weight_rule` 四列；`sample_weight_rule` 写明"ξ̂ 取自 `xi_rho_by_block.csv` 的对应折"。
+**权重列**：`configs/feature_whitelist_b5a.csv` 要有 `feature / source / allowed / sample_weight_rule` 四列；`sample_weight_rule` 写明"ξ 取自 `xi_rho_by_block.csv` 的 `xi` 列（常量 0.0019）"。
 
 ## 4. 会签
 

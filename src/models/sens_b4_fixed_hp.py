@@ -1,17 +1,20 @@
-"""M3 复核 · B4 固定超参敏感性（**不改主结果**，只产出证据表）。
+"""M3 复盘 P0-1 的证据脚本：量化「逐折选参」这条规则的代价。
 
 背景（`Project/M3_交付复盘_v1.0.md` P0-1）：预注册的逐折选参规则在每折只有
 一个赛季（约 306–380 场）的验证集上做 argmin，而相邻 ξ 的真实差异约 0.001 nats、
 配对 SE 中位 0.0034，信噪比 0.3 ⇒ argmin 近似抽签，且系统性偏向极端值。
-本脚本把「不做选择」的四个固定配置跑一遍，量化选参规则的代价，并重算所有
-受 B4 影响的下游比较。
+
+**2026-11-24 结论已落地**：B4 主口径改为常量 ``(ξ=0.0019, ρ=0)``（见
+``tune_b4.py``）。本脚本因此变成「对照组」，把四个固定配置与**已归档的 argmin 预测**
+（``results/logs/selection_diagnostic/preds_B4_argmin.csv``）逐块配对比较，
+并重算所有受 B4 影响的下游比较——报告 §4.2.5 的四张表就出自这里。
 
 **它不写 `results/preds/`，不改 `table_main.csv`，不动九臂定义。**
 产物全部落在 `results/logs/`：
 
     results/logs/sensitivity/preds_B4_<tag>.csv     逐场预测（仅作复核底稿）
     results/logs/b4_fixed_hp_by_fold.csv            48 折 × 4 配置的 test log loss
-    results/logs/b4_fixed_hp_contrasts.csv          各配置 vs 交付版 B4 / vs B3 的块级配对区间
+    results/logs/b4_fixed_hp_contrasts.csv          各配置 vs argmin / vs B3 的块级配对区间
     results/logs/b4_fixed_hp_downstream.csv         H2 / B2−B4 / C1 / H4 在该配置下的取值
 
 运行：python -m src.models.sens_b4_fixed_hp         （48 折 × 4 配置 ≈ 90 s）
@@ -40,12 +43,13 @@ from src.splits import load_splits, resolve_split  # noqa: E402
 
 LOGS = ROOT / "results" / "logs"
 SENS = LOGS / "sensitivity"
+DIAG = LOGS / "selection_diagnostic"
 SEED = 20261110
 B_BOOT = 10_000
 
 # (tag, ξ, ρ, 说明)：四个都**不做任何选择**，直接用同一组值跑满 48 折
 CONFIGS: tuple[tuple[str, float, float, str], ...] = (
-    ("centre", 0.0019, 0.0, "网格正中心（半衰期 1.00 年）"),
+    ("centre", 0.0019, 0.0, "网格正中心（半衰期 1.00 年）——现行主口径"),
     ("centre_neg", 0.0019, -0.05, "中心 ξ + 相邻负 ρ"),
     ("min_xi", 0.0005, 0.0, "最常被选中的 ξ（半衰期 3.80 年）"),
     ("flat", 0.0, 0.0, "无衰减无 τ，等价于 B3（退化对照）"),
@@ -54,6 +58,12 @@ CONFIGS: tuple[tuple[str, float, float, str], ...] = (
 
 def load_arm(arm: str) -> pd.DataFrame:
     return pd.read_csv(ROOT / "results" / "preds" / f"preds_{arm}.csv",
+                       dtype={"match_id": str, "season": str, "date": str})
+
+
+def load_argmin() -> pd.DataFrame:
+    """已归档的「逐折 argmin」B4 预测（被放弃的规则，作对照基线）。"""
+    return pd.read_csv(DIAG / "preds_B4_argmin.csv",
                        dtype={"match_id": str, "season": str, "date": str})
 
 
@@ -92,8 +102,8 @@ def _interval(a: pd.DataFrame, b: pd.DataFrame) -> dict:
 
 
 def contrasts(by_fold: pd.DataFrame) -> pd.DataFrame:
-    """每个固定配置 vs 交付版 B4（逐折选中）、vs B3：块级配对 90% 区间。"""
-    base = load_arm("B4")
+    """每个固定配置 vs 已放弃的 argmin、vs B3：块级配对 90% 区间。"""
+    base = load_argmin()
     b3 = load_arm("B3")
     rows = []
     for tag, *_ in CONFIGS:
@@ -101,7 +111,7 @@ def contrasts(by_fold: pd.DataFrame) -> pd.DataFrame:
                           dtype={"match_id": str, "season": str, "date": str})
         vs_b4 = _interval(cur, base)            # 负 = 固定配置更好
         vs_b3 = _interval(cur, b3)              # 正 = 固定配置比 B3 好
-        rows.append({"config": tag, "vs": "B4_shifted",
+        rows.append({"config": tag, "vs": "argmin_abandoned",
                      **vs_b4, "n_folds_better": _fold_wins(tag, base)})
         rows.append({"config": tag, "vs": "B3",
                      **vs_b3, "n_folds_better": _fold_wins(tag, b3)})
@@ -148,9 +158,9 @@ def downstream() -> pd.DataFrame:
     """受 B4 影响的四条下游：H2 gap、B2−B4、C1（B5a−B4）、H4 rel（B6r 版 + oracle 上界）。"""
     b2, b5a, b6, b6r = (load_arm("B2"), load_arm("B5a"), load_arm("B6"),
                         load_arm("B6r"))
-    base = load_arm("B4")
+    base = load_argmin()
     rows = []
-    for cfg, cur in ([("delivered(selected)", base)] +
+    for cfg, cur in ([("argmin(abandoned)", base)] +
                      [(tag, pd.read_csv(SENS / f"preds_B4_{tag}.csv",
                                         dtype={"match_id": str, "season": str,
                                                "date": str}))
@@ -192,9 +202,9 @@ def main(argv: list[str] | None = None) -> int:
                      include_groups=False))
     for tag, *_ in CONFIGS:
         print(f"  {tag:<12} {pooled[tag]:.4f}")
-    conv = pd.read_csv(LOGS / "convergence.csv")
+    conv = pd.read_csv(DIAG / "convergence_argmin.csv")
     base_ll = float(np.average(conv["test_logloss_b4"], weights=conv["n_test"]))
-    print(f"  {'delivered':<12} {base_ll:.4f}（逐折选中）")
+    print(f"  {'argmin':<12} {base_ll:.4f}（已放弃的逐折选中）")
 
     print("\n=== 块级配对 90% 区间 ===")
     ct = contrasts(by_fold)

@@ -226,11 +226,20 @@ def _init_theta(train: pd.DataFrame, teams: tuple[str, ...],
 def fit(train: pd.DataFrame, *, xi: float = 0.0, rho: float = 0.0,
         ref_date: str | None = None, sample_weight: np.ndarray | None = None,
         l2: float = DEFAULT_L2, init: dict | None = None,
-        maxiter: int = 500, tol: float = 1e-9, gtol: float = 1e-7) -> PoissonModel:
+        maxiter: int = 2000, tol: float = 1e-12, gtol: float = 1e-10) -> PoissonModel:
     """加权极大似然。``xi=0, rho=0`` 即 B3；B4 由 ``b4_dixon_coles.py`` 调用同一函数。
 
-    ``tol`` / ``gtol`` 只在复核"解是否真的停在最优点"时才会收紧
-    （见 ``b4_dixon_coles.py --polish``）；默认值就是交付时的值，不要改。
+    **容差在 2026-11-24 收紧过一次**（原 ``maxiter=500, tol=1e-9, gtol=1e-7``）。
+    起因是 ``b4_dixon_coles.py --polish`` 报 FAIL：原容差下 L-BFGS-B 以
+    ``REL_REDUCTION_OF_F`` 判据退出，``res.success`` 为 True，但解上仍有
+    |∇|∞ = 0.05–0.76，从该点继续优化还能把训练 nll 再降 4.6 × 10⁻⁴
+    （每场 7.9 × 10⁻⁸）、test log loss 变动 5 × 10⁻⁵。原因是该目标在这个参数化下
+    病态：**相邻两次迭代的改善**低于 ftol，但尾部很长。收紧后 |∇|∞ 降到 2 × 10⁻³–8 × 10⁻³
+    （约 100 倍），多花 0.13 s/折。
+
+    这个目标不存在"梯度恰好为零"的可达点（减参 + ridge 让条件数很大），所以
+    可复现性的地板在 test log loss 的 1 × 10⁻⁵ 量级——``--polish`` 报的是这个实测值，
+    判据见该函数的 docstring。
     """
     import time
     t0 = time.perf_counter()

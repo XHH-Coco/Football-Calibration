@@ -46,11 +46,14 @@ def half_life_years(xi: float) -> float:
 
 def fit(train: pd.DataFrame, *, xi: float, rho: float, ref_date: str | None = None,
         sample_weight: np.ndarray | None = None, l2: float = DEFAULT_L2,
-        init: dict | None = None, maxiter: int = 500, tol: float = 1e-9,
-        gtol: float = 1e-7) -> PoissonModel:
+        init: dict | None = None, maxiter: int = 2000, tol: float = 1e-12,
+        gtol: float = 1e-10) -> PoissonModel:
     """B4 的一折拟合。参数合法性与收敛信息都留在返回对象里，供 convergence.csv。
 
-    ``maxiter`` / ``tol`` / ``gtol`` 默认就是交付口径；只有 ``--polish`` 复核会收紧。
+    ``maxiter`` / ``tol`` / ``gtol`` 默认值在 2026-11-24 与 ``b3_poisson.fit`` 同步收紧
+    （原 500 / 1e-9 / 1e-7）。原因见 ``b3_poisson.fit`` 的 docstring：旧容差下
+    ``res.success`` 为 True 但 |∇|∞ 有 0.05–0.76，``--polish`` 据此报 FAIL。
+    被放弃的 argmin 诊断用 ``tune_b4.LEGACY_FIT_OPTS`` 显式钉回旧值，归档才可逐字节复现。
     """
     if xi < 0 or rho <= -1.0 or rho >= 1.0:
         raise ValueError(f"非法超参：xi={xi}, rho={rho}")
