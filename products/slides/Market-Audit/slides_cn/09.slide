@@ -1,0 +1,38 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
+        模型侧 · RQ1
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        模型错在别处
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', width: 1160 }}>
+            <Text style={{ fontSize: 17, color: '#4A5568' }}>
+                分赛果类别的可靠性曲线——虚线对角线代表完美校准。
+            </Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8' }}>局部平滑 · ESS ≥ 20</Text>
+        </Box>
+
+        <Image src="assets/fig05.png" style={{ width: 1040, height: 321, marginTop: 8 }} />
+
+        <Box style={{ width: 1160, padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+                平局被过度分散——两个提升树臂的斜率是 0.528 / 0.566，B4 是 0.944；而它们的主胜与客胜斜率是 1.08–1.11，反而分散不足。市场三类都在 1.06–1.09。容量把各个类别往相反方向扭，而 ECE 给出了反向信号，所以斜率是我们唯一的判定统计量。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 9/10</Text>
+    </Box>
+</Slide>

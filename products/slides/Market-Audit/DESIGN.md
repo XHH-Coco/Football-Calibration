@@ -83,3 +83,28 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 3. 只用 `B0`–`B6` + `B6r`，不出现 accuracy。
 4. 关键数字只出现在 P4（C1/C2）、P6（H1 斜率）、P7（H2 gap）、P8（H4 相对变化）。
 5. 出镜：M5 P1、M1 P2、M3 P3、M4 P4、M2 P5·P6·P8、M5 P7、M1 P9·P10；时长合计 7:50。
+
+## 4. 中文版（`Market-Audit-CN.pptx`）
+
+同一份设计的译版，**版式零改动**：10 页、页序、页脚编号、图位与图尺寸全部与英文版一致，只替换文字。源文件在 `slides_cn/01–10.slide`，与 `slides/` 一对一。
+
+### ① 译法约定
+
+| 类别 | 处理 |
+|---|---|
+| 统计术语 | 保留英文：log loss、nats、bootstrap、cluster、deff、ESS、ECE、oracle、de-vig |
+| 臂名 | `B0`–`B6` + `B6r` 原样；`arm` 译「臂」 |
+| 专有名词 | Elo、Dixon–Coles、Shin / power / proportional、Pinnacle 原样 |
+| 队名 / 联赛 | 法甲、荷甲（口径与报告 `section_3_data.md` 一致） |
+| 图内文字 | **仍为英文**（图由 `src/eval/` 生成，改字体需改生成器，风险大于收益）；图注全中文 |
+| 主标题字体 | Georgia → **Microsoft YaHei**（Georgia 无中文字形），P1 54px、P10 44px |
+
+### ② 三条改稿纪律
+
+1. **数字一个都不改**。`python -m src.report.m5_report_tables` 第 49 条对两版做测量型数字集合比对（含小数 / 千分位 / ≥3 位），中文版出现英文版没有的数即 FAIL。负向注入 `0.0113 → 0.0131` 已验证会红。
+2. **中文段落写在一行内**。JSX 把行尾换行折叠为一个空格，中文句中断行会在渲染里留下「主胜 与客胜」这种空隙——本轮改了 13 处。全角标点（。；，）自带的字距不算问题，别去动。
+3. **改稿走 `--page-index` 覆盖，不要重建 deck**。`slidep create` 产出的是 0 页文件，首次追加用不带 `--page-index` 的 `upsert-dsl`，之后按 0..9 覆盖。
+
+### ③ 校验
+
+`slidep lint` 10/10 无诊断；`slidep inspect` 逐页文字块坐标 max_x=1220、max_y=660，重叠 0；`slidep screenshot` 10 页逐页目视核对（含 2× 放大裁剪复检标点间距）。

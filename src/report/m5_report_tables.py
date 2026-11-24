@@ -35,6 +35,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 REPORT = ROOT / "products" / "report"
 SLIDES = ROOT / "products" / "slides"
+DECK = SLIDES / "Market-Audit"
 LOGS = ROOT / "results" / "logs"
 
 MINUS = ("−", "–", "—")
@@ -279,6 +280,32 @@ def ladder_table_check(tm: pd.DataFrame):
     return out
 
 
+def deck_parity_check(root: Path = DECK):
+    """中英两版 deck 的数字必须一一对应：中文版不得出现英文版没有的数值。
+
+    译文最典型的错误是数字被顺手改掉一位（0.0113 → 0.0131），而这类错误在版面上
+    看不出来、`lint` 也不管。这里只比较「测量型」数字——含小数点、千分位或 ≥3 位，
+    于是 46,507 / 0.0270 / 2019 会被比较，而 44（字号）、1.22（行高）不会。
+    先剥掉 `style={{…}}` 与 JSX 标签，避免把样式值当成内容。
+
+    局限：若错值恰好也在英文版别处出现（如 0.0270 与 0.0317 互换），集合比对查不出。
+    """
+    def tokens(files):
+        out = set()
+        for f in files:
+            s = f.read_text(encoding="utf-8")
+            s = re.sub(r"style=\{\{.*?\}\}", " ", s, flags=re.S)
+            s = re.sub(r"<[^<>]*>", " ", s)
+            for t in re.findall(r"\d+(?:[.,]\d+)*", s):
+                if "." in t or "," in t or len(t) >= 3:
+                    out.add(t)
+        return out
+
+    en = tokens(sorted((root / "slides").glob("*.slide")))
+    cn = tokens(sorted((root / "slides_cn").glob("*.slide")))
+    return sorted(cn - en), sorted(en - cn), len(en), len(cn)
+
+
 def main(argv: list[str]) -> int:
     checks, ctx = build_checks()
     if "--list" in argv:
@@ -390,6 +417,19 @@ def main(argv: list[str]) -> int:
         else:
             print(f"FAIL  section_4_1 · 表 4.1-a {arm}：正文 {got:.4f} vs 产物 {want:.4f}")
             n_fail += 1
+
+    # 中文版 deck 不得引入英文版没有的数字（防翻译漂移）
+    extra, missing, n_en, n_cn = deck_parity_check()
+    if extra:
+        print("FAIL  slides_cn · 中文版出现英文版没有的数值：" + ", ".join(extra))
+        n_fail += 1
+    elif missing or n_en != n_cn:
+        print(f"FAIL  slides_cn · 两版数值不齐（英文 {n_en} 个、中文 {n_cn} 个"
+              + ("，缺 " + ", ".join(missing) if missing else "") + "）")
+        n_fail += 1
+    else:
+        print(f"PASS  slides_cn · 中英数字一一对应（{n_cn} 个数值）")
+        n_pass += 1
 
     print(f"\n{n_pass} passed, {n_fail} failed")
     return 0 if n_fail == 0 else 1

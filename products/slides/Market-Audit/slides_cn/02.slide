@@ -1,0 +1,103 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
+        数据 · 口径
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        46,507 场比赛，其中一场不完整
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flexDirection: 'row', gap: 48, marginTop: 22, flex: 1 }}>
+        <Box style={{ width: 430, justifyContent: 'flex-start' }}>
+            <Box>
+                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>46,507</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6 }}>
+                    场比赛 · 6 个联赛 × 22 个赛季
+                </Text>
+            </Box>
+            <Box style={{ marginTop: 14 }}>
+                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>16,733</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6, lineHeight: 1.5 }}>
+                    评估窗内的 48 个「联赛 × 赛季」块，其中 46 块满格
+                </Text>
+            </Box>
+            <Box style={{ marginTop: 14 }}>
+                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#D9534F', lineHeight: 1.1 }}>1</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6, lineHeight: 1.5 }}>
+                    评估集里唯一一场缺射门列的比赛——覆盖率 0.999940，保留为 NaN
+                </Text>
+            </Box>
+        </Box>
+
+        <Box style={{ width: 682 }}>
+            <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
+                22 个赛季里，只有最近 8 个赛季有收盘赔率
+            </Text>
+            <Box style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+            </Box>
+            <Box style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
+                <Box style={{ flex: 14 }}>
+                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2016/17 · 14 个赛季</Text>
+                </Box>
+                <Box style={{ flex: 8 }}>
+                    <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>2017/18 → 2024/25</Text>
+                </Box>
+            </Box>
+            <Box style={{ flexDirection: 'row', gap: 24, marginTop: 18 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>无收盘赔率</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 14, height: 14, background: '#1E4FA8' }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>评估窗</Text>
+                </Box>
+            </Box>
+            <Box style={{ marginTop: 22, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+                <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.6 }}>
+                    原始 CSV 不是矩形：775 行超长、1,331 行缺列、14 个文件有重复列名、7 个文件末尾 11 行全空。按 19 列白名单解析——溢出的非空字段直接报错，绝不跳过。
+                </Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
+        <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
+            两个腰斩块都在 2019/20：法甲止于 279 场，荷甲止于 232 场。我们丢弃而不回填；唯一缺失的射门数据保持 NaN，绝不补 0。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 2/10</Text>
+    </Box>
+</Slide>

@@ -1,0 +1,57 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
+        H4 · RQ2——差距是校准缺陷吗？
+    </Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
+        是信息，不是校准
+    </Text>
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 44, alignItems: 'center' }}>
+        <Box style={{ width: 616 }}>
+            <Text style={{ fontSize: 15, color: '#4A5568' }}>
+                用市场自身再校准之后，差距的相对变化
+            </Text>
+            <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 6 }}>
+                <Text style={{ fontSize: 46, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.05 }}>0.0019</Text>
+                <Text style={{ fontSize: 17, color: '#4A5568' }}>相对值，90% 区间 [−0.0085, +0.0127]</Text>
+            </Box>
+            <Text style={{ fontSize: 17, color: '#1A2230', marginTop: 10, lineHeight: 1.5 }}>
+                整个区间都落在 0.25 的判据线之下——再校准几乎解释不了差距。
+            </Text>
+
+            <Box style={{ marginTop: 22, padding: '14px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#8B97A8' }}>8.7%</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>上界，开卷 oracle</Text>
+                </Box>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                    两个参数都用测试集标签来拟合——这已经是作弊——也只收回不到十分之一的差距。所以差距是模型没有的信息。
+                </Text>
+            </Box>
+        </Box>
+
+        <Box style={{ width: 500, justifyContent: 'center' }}>
+            <Image src="assets/fig08_right.png" style={{ width: 440, height: 344 }} />
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '12px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            如果差距是校准缺陷，把市场自身的校准修正就该把差距补上。但它没有：0.0019 对
+            0.25 的判据线，即便用上测试标签也只有 8.7%。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
+        <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 8/10</Text>
+    </Box>
+</Slide>

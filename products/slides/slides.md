@@ -48,6 +48,7 @@
 | 逐页源文件 | `Market-Audit/slides/01–10.slide` |
 | 图素材 | `Market-Audit/assets/`，由 `python -m src.report.slide_assets` 从 `products/figures/` 裁去图内总标题（`--check` 校验尺寸） |
 | 题页 | **并入页 1**：课程名、英文主标题、副标、RQ1/RQ2、队名、五人姓名+UID、日期同屏，不额外占页 |
+| 中文版 | `Market-Audit/Market-Audit-CN.pptx`（同 10 页同版式），源文件 `Market-Audit/slides_cn/01–10.slide` |
 
 三处不贴位图的判断（与上屏规范第 4 条的偏差，理由如下）：
 
@@ -56,6 +57,16 @@
 3. **页 7** 只挂 `fig07`；`fig08` 左面板（H3 两系数）不上屏——H3 只作描述，占版面会抢 H2 头条，其读数保留为页内一句注。
 
 > 页 2 的「46 块满格」口径：48 块中 29 块 380 场（20 队联赛）、17 块 306 场（18 队联赛与 2023/24 起的法甲），仅 `F1|2019/20` 279 场与 `N1|2019/20` 232 场两块腰斩。上一版写的「45 块满格」是错的。
+
+### 中文版（2026-11-25）
+
+版式、页序、页脚、图位与英文版逐页一一对应，只换语言。约定：
+
+1. **术语保留英文**：log loss、nats、bootstrap、cluster、deff、ESS、ECE、oracle、Elo、Dixon–Coles、Shin / power / proportional、Pinnacle，以及全部臂名 B0–B6r。`arm` 译「臂」。
+2. **图内文字仍为英文**——图由 `src/eval/` 生成，改字体需重跑生成器并动 `plots_h3h4` / notebook，风险大于收益；正文与图注全中文，读者不缺信息。
+3. **封面主标题不再用 Georgia**（无中文字形），改 Microsoft YaHei 加粗；页 10 同。
+4. **数值一律不改**：`python -m src.report.m5_report_tables` 第 49 条把中英两版的测量型数字做集合比对，中文版出现英文版没有的数即 FAIL（负向注入 `0.0113 → 0.0131` 已验证）。
+5. **中文段落必须写在一行内**：JSX 会把行尾换行折叠成一个空格，中文句中断行会在渲染里留下「主胜 与客胜」这种空隙。改稿时先在源文件里压平再加元素。
 
 ## 与上一版的差异（供剪辑核对）
 

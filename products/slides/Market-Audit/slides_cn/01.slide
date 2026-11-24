@@ -1,0 +1,77 @@
+<Slide style={{
+    width: 1280,
+    height: 720,
+    background: '#FFFFFF',
+    padding: '60px 60px',
+    flexDirection: 'column',
+    fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
+}}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: '#8B97A8', letterSpacing: 1.2, fontWeight: 'bold' }}>
+            DSC5001 · 统计机器学习 I
+        </Text>
+        <Text style={{ fontSize: 13, color: '#8B97A8', letterSpacing: 1.2 }}>
+            2026/27 学年 A 学期 · 香港城市大学
+        </Text>
+    </Box>
+
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 18 }} />
+
+    <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 54, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 30 }}>
+        把市场当作量尺
+    </Text>
+
+    <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5, marginTop: 22 }}>
+        用只看赛前信息的模型，审计 Pinnacle 收盘赔率的校准质量。
+    </Text>
+
+    <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 18 }}>
+        我们不试图打败市场，只问它在哪里答得差——以及一个可复现的透明模型，能不能跟到那里。
+    </Text>
+
+    <Box style={{ flexDirection: 'row', gap: 40, marginTop: 28 }}>
+        <Box style={{
+            width: 560,
+            height: 118,
+            padding: '20px 24px',
+            background: '#F7F9FC',
+            border: '1px solid #D6DCE5',
+            borderRadius: 6,
+            justifyContent: 'space-between',
+        }}>
+            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>RQ1</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', fontWeight: 'bold', marginTop: 6 }}>
+                市场会自我校准吗？
+            </Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', marginTop: 4 }}>H1 · H4</Text>
+        </Box>
+        <Box style={{
+            width: 560,
+            height: 118,
+            padding: '20px 24px',
+            background: '#F7F9FC',
+            border: '1px solid #D6DCE5',
+            borderRadius: 6,
+            justifyContent: 'space-between',
+        }}>
+            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>RQ2</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', fontWeight: 'bold', marginTop: 6 }}>
+                透明模型能追上它吗？
+            </Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', marginTop: 4 }}>C1 · C2 · H2 · H3</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ flex: 1 }} />
+
+    <Box>
+        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>第 32 组</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568' }}>2026 年 11 月 24 日</Text>
+        </Box>
+        <Text style={{ fontSize: 13, color: '#4A5568', lineHeight: 1.6, marginTop: 8 }}>
+            WAN Yihui 60918408 · WANG Xingshuai 61044852 · ZHOU Yixuan 60802448 ·
+            SUN Peng 61039829 · SHU Peixuan 57855209
+        </Text>
+    </Box>
+</Slide>
