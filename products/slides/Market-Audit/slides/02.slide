@@ -38,23 +38,23 @@
 
         <Box style={{ width: 682 }}>
             <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
-                Closing odds exist for the last 8 of 22 seasons
+                Closing odds start in 2012/13 — 13 of 22 seasons
             </Text>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
@@ -65,20 +65,27 @@
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
             </Box>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
-                <Box style={{ flex: 14 }}>
-                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2016/17 · 14 seasons</Text>
+                <Box style={{ flex: 9 }}>
+                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2011/12 · 9 seasons</Text>
+                </Box>
+                <Box style={{ flex: 5 }}>
+                    <Text style={{ fontSize: 14, color: '#3D7BD9' }}>2012/13 → 2016/17</Text>
                 </Box>
                 <Box style={{ flex: 8 }}>
                     <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>2017/18 → 2024/25</Text>
                 </Box>
             </Box>
-            <Box style={{ flexDirection: 'row', gap: 24, marginTop: 18 }}>
+            <Box style={{ flexDirection: 'row', gap: 18, marginTop: 18 }}>
                 <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5', }} />
                     <Text style={{ fontSize: 14, color: '#4A5568' }}>no closing odds</Text>
                 </Box>
                 <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#1E4FA8' }} />
+                    <Box style={{ width: 14, height: 14, background: '#9FB8DC', }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>odds, outside the window</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 14, height: 14, background: '#1E4FA8', }} />
                     <Text style={{ fontSize: 14, color: '#4A5568' }}>evaluation window</Text>
                 </Box>
             </Box>

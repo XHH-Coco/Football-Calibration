@@ -38,23 +38,23 @@
 
         <Box style={{ width: 682 }}>
             <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
-                22 个赛季里，只有最近 8 个赛季有收盘赔率
+                收盘赔率从 2012/13 才有——22 个赛季里 13 个有
             </Text>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
@@ -65,21 +65,28 @@
                 <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
             </Box>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
-                <Box style={{ flex: 14 }}>
-                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2016/17 · 14 个赛季</Text>
+                <Box style={{ flex: 9 }}>
+                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2011/12 · 9 个赛季</Text>
+                </Box>
+                <Box style={{ flex: 5 }}>
+                    <Text style={{ fontSize: 14, color: '#3D7BD9' }}>2012/13 → 2016/17</Text>
                 </Box>
                 <Box style={{ flex: 8 }}>
                     <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>2017/18 → 2024/25</Text>
                 </Box>
             </Box>
-            <Box style={{ flexDirection: 'row', gap: 24, marginTop: 18 }}>
+            <Box style={{ flexDirection: 'row', gap: 18, marginTop: 18 }}>
                 <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5', }} />
                     <Text style={{ fontSize: 14, color: '#4A5568' }}>无收盘赔率</Text>
                 </Box>
                 <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#1E4FA8' }} />
-                    <Text style={{ fontSize: 14, color: '#4A5568' }}>评估窗</Text>
+                    <Box style={{ width: 14, height: 14, background: '#9FB8DC', }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>有赔率、未入选</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Box style={{ width: 14, height: 14, background: '#1E4FA8', }} />
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>评估窗（8 季）</Text>
                 </Box>
             </Box>
             <Box style={{ marginTop: 22, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>

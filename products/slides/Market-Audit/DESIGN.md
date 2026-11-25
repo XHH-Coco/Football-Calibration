@@ -66,7 +66,7 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 | 页 | title | type | role | layout | visual | density | anti_pattern |
 |---|---|---|---|---|---|---|---|
 | 1 | The market as a measuring instrument | cover | hero | 标题 + 双 RQ 卡 + 成员条 | 无图，矢量 | 约 120 字 / 0 图 / 留白 35% | 禁止等宽四卡横排；禁止抽象粒子背景 |
-| 2 | 46,507 matches, one of them incomplete | content | supporting | 左 KPI 三行 + 右 22 季时间轴 | 矢量时间轴 | 约 130 字 / 1 图 / 留白 10% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI |
+| 2 | 46,507 matches, one of them incomplete | content | supporting | 左 KPI 三行 + 右 22 季三段色阶时间轴 | 矢量时间轴（9 无赔率 / 5 有赔率未入选 / 8 评估窗） | 约 130 字 / 1 图 / 留白 10% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI |
 | 3 | The ladder B0–B6 + B6r | content | supporting | 九块阶梯 + 两次单因素标注 | 矢量阶梯 | 约 150 字 / 1 图 / 留白 12% | 禁止九块等距不留标注；禁止给所有块同一强调色 |
 | 4 | C1 and C2 — the only two attributions we own | content | supporting | 全宽区间图 + 双结论卡 | `fig04.png` | 约 130 字 / 1 图 / 留白 8% | 禁止把 C1 写成「B5a 更好」；禁止只报点估计不报区间 |
 | 5 | 48 blocks, not 16,733 matches | content | supporting | 左 rolling-origin 示意 + 右三行口径 | 矢量流程 | 约 140 字 / 1 图 / 留白 12% | 禁止把比赛数当独立样本；禁止只写 deff 不写换算 |
@@ -82,7 +82,7 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 2. 区间一律标 `48-block cluster bootstrap, 10,000 resamples`；分联赛 / 轮次 sweep 标 `descriptive only`。
 3. 只用 `B0`–`B6` + `B6r`，不出现 accuracy。
 4. 关键数字只出现在 P4（C1/C2）、P6（H1 斜率）、P7（H2 gap）、P8（H4 相对变化）。
-5. 出镜：M5 P1、M1 P2、M3 P3、M4 P4、M2 P5·P6·P8、M5 P7、M1 P9·P10；时长合计 7:50。
+5. 出镜（2026-11-25 改为一 人连讲两页）：**M1 P1–P2 / M4 P3–P4 / M2 P5–P6 / M3 P7–P8 / M5 P9–P10**；时长合计 7:50，四个切点 1:25 / 3:10 / 4:50 / 6:25。英文讲稿 `../script_en.md`。
 
 ## 4. 中文版（`Market-Audit-CN.pptx`）
 
@@ -108,3 +108,15 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 ### ③ 校验
 
 `slidep lint` 10/10 无诊断；`slidep inspect` 逐页文字块坐标 max_x=1220、max_y=660，重叠 0；`slidep screenshot` 10 页逐页目视核对（含 2× 放大裁剪复检标点间距）。
+
+## 5. 页 2 时间轴的订正（2026-11-25）
+
+原图例把「赔率可得性」与「评估窗」画成同一刀：22 季里前 14 季标「无收盘赔率」。实测 `data/raw/` 逐季统计：
+
+| 区间 | 季数 | 收盘赔率 |
+|---|---|---|
+| 2003/04 – 2011/12 | 9 | 完全没有 `PSCH/PSCD/PSCA` 三列 |
+| 2012/13 – 2016/17 | 5 | 有，但不在评估窗内（6 个联赛-赛季部分缺失，覆盖 0.990–0.997） |
+| 2017/18 – 2024/25 | 8 | 有，且是预注册评估窗（48 块） |
+
+所以时间轴改成 **9 灰 / 5 中蓝 / 8 深蓝**三段，标题从「最近 8 季有赔率」改为「赔率自 2012/13 才有——13 季有」。两版 deck 同改，`script.md` 段 2 与 `script_en.md` 的 P2 台词同步。

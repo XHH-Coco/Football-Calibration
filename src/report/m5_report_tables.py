@@ -38,6 +38,12 @@ SLIDES = ROOT / "products" / "slides"
 DECK = SLIDES / "Market-Audit"
 LOGS = ROOT / "results" / "logs"
 
+# 只存在于**位图内部**的数字：图是一个像素块，上屏了但 DSL 文本里抓不到。
+# 目前只有一张：`assets/fig04.png` 的面板标题写着 `ΔLL = +0.0055 (90% [+0.0009, +0.0099])`
+# 与 `ΔLL = -0.0015 (90% [-0.0032, +0.0001])`，讲稿引用的正是这两个端点。
+# 若重跑 `src/eval/plot_*` 换了区间，这里要跟着改。
+FIGURE_ONLY = {"0.0009", "0.0099"}
+
 MINUS = ("−", "–", "—")
 NUM = r"([−–—\-]?\d+(?:\.\d+)?)"
 
@@ -306,6 +312,32 @@ def deck_parity_check(root: Path = DECK):
     return sorted(cn - en), sorted(en - cn), len(en), len(cn)
 
 
+def script_check(root: Path = DECK):
+    """讲稿里的每个小数 / 千分位数字都必须在上屏文本里出现过。
+
+    口播与上屏对不上是录像最显眼的失败——观众同时听到和看到两个数。只比
+    「含小数点或千分位」的串：讲稿里「四万六千五百零七」这类中文写法不该被
+    要求上屏，而 `2012/13` 这种日期也不在比对范围内（保守）。
+    """
+    def text_of(p):
+        s = p.read_text(encoding="utf-8")
+        s = re.sub(r"style=\{\{.*?\}\}", " ", s, flags=re.S)
+        s = re.sub(r"<[^<>]*>", " ", s)
+        return s
+
+    pat = re.compile(r"\d+(?:[.,]\d+)+")
+    on_screen = set()
+    for deck in ("slides", "slides_cn"):
+        for f in (root / deck).glob("*.slide"):
+            on_screen |= set(pat.findall(text_of(f)))
+
+    script = root.parent / "script_en.md"
+    if not script.exists():
+        return None
+    said = set(pat.findall(script.read_text(encoding="utf-8")))
+    return sorted(said - on_screen - FIGURE_ONLY), len(said)
+
+
 def main(argv: list[str]) -> int:
     checks, ctx = build_checks()
     if "--list" in argv:
@@ -430,6 +462,20 @@ def main(argv: list[str]) -> int:
     else:
         print(f"PASS  slides_cn · 中英数字一一对应（{n_cn} 个数值）")
         n_pass += 1
+
+    # 讲稿里的数字必须在上屏文本里出现过（口播与屏幕不能是两个数）
+    res = script_check()
+    if res is None:
+        print("SKIP  script_en · 讲稿尚未成文")
+    else:
+        missing_nums, n_said = res
+        if missing_nums:
+            print("FAIL  script_en · 讲稿里的数字未出现在任何一页上屏文本："
+                  + ", ".join(missing_nums))
+            n_fail += 1
+        else:
+            print(f"PASS  script_en · 口播数字全部上屏（{n_said} 个）")
+            n_pass += 1
 
     print(f"\n{n_pass} passed, {n_fail} failed")
     return 0 if n_fail == 0 else 1
