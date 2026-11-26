@@ -7,17 +7,17 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        推断 · 评估单元
+        步骤 4 / 7 · 怎么判（2/2）
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        48 个块，而不是 16,733 场比赛
+        48 个块，不是 16,733 场
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 48, marginTop: 8 }}>
+    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 48, marginTop: 8 }}>
         <Box style={{ width: 600 }}>
             <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
-                每个「联赛 × 赛季」重训一次，只用更早的比赛
+                每个联赛-赛季重训一次，只用此前的比赛
             </Text>
 
             <Box style={{ marginTop: 20 }}>
@@ -55,7 +55,7 @@
                 </Box>
                 <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <Box style={{ width: 16, height: 14, background: '#1E4FA8' }} />
-                    <Text style={{ fontSize: 14, color: '#4A5568' }}>测试块（一个联赛 × 赛季）</Text>
+                    <Text style={{ fontSize: 14, color: '#4A5568' }}>测试块（一个联赛-赛季）</Text>
                 </Box>
             </Box>
         </Box>
@@ -64,19 +64,19 @@
             <Box>
                 <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#1E4FA8' }}>48</Text>
                 <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
-                    个独立单元——8 个赛季 × 6 个联赛
+                    个独立单位——8 季 × 6 联赛
                 </Text>
             </Box>
             <Box style={{ marginTop: 18 }}>
                 <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#1E4FA8' }}>16,733</Text>
                 <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
-                    块内被打分的比赛，从不逐场重抽
+                    场在块内被打分，从不逐场重抽
                 </Text>
             </Box>
             <Box style={{ marginTop: 18 }}>
                 <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#D9534F' }}>1.32–1.89</Text>
                 <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 2 }}>
-                    实测设计效应：区间宽度是朴素宽度的 √deff ≈ 1.15–1.37 倍
+                    实测设计效应：区间宽 ≈ √deff ≈ 1.15–1.37 倍
                 </Text>
             </Box>
         </Box>
@@ -84,7 +84,7 @@
 
     <Box style={{ padding: '16px 20px', background: '#F0F5FC', borderRadius: 6 }}>
         <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-            同一块内的比赛共享球队与赛程。把它们当独立样本重抽会低估不确定性，所以这里每个区间都重抽整块——10,000 次。
+            同一块里的比赛共享球队和赛程。把它们当独立重抽会低估不确定性，所以这里每个区间都是整块整块重抽——10,000 次。
         </Text>
     </Box>
 

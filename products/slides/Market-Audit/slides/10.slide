@@ -7,52 +7,68 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        CONCLUSION
+        STEP 7 / 7 · WHAT A NEGATIVE RESULT BUYS
     </Text>
-    <Text style={{ fontFamily: 'Georgia, serif', fontSize: 46, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.18, marginTop: 12 }}>
-        A negative result, by design
+    <Text style={{ fontFamily: 'Georgia, serif', fontSize: 44, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.18, marginTop: 12 }}>
+        A negative result, and what it buys
     </Text>
-    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 16 }} />
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 26 }}>
-        The gap between a reproducible transparent model and the closing market is
-        information, not a calibration defect we could have repaired.
+    <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 20 }}>
+        We did not beat the closing market. What we bought is three things that a positive result would not have produced.
     </Text>
 
-    <Box style={{ flexDirection: 'row', gap: 20, marginTop: 30 }}>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>LIMIT 01</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                One sport, six leagues — and Pinnacle closing prices only.
+    <Box style={{ flexDirection: 'row', gap: 20, marginTop: 24 }}>
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>BUYS 01</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                A price map that carries its method
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                Three de-vigging methods side by side, the most deviant one pre-registered as a secondary claim.
+                A reader who de-vigs differently can recompute instead of trusting us.
             </Text>
         </Box>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>LIMIT 02</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                Closing odds only — no opening, no in-play prices, no other bookmakers.
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>BUYS 02</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                An answer located by kind of match
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                Promotion widens the gap, early rounds narrow it. The pair says more than “the model is worse
+                somewhere”, and it includes the half we got wrong.
             </Text>
         </Box>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>LIMIT 03</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                48 blocks resolve differences above 0.02 nats — nothing finer.
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>BUYS 03</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                Two literatures joined up
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                Market accuracy and model accuracy on the same 16,728 matches, one margin, one resampling —
+                which only works because of the H4 step.
             </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 28, padding: '16px 20px', background: '#F0F5FC', borderRadius: 6 }}>
-        <Text style={{ fontSize: 16, color: '#1A2230' }}>
+    <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 18, lineHeight: 1.5 }}>
+        Limits: one sport, six leagues; closing prices from one bookmaker; 48 blocks resolve nothing finer
+        than 0.02 nats.
+    </Text>
+
+    <Box style={{ flex: 1 }} />
+
+    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 15, color: '#1A2230' }}>
             One command rebuilds every number on these slides:
         </Text>
-        <Text style={{ fontSize: 16, color: '#0E3F8C', fontWeight: 'bold', letterSpacing: 0.4 }}>
+        <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold', letterSpacing: 0.4 }}>
             python -m src.eval.run_m2
         </Text>
     </Box>
 
-    <Box style={{ flex: 1 }} />
-
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontFamily: 'Georgia, serif', fontSize: 30, color: '#0E3F8C', fontWeight: 'bold' }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
+        <Text style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: '#0E3F8C', fontWeight: 'bold' }}>
             Thank you
         </Text>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>

@@ -7,31 +7,49 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        模型侧 · RQ1
+        步骤 6 / 7 · 结果（3/3）· H4
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        模型错在别处
+        差距不是可以减掉的偏移
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', width: 1160 }}>
-            <Text style={{ fontSize: 17, color: '#4A5568' }}>
-                分赛果类别的可靠性曲线——虚线对角线代表完美校准。
+    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 44, alignItems: 'center', marginTop: 6 }}>
+        <Box style={{ width: 616 }}>
+            <Text style={{ fontSize: 15, color: '#4A5568' }}>
+                把市场对自己的概率重新校准之后，差距的变化
             </Text>
-            <Text style={{ fontSize: 14, color: '#8B97A8' }}>局部平滑 · ESS ≥ 20</Text>
+            <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 6 }}>
+                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.05 }}>0.0019</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568' }}>相对值，90% 区间 [−0.0085, +0.0127]</Text>
+            </Box>
+            <Text style={{ fontSize: 16, color: '#1A2230', marginTop: 8, lineHeight: 1.45 }}>
+                整段区间都在 0.25 判定线以下——重校准几乎解释不了差距。
+            </Text>
+
+            <Box style={{ marginTop: 16, padding: '12px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#8B97A8' }}>8.7%</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>上界，开卷 oracle</Text>
+                </Box>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.5, marginTop: 5 }}>
+                    两个参数直接对着测试标签拟合——这是作弊——也只补回不到十分之一的差距。所以差距是模型没有的信息。
+                </Text>
+            </Box>
         </Box>
 
-        <Image src="assets/fig05.png" style={{ width: 1040, height: 321, marginTop: 8 }} />
-
-        <Box style={{ width: 1160, padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
-            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
-                平局被过度分散——两个提升树臂的斜率是 0.528 / 0.566，B4 是 0.944；而它们的主胜与客胜斜率是 1.08–1.11，反而分散不足。市场三类都在 1.06–1.09。容量把各个类别往相反方向扭，而 ECE 给出了反向信号，所以斜率是我们唯一的判定统计量。
-            </Text>
+        <Box style={{ width: 470, justifyContent: 'center' }}>
+            <Image src="assets/fig08_right.png" style={{ width: 440, height: 344 }} />
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+    <Box style={{ padding: '10px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5 }}>
+            模型自己的错也没有单一方向。两个提升树臂上，平局斜率是 0.528 / 0.566，主胜客胜却在 1.08–1.11；B4 三类都在一以下（0.94–0.96）；市场三类都在一以上（1.06–1.09）。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 9/10</Text>
     </Box>

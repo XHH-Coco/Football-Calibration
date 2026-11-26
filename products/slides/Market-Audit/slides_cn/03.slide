@@ -7,12 +7,16 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        设计 · 九臂
+        步骤 3 / 7 · 怎么比
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        阶梯 B0–B6 + B6r
+        一条阶梯，不是一张排行榜
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.5, marginTop: 14 }}>
+        两个模型之间的差，可能同时来自三件事——函数形式、喂进去的特征、以及参数怎么估。一级台阶只动其中一件。
+    </Text>
 
     <Box style={{ flex: 1, justifyContent: 'center' }}>
         <Box style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
@@ -39,86 +43,86 @@
             <Box style={{ flex: 1 }} />
         </Box>
 
-        <Box style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B0</Text>
-                <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>频率先验</Text>
+                <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>历史频率</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B1</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>+ Elo</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B2</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>有序 logit</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B3</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>独立泊松</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1E4FA8', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1E4FA8', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B4</Text>
-                <Text style={{ fontSize: 12, color: '#E8EFF8', lineHeight: 1.35 }}>Dixon–Coles 时间衰减</Text>
+                <Text style={{ fontSize: 12, color: '#E8EFF8', lineHeight: 1.35 }}>Dixon–Coles，带时间衰减</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B5a</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>梯度提升树</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B5b</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>+ 30 个特征</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B6</Text>
                 <Text style={{ fontSize: 12, color: '#D6DCE5', lineHeight: 1.35 }}>去水后的市场</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B6r</Text>
-                <Text style={{ fontSize: 12, color: '#D6DCE5', lineHeight: 1.35 }}>再校准的市场</Text>
+                <Text style={{ fontSize: 12, color: '#D6DCE5', lineHeight: 1.35 }}>重校准的市场</Text>
             </Box>
         </Box>
 
-        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
             <Text style={{ fontSize: 13, color: '#8B97A8' }}>只有先验</Text>
-            <Text style={{ fontSize: 13, color: '#8B97A8' }}>信息更多、容量更大</Text>
-            <Text style={{ fontSize: 13, color: '#8B97A8' }}>基准</Text>
+            <Text style={{ fontSize: 13, color: '#8B97A8' }}>更多信息、更大容量</Text>
+            <Text style={{ fontSize: 13, color: '#8B97A8' }}>基准，不是台阶</Text>
         </Box>
 
-        <Box style={{ marginTop: 30, flexDirection: 'row', gap: 40 }}>
+        <Box style={{ marginTop: 22, flexDirection: 'row', gap: 40 }}>
             <Box style={{ width: 560 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>
                     <span style={{ color: '#D9534F' }}>C1</span> · B4 → B5a
                 </Text>
-                <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.55, marginTop: 8 }}>
-                    同样的信息、同样的样本权重，只换模型类。
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.5, marginTop: 6 }}>
+                    同样的信息、同样的样本权重——只换模型类。
                 </Text>
             </Box>
             <Box style={{ width: 560 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>
                     <span style={{ color: '#D9534F' }}>C2</span> · B5a → B5b
                 </Text>
-                <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.55, marginTop: 8 }}>
-                    同样的模型与超参，多 30 个特征。
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.5, marginTop: 6 }}>
+                    同一个学习器、同一组超参数——多 30 个特征。
                 </Text>
             </Box>
-        </Box>
-
-        <Box style={{ padding: '18px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 24 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-                只有这两级是一次只动一个因素。其余每一步都同时改了几件事，所以那些臂只并列报告，绝不归因到单一原因。
-            </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ padding: '14px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            整条阶梯只有这两级确实只动一个因素，所以 C1 和 C2 是我们唯一给归因的差别。其余每一级都同时改了几件事——那些臂只并列报告。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 3/10</Text>
     </Box>

@@ -7,30 +7,42 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        归因 · C1 / C2
+        步骤 4 / 7 · 怎么判（1/2）
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        C1 与 C2——我们唯一能归因的两步
+        打分：log loss，和 0.02 nats 的边际
     </Text>
-    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 12 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 17, color: '#4A5568', alignSelf: 'flex-start' }}>
-            两个比较都是对数损失的差值，对照 ±0.02 nats 的等价边际来读。
-        </Text>
-
-        <Image src="assets/fig04.png" style={{ width: 1140, height: 308, marginTop: 16 }} />
-
-        <Box style={{ width: 1140, padding: '18px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 20 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.6 }}>
-                C1 付出 <span style={{ fontWeight: 'bold' }}>0.0055</span> nats，区间不含 0——
-                差异真实，但远在边际之内。C2 换回{' '}
-                <span style={{ fontWeight: 'bold' }}>0.0015</span>，区间跨 0。阶梯的顶端并没有买到更好的预测。
+    <Box style={{ flexDirection: 'row', gap: 32, marginTop: 12 }}>
+        <Box style={{ width: 564, padding: '10px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>分数</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5, marginTop: 4 }}>
+                每场给出三个加起来等于 1 的概率。赛后只按你给“真正发生的结果”的概率扣分，取 −log p，所以敢押又押错罚得最重。全场平均就是 log loss，单位 nats，越小越好。我们从不报准确率：它奖励敢押，不奖励诚实。
+            </Text>
+        </Box>
+        <Box style={{ width: 564, padding: '10px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>边际</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5, marginTop: 4 }}>
+                0.02 nats，两种读法。单场看：把一个三分之一的概率标成 32.6% 而不是 33.3%。48 块看：这是数据能显示的最小刻度——比它更细的差别，无论我们怎么声称，都分辨不出来。不是门槛低，是分辨率到头了。
             </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: '#7C8899', letterSpacing: 0.3, marginBottom: 6 }}>
+            这两个台阶的比较我们早就有了——这是尺子的第一次使用，不是结论
+        </Text>
+        <Image src="assets/fig04.png" style={{ width: 1020, height: 276 }} />
+    </Box>
+
+    <Box style={{ padding: '11px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            读法一样：C1 多花 0.0055 nats，区间不含零；C2 买回 0.0015，区间跨零。两者都落在边际之内——可分辨，但不值得据此做决定。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 4/10</Text>
     </Box>

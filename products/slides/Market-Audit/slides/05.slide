@@ -7,14 +7,14 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        INFERENCE · UNIT OF EVALUATION
+        STEP 4 / 7 · HOW WE JUDGE (2/2)
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
         48 blocks, not 16,733 matches
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 48, marginTop: 8 }}>
+    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 48, marginTop: 8 }}>
         <Box style={{ width: 600 }}>
             <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
                 One refit per league-season, trained only on earlier matches

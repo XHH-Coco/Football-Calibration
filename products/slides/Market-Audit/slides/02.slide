@@ -7,106 +7,122 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        DATA · SCOPE
+        STEP 2 / 7 · THE DATA
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        46,507 matches, one of them incomplete
+        46,507 matches, three traps
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flexDirection: 'row', gap: 48, marginTop: 22, flex: 1 }}>
-        <Box style={{ width: 430, justifyContent: 'flex-start' }}>
-            <Box>
-                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>46,507</Text>
-                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6 }}>
-                    matches · 6 leagues × 22 seasons
-                </Text>
-            </Box>
-            <Box style={{ marginTop: 14 }}>
-                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>16,733</Text>
-                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6, lineHeight: 1.5 }}>
-                    48 league-season blocks in the evaluation window, 46 of them at full size
-                </Text>
-            </Box>
-            <Box style={{ marginTop: 14 }}>
-                <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#D9534F', lineHeight: 1.1 }}>1</Text>
-                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 6, lineHeight: 1.5 }}>
-                    evaluation match without a shots block — coverage 0.999940, kept as NaN
-                </Text>
-            </Box>
+    <Box style={{ flexDirection: 'row', marginTop: 16, background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '12px 4px' }}>
+        <Box style={{ flex: 1, padding: '0 18px' }}>
+            <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>46,507</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', marginTop: 4 }}>
+                matches · 6 leagues × 22 seasons
+            </Text>
         </Box>
+        <Box style={{ flex: 1, padding: '0 18px', borderLeft: '1px solid #D6DCE5' }}>
+            <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>16,733</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', marginTop: 4 }}>
+                matches inside the evaluation window · 48 blocks
+            </Text>
+        </Box>
+        <Box style={{ flex: 1, padding: '0 18px', borderLeft: '1px solid #D6DCE5' }}>
+            <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#D9534F', lineHeight: 1.1 }}>1</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', marginTop: 4 }}>
+                match without a shots block — coverage 0.999940, kept as NaN
+            </Text>
+        </Box>
+    </Box>
 
-        <Box style={{ width: 682 }}>
+    <Box style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 40, marginTop: 18 }}>
+        <Box style={{ width: 676 }}>
             <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold' }}>
                 Closing odds start in 2012/13 — 13 of 22 seasons
             </Text>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
-                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
-                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
-                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
-                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
-                <Box style={{ flex: 1, height: 46, background: '#9FB8DC' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
-                <Box style={{ flex: 1, height: 46, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                <Box style={{ flex: 1, height: 72, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 72, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 72, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 72, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 72, background: '#9FB8DC' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
+                <Box style={{ flex: 1, height: 72, background: '#1E4FA8' }} />
             </Box>
             <Box style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
                 <Box style={{ flex: 9 }}>
-                    <Text style={{ fontSize: 14, color: '#8B97A8' }}>2003/04 → 2011/12 · 9 seasons</Text>
+                    <Text style={{ fontSize: 13, color: '#8B97A8' }}>2003/04 → 2011/12 · 9 seasons</Text>
                 </Box>
                 <Box style={{ flex: 5 }}>
-                    <Text style={{ fontSize: 14, color: '#3D7BD9' }}>2012/13 → 2016/17</Text>
+                    <Text style={{ fontSize: 13, color: '#3D7BD9' }}>2012/13 → 2016/17</Text>
                 </Box>
                 <Box style={{ flex: 8 }}>
-                    <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>2017/18 → 2024/25</Text>
+                    <Text style={{ fontSize: 13, color: '#1E4FA8', fontWeight: 'bold' }}>2017/18 → 2024/25</Text>
                 </Box>
             </Box>
-            <Box style={{ flexDirection: 'row', gap: 18, marginTop: 18 }}>
-                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#E8EFF8', border: '1px solid #D6DCE5', }} />
-                    <Text style={{ fontSize: 14, color: '#4A5568' }}>no closing odds</Text>
+            <Box style={{ flexDirection: 'row', gap: 16, marginTop: 14 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                    <Box style={{ width: 13, height: 13, background: '#E8EFF8', border: '1px solid #D6DCE5' }} />
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>no closing odds</Text>
                 </Box>
-                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#9FB8DC', }} />
-                    <Text style={{ fontSize: 14, color: '#4A5568' }}>odds, outside the window</Text>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                    <Box style={{ width: 13, height: 13, background: '#9FB8DC' }} />
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>odds, outside the window</Text>
                 </Box>
-                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Box style={{ width: 14, height: 14, background: '#1E4FA8', }} />
-                    <Text style={{ fontSize: 14, color: '#4A5568' }}>evaluation window</Text>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                    <Box style={{ width: 13, height: 13, background: '#1E4FA8' }} />
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>evaluation window</Text>
                 </Box>
             </Box>
-            <Box style={{ marginTop: 22, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-                <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.6 }}>
-                    Raw files are not rectangular: 775 long rows, 1,331 short rows, 14 duplicated
-                    column names, 7 all-blank trailers. Parsed against a 19-column whitelist — a
-                    non-empty overflow raises instead of being skipped.
+        </Box>
+
+        <Box style={{ width: 444, padding: '14px 18px', background: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>THREE DECISIONS</Text>
+            <Box style={{ flexDirection: 'row', gap: 9, marginTop: 16 }}>
+                <Text style={{ fontSize: 13, color: '#D9534F', fontWeight: 'bold', width: 14 }}>1</Text>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.5 }}>
+                    No odds columns in 9 seasons — the window is the last 8, fixed before we saw any result.
+                </Text>
+            </Box>
+            <Box style={{ flexDirection: 'row', gap: 9, marginTop: 16 }}>
+                <Text style={{ fontSize: 13, color: '#D9534F', fontWeight: 'bold', width: 14 }}>2</Text>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.5 }}>
+                    775 long rows, 1,331 short, 14 duplicated column names, 7 blank trailers — read against
+                    a 19-column whitelist, so an overflow raises instead of being skipped.
+                </Text>
+            </Box>
+            <Box style={{ flexDirection: 'row', gap: 9, marginTop: 16 }}>
+                <Text style={{ fontSize: 13, color: '#D9534F', fontWeight: 'bold', width: 14 }}>3</Text>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.5 }}>
+                    243 name spellings resolve to 241 clubs, without fuzzy matching.
                 </Text>
             </Box>
         </Box>
     </Box>
 
-    <Box style={{ padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
-        <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-            Both short blocks are 2019/20 — Ligue 1 stops at 279 matches, the Eredivisie at 232.
-            We drop them and never backfill; the one missing shots block stays NaN, never zero.
+    <Box style={{ padding: '10px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5 }}>
+            Both short blocks are 2019/20 — Ligue 1 stops at 279 matches, the Eredivisie at 232. We drop them
+            and never backfill; the missing shots stay NaN, never zero.
         </Text>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 2/10</Text>
     </Box>

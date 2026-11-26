@@ -169,13 +169,13 @@ def build_checks():
          "m2_verdicts.csv · C1"),
 
         # ---------- 幻灯片 ----------
-        (deck, "幻灯页 7 · B2 差距区间",
+        (deck, "幻灯页 8 · B2 差距区间",
          r"B2 落后 " + NUM + r"（" + NUM + r"–" + NUM, (b2_gap, b2_lo, b2_hi), t3,
          "table_main.csv · B2"),
-        (deck, "幻灯页 7 · B4 差距",
+        (deck, "幻灯页 8 · B4 差距",
          r"B4 落后 " + NUM, b4_gap, t3,
          "table_main.csv · B4"),
-        (deck, "幻灯页 8 · H4 上界",
+        (deck, "幻灯页 9 · H4 上界",
          r"相对变化 " + NUM + r"（90% 上界 " + NUM, (h4.point, h4.hi), t3,
          "m2_verdicts.csv · H4"),
         (deck, "幻灯页 4 · C1",
@@ -188,7 +188,7 @@ def build_checks():
          r"draw 过度离散（" + NUM + r" / " + NUM, (slopes.loc["B5a", "draw"],
                                                  slopes.loc["B5b", "draw"]), 6e-4,
          "m5_calibration_slopes.csv · B5a/B5b.draw"),
-        (deck, "幻灯页 6 · H1 主斜率",
+        (deck, "幻灯页 7 · H1 主斜率",
          r"比例法斜率 " + NUM + r"（90% CI " + NUM + r"–", (h1.point, h1.lo), t3,
          "m2_verdicts.csv · H1"),
     ]

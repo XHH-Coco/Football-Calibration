@@ -7,31 +7,47 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        ATTRIBUTION · C1 / C2
+        STEP 4 / 7 · HOW WE JUDGE (1/2)
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        C1 and C2 — the only two attributions we own
+        Scoring: log loss, and a margin of 0.02 nats
     </Text>
-    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 12 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 17, color: '#4A5568', alignSelf: 'flex-start' }}>
-            Both comparisons are a change in log loss, read against the ±0.02 equivalence margin.
-        </Text>
-
-        <Image src="assets/fig04.png" style={{ width: 1140, height: 308, marginTop: 16 }} />
-
-        <Box style={{ width: 1140, padding: '18px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 20 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.6 }}>
-                C1 costs <span style={{ fontWeight: 'bold' }}>0.0055</span> nats and its interval excludes zero —
-                real, but far inside the margin. C2 buys back{' '}
-                <span style={{ fontWeight: 'bold' }}>0.0015</span> with an interval that crosses zero.
-                The top of the ladder did not buy better predictions.
+    <Box style={{ flexDirection: 'row', gap: 32, marginTop: 12 }}>
+        <Box style={{ width: 564, padding: '10px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>THE SCORE</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5, marginTop: 4 }}>
+                Three probabilities summing to one. After the match you are charged −log p for what actually
+                happened, so a confident miss is expensive. Averaged over matches, in nats — lower is better.
+                We never report accuracy: it rewards conviction, not honesty.
+            </Text>
+        </Box>
+        <Box style={{ width: 564, padding: '10px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>THE MARGIN</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5, marginTop: 4 }}>
+                0.02 nats, read two ways. On one match: pricing a one-in-three event at 32.6% instead of 33.3%.
+                On 48 blocks: the finest tick the data can show — nothing smaller is resolvable, whatever we
+                claim. Not a low bar, a resolution limit.
             </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: '#7C8899', letterSpacing: 0.3, marginBottom: 6 }}>
+            Two comparisons we already have — this is the ruler's first use, not a finding
+        </Text>
+        <Image src="assets/fig04.png" style={{ width: 1020, height: 276 }} />
+    </Box>
+
+    <Box style={{ padding: '11px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            Read the same way: C1 costs 0.0055 nats with an interval that excludes zero; C2 buys back 0.0015
+            with one that crosses zero. Both sit inside the margin — separable, and not worth a decision.
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 4/10</Text>
     </Box>

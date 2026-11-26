@@ -7,51 +7,64 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        结论
+        步骤 7 / 7 · 一个负结果值什么
     </Text>
-    <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 44, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.22, marginTop: 12 }}>
-        一个设计出来的负结果
+    <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 42, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 12 }}>
+        一个负结果，买到了什么
     </Text>
-    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 16 }} />
+    <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 26 }}>
-        可复现的透明模型与收盘市场之间的差距，是信息差距，而不是我们本可修复的校准缺陷。
+    <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 20 }}>
+        我们没赢过收盘市场。买到的是三样东西——正结果给不了的那种。
     </Text>
 
-    <Box style={{ flexDirection: 'row', gap: 20, marginTop: 30 }}>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>限制 01</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                单一项目、六个联赛——而且只有 Pinnacle 的收盘价。
+    <Box style={{ flexDirection: 'row', gap: 20, marginTop: 24 }}>
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>买到 01</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                一张自带方法的价格地图
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                三种去水方法并列给出，最偏离的那种被当作事先注册的次级结论去检验。习惯别的扣法的读者可以自己重算，不必信我们。
             </Text>
         </Box>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>限制 02</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                只有收盘赔率——没有开盘价、没有滚球价、没有其他博彩公司。
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>买到 02</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                一个定位到“哪类比赛”的答案
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                升班马处差距更大，赛季初反而更小。这一对数字比“模型在某些地方更差”精确得多，而且包含我们猜错的那一半。
             </Text>
         </Box>
-        <Box style={{ flex: 1, padding: '18px 20px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-            <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>限制 03</Text>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>
-                48 个块只能分辨 0.02 nats 以上的差异——再细就测不出。
+        <Box style={{ flex: 1, padding: '16px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+            <Text style={{ fontSize: 12, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>买到 03</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#0E3F8C', marginTop: 7, lineHeight: 1.35 }}>
+                把两条研究线接上
+            </Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
+                市场准不准、模型好不好，落在同一批 16,728 场比赛、同一个边际、同一次重抽样上——这全靠 H4 那一步。
             </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 28, padding: '16px 20px', background: '#F0F5FC', borderRadius: 6 }}>
-        <Text style={{ fontSize: 16, color: '#1A2230' }}>
-            一条命令可重建这套幻灯上的每个数字：
+    <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 18, lineHeight: 1.5 }}>
+        限制：一种运动、六个联赛；只有一家的收盘价；48 块分辨不出比 0.02 nats 更细的差。
+    </Text>
+
+    <Box style={{ flex: 1 }} />
+
+    <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 15, color: '#1A2230' }}>
+            一条命令重建幻灯片上的每个数字：
         </Text>
-        <Text style={{ fontSize: 16, color: '#0E3F8C', fontWeight: 'bold', letterSpacing: 0.4 }}>
+        <Text style={{ fontSize: 15, color: '#0E3F8C', fontWeight: 'bold', letterSpacing: 0.4 }}>
             python -m src.eval.run_m2
         </Text>
     </Box>
 
-    <Box style={{ flex: 1 }} />
-
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 30, color: '#0E3F8C', fontWeight: 'bold' }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
+        <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 28, color: '#0E3F8C', fontWeight: 'bold' }}>
             谢谢
         </Text>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>

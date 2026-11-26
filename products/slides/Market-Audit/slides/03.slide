@@ -7,12 +7,17 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        DESIGN · NINE ARMS
+        STEP 3 / 7 · HOW WE COMPARE
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        The ladder B0–B6 + B6r
+        A ladder, not a leaderboard
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
+
+    <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.5, marginTop: 14 }}>
+        Two models can differ in three things at once — the functional form, the features, how the fit is
+        regularised. A rung is designed to move one of them.
+    </Text>
 
     <Box style={{ flex: 1, justifyContent: 'center' }}>
         <Box style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
@@ -39,87 +44,87 @@
             <Box style={{ flex: 1 }} />
         </Box>
 
-        <Box style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B0</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>frequency prior</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B1</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>+ Elo</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B2</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>ordinal logit</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B3</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>independent Poisson</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1E4FA8', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1E4FA8', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B4</Text>
                 <Text style={{ fontSize: 12, color: '#E8EFF8', lineHeight: 1.35 }}>Dixon–Coles, time-decayed</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B5a</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>gradient boosting</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0E3F8C' }}>B5b</Text>
                 <Text style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.35 }}>+ 30 features</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B6</Text>
                 <Text style={{ fontSize: 12, color: '#D6DCE5', lineHeight: 1.35 }}>de-vigged market</Text>
             </Box>
             <Box style={{ width: 44, alignItems: 'center' }}><Text style={{ fontSize: 16, color: '#8B97A8' }}>→</Text></Box>
-            <Box style={{ flex: 1, height: 132, padding: '14px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
+            <Box style={{ flex: 1, height: 124, padding: '12px 8px', background: '#1A2230', borderRadius: 4, justifyContent: 'space-between' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>B6r</Text>
                 <Text style={{ fontSize: 12, color: '#D6DCE5', lineHeight: 1.35 }}>recalibrated market</Text>
             </Box>
         </Box>
 
-        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
             <Text style={{ fontSize: 13, color: '#8B97A8' }}>prior only</Text>
             <Text style={{ fontSize: 13, color: '#8B97A8' }}>more information, more capacity</Text>
-            <Text style={{ fontSize: 13, color: '#8B97A8' }}>the benchmark</Text>
+            <Text style={{ fontSize: 13, color: '#8B97A8' }}>the benchmark, not a rung</Text>
         </Box>
 
-        <Box style={{ marginTop: 30, flexDirection: 'row', gap: 40 }}>
+        <Box style={{ marginTop: 22, flexDirection: 'row', gap: 40 }}>
             <Box style={{ width: 560 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>
                     <span style={{ color: '#D9534F' }}>C1</span> · B4 → B5a
                 </Text>
-                <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.55, marginTop: 8 }}>
-                    Same information, same sample weights, only the model class changes.
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.5, marginTop: 6 }}>
+                    Same information, same sample weights — only the model class changes.
                 </Text>
             </Box>
             <Box style={{ width: 560 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>
                     <span style={{ color: '#D9534F' }}>C2</span> · B5a → B5b
                 </Text>
-                <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.55, marginTop: 8 }}>
-                    Same model and hyper-parameters, 30 more features.
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.5, marginTop: 6 }}>
+                    Same learner, same hyper-parameters — 30 more features.
                 </Text>
             </Box>
-        </Box>
-
-        <Box style={{ padding: '18px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 24 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-                Only these two rungs move one factor at a time. Every other step bundles several
-                changes at once, so those arms are reported side by side — never attributed to one cause.
-            </Text>
         </Box>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ padding: '14px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            Only these two rungs move exactly one factor, so C1 and C2 are the only differences we attribute.
+            Every other step bundles several changes at once — those arms are reported side by side.
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 3/10</Text>
     </Box>

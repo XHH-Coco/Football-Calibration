@@ -7,33 +7,82 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.6 }}>
-        H1 · RQ1 — DOES THE MARKET CALIBRATE ITSELF?
+        STEP 5 / 7 · FOUR HYPOTHESES
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        The market is under-dispersed
+        Four hypotheses, falsified in advance
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', width: 1160 }}>
-            <Text style={{ fontSize: 17, color: '#4A5568' }}>
-                Calibration slope after de-vigging — 1.0 would mean the prices are already calibrated.
+    <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.5, marginTop: 16 }}>
+        Written down before any model ran. Each row carries what we expect and what would count against it,
+        so a wrong guess cannot be rephrased afterwards.
+    </Text>
+
+    <Box style={{ flex: 1, marginTop: 14 }}>
+        <Box style={{ flexDirection: 'row', paddingBottom: 8, borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: 84, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>ID</Text>
+            <Text style={{ width: 606, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>
+                WHAT WE EXPECTED
             </Text>
-            <Text style={{ fontSize: 14, color: '#8B97A8' }}>48-block cluster bootstrap · 10,000 resamples</Text>
-        </Box>
-
-        <Image src="assets/fig06.png" style={{ width: 960, height: 347, marginTop: 6 }} />
-
-        <Box style={{ width: 1160, padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-                Proportional de-vigging gives <span style={{ fontWeight: 'bold' }}>1.086</span> [1.047, 1.124] —
-                longshots over-priced, favourites under-priced. Shin (1.052) and power (1.030, interval
-                crossing 1) agree on direction, not on magnitude.
+            <Text style={{ width: 470, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>
+                FALSIFIED IF
             </Text>
         </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H1</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                Market probabilities are pulled toward the middle.
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                The calibration slope is ≤ 1.
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H2</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                A transparent model does not reach the market, and the gap is not trivial.
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                The 95% interval puts some model ahead; or the 90% interval lies entirely inside ±0.02.
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H3</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                The gap concentrates on promoted clubs and the first six rounds.
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                Either coefficient is not positive, or its interval covers zero.
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '15px 0' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H4</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                The gap is information, not miscalibration.
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                Recalibrating the market closes more than 25% of the gap.
+            </Text>
+        </Box>
+
+        <Text style={{ fontSize: 14, color: '#8B97A8', marginTop: 10, lineHeight: 1.45 }}>
+            H2 asks two questions on purpose: the 95% interval asks which way, the 90% interval asks how much.
+        </Text>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ padding: '11px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            One of the four, H3, fails in one direction. By the rule printed above it drops to a description —
+            it does not get rephrased into a success.
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · Statistical Machine Learning I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>Team 32 · 6/10</Text>
     </Box>

@@ -52,37 +52,43 @@
 | 文件 | 用途 | 来源 | 真实内容 | 页 |
 |---|---|---|---|---|
 | `assets/fig04.png` | evidence | 材料图（`products/figures/fig04_c_equivalence.png` 裁去图内总标题） | C1 / C2 等价区间两块 | P4 |
-| `assets/fig06.png` | anchor | 同上 `fig06_market_calibration.png` | 三法校准斜率 + 分位数偏差 | P6 |
-| `assets/fig07.png` | anchor | 同上 `fig07_market_gap.png` | 八臂与市场的配对 ΔLL | P7 |
-| `assets/fig08_right.png` | evidence | 同上 `fig08_localisation_recal.png` 右面板 | H4：重校准与 oracle 的相对变化 | P8 |
-| `assets/fig05.png` | anchor | 同上 `fig05_model_reliability.png` | 三类可靠性曲线（B0/B4/B5b/B6） | P9 |
+| `assets/fig06.png` | anchor | 同上 `fig06_market_calibration.png` | 三法校准斜率 + 分位数偏差 | P7 |
+| `assets/fig07.png` | anchor | 同上 `fig07_market_gap.png` | 八臂与市场的配对 ΔLL | P8 |
+| `assets/fig08_right.png` | evidence | 同上 `fig08_localisation_recal.png` 右面板 | H4：重校准与 oracle 的相对变化 | P9 |
 
-`fig08_left.png`（H3 系数）已裁出备查，本版不上屏——H3 只作描述，占版面会抢 P7 的 H2 头条。
-P2 / P3 / P5 不贴位图，用原生矢量绘制，理由：P2 的覆盖率热图是 6×22 网格，缩到 16:9 不可读；
-P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘（信息与 `fig01` 一致）。
+`fig05_model_reliability.png` **v4 起不上屏**（资产仍留在 `assets/`）：它要占满整幅宽度才读得出三条曲线的斜率，
+而 P9 的论点是「误差不是一个可以减掉的偏移」，逐类斜率用一行读数（0.528 / 0.566 对 1.08–1.11）比三幅
+曲线更快到位。`fig08_left.png`（H3 系数）仍不上屏——H3 只作描述，占版面会抢 P8 的 H2 头条。
+
+P2 / P3 / P5 / P6 不贴位图，用原生矢量绘制，理由：P2 的覆盖率热图是 6×22 网格，缩到 16:9 不可读；
+P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘（信息与 `fig01` 一致）；P6 的四行假设表
+直接用文本排（表格图会失去可复制性）。
 
 ## 2. 逐页字段表
 
 | 页 | title | type | role | layout | visual | density | anti_pattern |
 |---|---|---|---|---|---|---|---|
 | 1 | The market as a measuring instrument | cover | hero | 标题 + 双 RQ 卡 + 成员条 | 无图，矢量 | 约 120 字 / 0 图 / 留白 35% | 禁止等宽四卡横排；禁止抽象粒子背景 |
-| 2 | 46,507 matches, one of them incomplete | content | supporting | 左 KPI 三行 + 右 22 季三段色阶时间轴 | 矢量时间轴（9 无赔率 / 5 有赔率未入选 / 8 评估窗） | 约 130 字 / 1 图 / 留白 10% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI |
-| 3 | The ladder B0–B6 + B6r | content | supporting | 九块阶梯 + 两次单因素标注 | 矢量阶梯 | 约 150 字 / 1 图 / 留白 12% | 禁止九块等距不留标注；禁止给所有块同一强调色 |
-| 4 | C1 and C2 — the only two attributions we own | content | supporting | 全宽区间图 + 双结论卡 | `fig04.png` | 约 130 字 / 1 图 / 留白 8% | 禁止把 C1 写成「B5a 更好」；禁止只报点估计不报区间 |
+| 2 | 46,507 matches, three traps | content | supporting | 顶部三格 KPI 条 + 左 22 季时间轴 + 右「三个决定」卡 | 矢量时间轴（9 无赔率 / 5 有赔率未入选 / 8 评估窗） | 约 150 字 / 1 图 / 留白 8% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI |
+| 3 | A ladder, not a leaderboard | content | supporting | 九块阶梯 + 两次单因素标注 + 双 C 卡 | 矢量阶梯 | 约 150 字 / 1 图 / 留白 12% | 禁止九块等距不留标注；禁止给所有块同一强调色；**禁止在此页写 C1/C2 的数值**（数值属于 P4） |
+| 4 | Scoring: log loss, and a margin of 0.02 nats | content | hero | 上双卡（分数 / 边际）+ 图注定性行 + 全宽区间图 + 判定条 | `fig04.png` | 约 160 字 / 1 图 / 留白 4% | 禁止把 C1 写成「B5a 更好」；禁止只报点估计不报区间；禁止用 accuracy；**禁止删掉图上方那行定性**（`this is the ruler's first use, not a finding`）或把措辞换成 finding / result / we find——删掉之后本页会被读成结果页，页序就退回「结论 → 方法 → 假设 → 结论」 |
 | 5 | 48 blocks, not 16,733 matches | content | supporting | 左 rolling-origin 示意 + 右三行口径 | 矢量流程 | 约 140 字 / 1 图 / 留白 12% | 禁止把比赛数当独立样本；禁止只写 deff 不写换算 |
-| 6 | The market is under-dispersed | content | hero | 左图右数字 | `fig06.png` | 约 120 字 / 1 图 / 留白 8% | 禁止只报比例法斜率；禁止把三法画成同一结论 |
-| 7 | How far behind — and where the gap is not | content | hero | 左数字右图 | `fig07.png` | 约 140 字 / 1 图 / 留白 8% | 禁止头条挂 B4；禁止把 H3 写成「支持」 |
-| 8 | Information, not calibration | content | supporting | 左结论右图 | `fig08_right.png` | 约 110 字 / 1 图 / 留白 15% | 禁止把 oracle 当模型成绩；禁止漏 25% 判据线 |
-| 9 | What the models get wrong instead | content | supporting | 全宽三联曲线 + 三行读数 | `fig05.png` | 约 130 字 / 1 图 / 留白 8% | 禁止把「draw 过散」说成整体过度自信；禁止不提 ECE 反向 |
-| 10 | A negative result, by design | ending | hero | 三限制 + 复现命令 | 无图 | 约 100 字 / 0 图 / 留白 35% | 禁止「未来展望」空话；禁止感谢页装饰 |
+| 6 | Four hypotheses, falsified in advance | content | supporting | 四行表（ID / 猜测 / 证伪条件）+ 脚注 | 无图，表格 | 约 130 字 / 0 图 / 留白 18% | 禁止只写假设不写证伪条件；禁止把 H2 的两个区间水平合成一个 |
+| 7 | The market is mildly under-dispersed | content | hero | 图 + 判定条 | `fig06.png` | 约 110 字 / 1 图 / 留白 8% | 禁止只报比例法斜率；禁止把三法画成同一结论 |
+| 8 | How far behind — and where the gap is not | content | hero | 左双数字 + H3 注 + 右图 | `fig07.png` | 约 140 字 / 1 图 / 留白 8% | 禁止头条挂 B4；禁止把 H3 写成「支持」 |
+| 9 | It is not an offset you can subtract | content | supporting | 左 H4 数字 + oracle 框 + 右图 + 逐类读数条 | `fig08_right.png` | 约 140 字 / 1 图 / 留白 10% | 禁止把 oracle 当模型成绩；禁止漏 25% 判据线；禁止把「draw 过散」说成整体过度自信 |
+| 10 | A negative result, and what it buys | ending | hero | 三张「买到」卡 + 限制行 + 复现命令 | 无图 | 约 110 字 / 0 图 / 留白 30% | 禁止「未来展望」空话；禁止感谢页装饰；禁止只列限制不列买到什么 |
 
 ## 3. 上屏口径（与 `../slides.md` 锁定）
 
 1. 标题与要点英文，口头讲解中文；每页一个点，正文 ≤6 行。
-2. 区间一律标 `48-block cluster bootstrap, 10,000 resamples`；分联赛 / 轮次 sweep 标 `descriptive only`。
-3. 只用 `B0`–`B6` + `B6r`，不出现 accuracy。
-4. 关键数字只出现在 P4（C1/C2）、P6（H1 斜率）、P7（H2 gap）、P8（H4 相对变化）。
-5. 出镜（2026-11-25 改为一 人连讲两页）：**M1 P1–P2 / M4 P3–P4 / M2 P5–P6 / M3 P7–P8 / M5 P9–P10**；时长合计 7:50，四个切点 1:25 / 3:10 / 4:50 / 6:25。英文讲稿 `../script_en.md`。
+2. 每条 kicker 带步号（`STEP 3 / 7 · HOW WE COMPARE`），让听众随时知道在第几步——这是 v4 唯一的
+   全局导航装置，改稿时不要换成主题词（`DESIGN · NINE ARMS` 之类）。
+3. 区间一律标 `48-block cluster bootstrap, 10,000 resamples`；分联赛 / 轮次 sweep 标 `descriptive only`。
+4. 只用 `B0`–`B6` + `B6r`，不出现 accuracy。
+5. 关键数字只出现在 P4（C1/C2）、P7（H1 斜率）、P8（H2 gap / H3 系数）、P9（H4 / 逐类斜率）；P2 只有数据规模与缺陷计数。
+6. 出镜：**M1 P1–P2 / M4 P3–P4 / M2 P5–P6 / M3 P7–P8 / M5 P9–P10**；时长合计 7:50，四个切点
+   1:43 / 3:25 / 5:01 / 6:32。英文讲稿 `../script_en.md`。
 
 ## 4. 中文版（`Market-Audit-CN.pptx`）
 
@@ -120,3 +126,30 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 | 2017/18 – 2024/25 | 8 | 有，且是预注册评估窗（48 块） |
 
 所以时间轴改成 **9 灰 / 5 中蓝 / 8 深蓝**三段，标题从「最近 8 季有赔率」改为「赔率自 2012/13 才有——13 季有」。两版 deck 同改，`script.md` 段 2 与 `script_en.md` 的 P2 台词同步。
+
+## 6. v4 重排（2026-11-26）
+
+页序从「按假设编号」改成「按读者要依次接受的四个判断」，与 `../../plain_zh.md` §1–§7 对应：
+
+| 页 | v3 | v4 |
+|---|---|---|
+| 1 | 封面 + 双 RQ | **未改** |
+| 2 | 46,507 / 16,733 / 时间轴 / 缺陷卡（左 KPI 三行） | 标题改 `46,507 matches, three traps`；KPI 改为顶部三格条，腾出的竖向空间给右侧「三个决定」卡（三个坑各配一个决定，含 243→241 队名） |
+| 3 | The ladder B0–B6 + B6r | 改 `A ladder, not a leaderboard`；**移走 C1/C2 的数值**，只留两个定义 |
+| 4 | C1 and C2 — the only two attributions we own | 改 `Scoring: log loss, and a margin of 0.02 nats`；上半页讲 log loss 与 0.02 两种读法，下半页用 `fig04` 当场量 C1/C2 |
+| 5 | 48 blocks, not 16,733 matches | **未改**（kicker 改 `STEP 4 / 7`） |
+| 6 | The market is under-dispersed | 换成 **Four hypotheses, falsified in advance**（新页，四行表） |
+| 7 | How far behind | 换成 H1 读数（原 P6 内容前移一页） |
+| 8 | Information, not calibration | 换成差距与 H3（原 P7 内容后移一页） |
+| 9 | What the models get wrong instead | 换成 `It is not an offset you can subtract`：H4 + 逐类斜率一行读数 |
+| 10 | A negative result, by design | 改 `A negative result, and what it buys`：三张「买到」卡 + 限制行 + 复现命令 |
+
+三条纪律（改稿时保持）：
+
+1. **kicker 的步号不许改**。`STEP n / 7` 是 v4 唯一的全局导航：听众在第 4 步知道自己在「怎么判」，
+   在结果页知道还有两页。换成主题词就退回 v3 那种「十页并排」的观感。
+2. **P3 不写数值**。C1 / C2 的 0.0055 与 0.0015 只出现在 P4——这是「先给尺子再给读数」的物理保证；
+   一旦 P3 也写上，口播就会提前用掉 P4 的边际。
+3. **P9 的一行读数与 `m5_calibration_slopes.csv` 对齐**：B5a/B5b 的 draw 0.528 / 0.566、home 1.103 /
+   1.109、away 1.082 / 1.091；B4 三类 0.940 / 0.944 / 0.964；B6 三类 1.061 / 1.092 / 1.076。
+   写成区间（1.08–1.11、0.94–0.96、1.06–1.09）是为了不念六个小数，但区间端点必须落在上面这些值上。

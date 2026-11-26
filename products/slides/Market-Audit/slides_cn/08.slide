@@ -7,50 +7,59 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        H4 · RQ2——差距是校准缺陷吗？
+        步骤 6 / 7 · 结果（2/3）· H2 / H3
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        是信息，不是校准
+        差多远，以及差距不在哪里
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', gap: 44, alignItems: 'center' }}>
-        <Box style={{ width: 616 }}>
-            <Text style={{ fontSize: 15, color: '#4A5568' }}>
-                用市场自身再校准之后，差距的相对变化
-            </Text>
-            <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 6 }}>
-                <Text style={{ fontSize: 46, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.05 }}>0.0019</Text>
-                <Text style={{ fontSize: 17, color: '#4A5568' }}>相对值，90% 区间 [−0.0085, +0.0127]</Text>
-            </Box>
-            <Text style={{ fontSize: 17, color: '#1A2230', marginTop: 10, lineHeight: 1.5 }}>
-                整个区间都落在 0.25 的判据线之下——再校准几乎解释不了差距。
-            </Text>
-
-            <Box style={{ marginTop: 22, padding: '14px 18px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
-                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
-                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#8B97A8' }}>8.7%</Text>
-                    <Text style={{ fontSize: 15, color: '#4A5568' }}>上界，开卷 oracle</Text>
+    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 36, marginTop: 8 }}>
+        <Box style={{ width: 574 }}>
+            <Box>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8', width: 46 }}>B2</Text>
+                    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1A2230' }}>0.0270</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>[0.0241, 0.0298]</Text>
                 </Box>
-                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55, marginTop: 6 }}>
-                    两个参数都用测试集标签来拟合——这已经是作弊——也只收回不到十分之一的差距。所以差距是模型没有的信息。
+                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 3 }}>
+                    最好的透明臂——但不是我们预注册的那个
+                </Text>
+            </Box>
+
+            <Box style={{ marginTop: 16 }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8', width: 46 }}>B4</Text>
+                    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1A2230' }}>0.0317</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>[0.0278, 0.0359]</Text>
+                </Box>
+                <Text style={{ fontSize: 15, color: '#4A5568', marginTop: 3 }}>
+                    预注册的那个臂
+                </Text>
+            </Box>
+
+            <Box style={{ marginTop: 18, padding: '12px 16px', background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6 }}>
+                <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55 }}>
+                    <span style={{ fontWeight: 'bold', color: '#1A2230' }}>H3，只作描述。</span>升班马让差距变大（+0.0113）；赛季初六轮让它变小（−0.0108）——与假设的符号相反。当描述留着，不当支持用。
                 </Text>
             </Box>
         </Box>
 
-        <Box style={{ width: 500, justifyContent: 'center' }}>
-            <Image src="assets/fig08_right.png" style={{ width: 440, height: 344 }} />
+        <Box style={{ width: 540 }}>
+            <Text style={{ fontSize: 12, color: '#8B97A8', textAlign: 'right', marginBottom: 6 }}>
+                三种扣水方法 · 90% 簇区间 · 48 块 bootstrap
+            </Text>
+            <Image src="assets/fig07.png" style={{ width: 528, height: 322 }} />
         </Box>
     </Box>
 
-    <Box style={{ padding: '12px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+    <Box style={{ padding: '11px 20px', background: '#F0F5FC', borderRadius: 6 }}>
         <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
-            如果差距是校准缺陷，把市场自身的校准修正就该把差距补上。但它没有：0.0019 对
-            0.25 的判据线，即便用上测试标签也只有 8.7%。
+            每个透明臂都落后于市场，两个头条区间都整段落在 +0.02 nats 之上。B2 的领先有一部分来自协议而不是模型：它在赛季内会刷新，B4 冻结。两边都冻上，顺序就反过来。
         </Text>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 8/10</Text>
     </Box>

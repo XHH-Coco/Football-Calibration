@@ -7,32 +7,80 @@
     fontFamily: '"Arial", "Microsoft YaHei", sans-serif',
 }}>
     <Text style={{ fontSize: 13, color: '#3D7BD9', fontWeight: 'bold', letterSpacing: 1.2 }}>
-        H1 · RQ1——市场会自我校准吗？
+        步骤 5 / 7 · 四个假设
     </Text>
     <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 10 }}>
-        市场是欠分散的
+        四个假设，先写死证伪条件
     </Text>
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 14 }} />
 
-    <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', width: 1160 }}>
-            <Text style={{ fontSize: 17, color: '#4A5568' }}>
-                去水后的校准斜率——斜率 1.0 意味着价格本身已经校准。
+    <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.5, marginTop: 16 }}>
+        在任何模型跑起来之前写下来。每行都带“我们猜什么”和“什么情况算被推翻”，所以猜错了没法事后改口。
+    </Text>
+
+    <Box style={{ flex: 1, marginTop: 14 }}>
+        <Box style={{ flexDirection: 'row', paddingBottom: 8, borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: 84, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>编号</Text>
+            <Text style={{ width: 606, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>
+                我们的猜测
             </Text>
-            <Text style={{ fontSize: 14, color: '#8B97A8' }}>48 块 cluster bootstrap · 10,000 次重抽</Text>
-        </Box>
-
-        <Image src="assets/fig06.png" style={{ width: 960, height: 347, marginTop: 6 }} />
-
-        <Box style={{ width: 1160, padding: '12px 20px', background: '#F0F5FC', borderRadius: 6, marginTop: 12 }}>
-            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.55 }}>
-                比例法去水得到 <span style={{ fontWeight: 'bold' }}>1.086</span> [1.047, 1.124]——
-                冷门被高估、热门被低估。Shin 法（1.052）与幂法（1.030，区间跨 1）方向一致，量级不一致。
+            <Text style={{ width: 470, fontSize: 12, color: '#8B97A8', fontWeight: 'bold', letterSpacing: 1.2 }}>
+                什么情况算被推翻
             </Text>
         </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H1</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                市场概率被压向中间。
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                校准斜率 ≤ 1。
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H2</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                透明模型追不上市场，而且差距不算小。
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                95% 区间显示某个模型更好；或 90% 区间整体落在 ±0.02 内。
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid #E8EFF8' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H3</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                差距集中在升班马和赛季前六轮。
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                两个系数有一个不为正，或它的区间跨零。
+            </Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '20px 0' }}>
+            <Text style={{ width: 84, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>H4</Text>
+            <Text style={{ width: 606, fontSize: 17, color: '#1A2230', lineHeight: 1.45 }}>
+                差距是信息，不是校准。
+            </Text>
+            <Text style={{ width: 470, fontSize: 15, color: '#4A5568', lineHeight: 1.45 }}>
+                重校准市场能补掉 25% 以上的差距。
+            </Text>
+        </Box>
+
+        <Text style={{ fontSize: 14, color: '#8B97A8', marginTop: 10, lineHeight: 1.45 }}>
+            H2 故意用两个水平：95% 问方向，90% 问大小。
+        </Text>
     </Box>
 
-    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+    <Box style={{ padding: '11px 20px', background: '#F0F5FC', borderRadius: 6 }}>
+        <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.5 }}>
+            四个里有一个，H3，在一个方向上失败。按上面这条规则，它降级为描述——不会改写成成功。
+        </Text>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 9 }}>
         <Text style={{ fontSize: 14, color: '#8B97A8' }}>DSC5001 · 统计机器学习 I</Text>
         <Text style={{ fontSize: 14, color: '#1E4FA8', fontWeight: 'bold' }}>第 32 组 · 6/10</Text>
     </Box>
