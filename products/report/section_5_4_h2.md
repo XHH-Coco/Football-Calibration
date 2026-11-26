@@ -4,7 +4,7 @@
 
 The shortfall is measured in three parts.
 
-**First, it is universal.** All seven transparent arms B0–B5b trail B6 on the same 16,728 matches, from 0.027 (B2) to 0.116 (B0) nats. The pre-registered comparison uses B4 (0.0317, 90% CI 0.0278–0.0359; 95% CI 0.0271–0.0366), and both H2 criteria are met: the 95% interval excludes zero on the "model is worse" side, and the 90% interval lies entirely above the +0.02 equivalence margin.
+**First, it is universal.** All seven model arms B0–B5b trail B6 on the same 16,728 matches, from 0.027 (B2) to 0.116 (B0) nats. The pre-registered comparison uses B4 (0.0317, 90% CI 0.0278–0.0359; 95% CI 0.0271–0.0366), and both H2 criteria are met: the 95% interval excludes zero on the "model is worse" side, and the 90% interval lies entirely above the +0.02 equivalence margin.
 
 **Second, it is not a method artefact.** The three de-vigging methods — proportional, Shin and power — give the same sign and essentially the same magnitude (0.0317, 0.0319, 0.0319 nats), so the gap survives however the margin is removed. This matters for H1 too: §5.2 shows that the *level* of the market's calibration slope depends on the de-vigging method, but the *gap* does not, so no H2 conclusion inherits that ambiguity.
 

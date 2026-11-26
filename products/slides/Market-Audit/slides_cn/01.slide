@@ -17,8 +17,8 @@
 
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 18 }} />
 
-    <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 54, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 30 }}>
-        把市场当作量尺
+    <Text style={{ fontFamily: '"Microsoft YaHei", sans-serif', fontSize: 50, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.2, marginTop: 30 }}>
+        足球博彩市场比模型知道得多吗？
     </Text>
 
     <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5, marginTop: 22 }}>
@@ -27,6 +27,10 @@
 
     <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 18 }}>
         我们不试图打败市场，只问它在哪里答得差——以及一个可复现的透明模型，能不能跟到那里。
+    </Text>
+
+    <Text style={{ fontSize: 13, color: '#8B97A8', lineHeight: 1.5, marginTop: 10 }}>
+        本文「透明」指：特征集不含任何市场列，每一步都可重跑——不是可解释性机器学习（XAI）所说的「内在可解释」。
     </Text>
 
     <Box style={{ flexDirection: 'row', gap: 40, marginTop: 28 }}>

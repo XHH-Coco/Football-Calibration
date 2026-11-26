@@ -114,6 +114,10 @@
         </Box>
     </Box>
 
+    <Text style={{ fontSize: 12, color: '#8B97A8', lineHeight: 1.5, marginBottom: 9 }}>
+        数据来源：football-data.co.uk · https://www.football-data.co.uk · 132 个联赛-赛季 CSV，免费、无需密钥，按 SHA-256 入库。
+    </Text>
+
     <Box style={{ padding: '10px 20px', background: '#F0F5FC', borderRadius: 6 }}>
         <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5 }}>
             两块残季都在 2019/20——法甲停在 279 场，荷甲停在 232 场。丢掉，不回填；缺的那块射门数据保留为 NaN，不填零。

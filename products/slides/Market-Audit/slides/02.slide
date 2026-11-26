@@ -115,6 +115,11 @@
         </Box>
     </Box>
 
+    <Text style={{ fontSize: 12, color: '#8B97A8', lineHeight: 1.5, marginBottom: 9 }}>
+        Source: football-data.co.uk · https://www.football-data.co.uk · 132 league-season CSVs, free, no key,
+        committed with SHA-256.
+    </Text>
+
     <Box style={{ padding: '10px 20px', background: '#F0F5FC', borderRadius: 6 }}>
         <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.5 }}>
             Both short blocks are 2019/20 — Ligue 1 stops at 279 matches, the Eredivisie at 232. We drop them

@@ -18,7 +18,7 @@
     <Box style={{ height: 1, background: '#D6DCE5', marginTop: 18 }} />
 
     <Text style={{ fontFamily: 'Georgia, serif', fontSize: 50, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.16, marginTop: 30 }}>
-        The market as a<br />measuring instrument
+        Do football betting markets know<br />more than a model can learn?
     </Text>
 
     <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5, marginTop: 22 }}>
@@ -28,6 +28,10 @@
     <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 20 }}>
         We do not try to beat the market. We ask where it answers badly — and whether a
         reproducible transparent model can follow it there.
+    </Text>
+
+    <Text style={{ fontSize: 13, color: '#8B97A8', lineHeight: 1.5, marginTop: 10 }}>
+        Transparent here: no market column in any feature set, and every step re-runnable — not the XAI sense of intrinsic interpretability.
     </Text>
 
     <Box style={{ flexDirection: 'row', gap: 40, marginTop: 28 }}>

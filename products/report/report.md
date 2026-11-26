@@ -77,7 +77,7 @@ The fixed-effects regression on the per-match gap (48 league–season intercepts
 ### 5.3 H2 — how far the model trails
 *(并入 `section_5_3_h2_numbers.md`)*
 
-The gap for all seven transparent arms under all three de-vigging methods, the two pre-registered criteria read off the intervals, why the methods cannot disagree by more than 1.5 × 10⁻⁴ nats, and the block-level distribution behind the pooled number.
+The gap for all seven model arms under all three de-vigging methods, the two pre-registered criteria read off the intervals, why the methods cannot disagree by more than 1.5 × 10⁻⁴ nats, and the block-level distribution behind the pooled number.
 
 ### 5.4 H2 reading, H3 localisation
 *(并入 `section_5_4_h2.md`)*

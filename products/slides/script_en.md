@@ -10,19 +10,19 @@
 > 打分规则与四个假设各得独立一页，因为它们才是让后面每个数字有意义的东西。
 > ② **每页首句回指上一页，末句递出下一个问题**（检查表见 `script.md` §「每页的接缝」）。
 > ③ 结果从五页压到三页：市场侧 / 差距 / 差距的成分，并在口播里明说「七个结果，三页」。
-> ④ 净词数 996，与 v3 的 998 持平；页数不变，所以每页的密度略降、接缝变硬。
+> ④ 净词数 995，与 v3 的 998 持平；页数不变，所以每页的密度略降、接缝变硬。
 
 ## 1. 分段与计时
 
 | 段 | 主讲 | 成员 | 页 | 起止 | 时长 | 英文词数 | 折算语速 |
 |---|---|---|---|---|---|---|---|
-| S1 | M1 | WAN Yihui | P1–P2 | 0:00–1:43 | 1:43 | 218 | 127 wpm |
+| S1 | M1 | WAN Yihui | P1–P2 | 0:00–1:43 | 1:43 | 217 | 126 wpm |
 | S2 | M4 | SUN Peng | P3–P4 | 1:43–3:25 | 1:42 | 218 | 128 wpm |
 | S3 | M2 | WANG Xingshuai | P5–P6 | 3:25–5:01 | 1:36 | 203 | 127 wpm |
 | S4 | M3 | ZHOU Yixuan | P7–P8 | 5:01–6:32 | 1:31 | 192 | 127 wpm |
 | S5 | M5 | SHU Peixuan | P9–P10 | 6:32–7:50 | 1:18 | 165 | 127 wpm |
 
-**合计 996 词 / 7:50。** 四个剪辑切点：**1:43 / 3:25 / 5:01 / 6:32**。
+**合计 995 词 / 7:50。** 四个剪辑切点：**1:43 / 3:25 / 5:01 / 6:32**。
 
 页内分界：P1 0:45 / P2 1:43 / P3 2:33 / P4 3:25 / P5 4:09 / P6 5:01 / P7 5:42 / P8 6:32 / P9 7:12 / P10 7:50。
 
@@ -45,11 +45,11 @@
 
 ### S1 · M1 WAN Yihui · P1–P2 · 0:00–1:43
 
-**[P1 · 0:00–0:45] The market as a measuring instrument**
+**[P1 · 0:00–0:45] Do football betting markets know more than a model can learn?**
 
-**EN** Let me be clear about what this is not: not a betting model. If we could beat the closing line reliably, we would be selling it. What we study is the closing price itself, the best public three-way forecast there is, used as a ruler. Two questions follow. Is the ruler accurate? And how far behind it is a transparent model that only sees pre-match information? Those are one question: the same prices are what we audit and what we measure ourselves against. So before saying how far behind we are, I check the ruler.
+**EN** That question — first, what this is not: not a betting model. If we could beat the closing line reliably, we would be selling it. What we study is the closing price itself, the best public three-way forecast there is, used as a ruler. Two questions follow. Is the ruler accurate? And how far behind it is a transparent model that only sees pre-match information? Those are one question: the same prices are what we audit and what we measure ourselves against. So before saying how far behind we are, I check the ruler.
 
-**中** 先说清楚这不是什么：不是赌博模型。真能稳定赢过收盘线，我们早去卖这个了。我们研究收盘价本身——目前最好的公开三分类预测——把它当尺子用。两个问题：尺子准不准？一个只看赛前信息的透明模型，离它多远？这其实是一个问题：同一串价格既是被审计的对象，也是量我们的标尺。所以说差多远之前，先验尺子。
+**中** 这个问句先说清楚它不是什么：不是赌博模型。真能稳定赢过收盘线，我们早去卖这个了。我们研究收盘价本身——目前最好的公开三分类预测——把它当尺子用。两个问题：尺子准不准？一个只看赛前信息的透明模型，离它多远？这其实是一个问题：同一串价格既是被审计的对象，也是量我们的标尺。所以说差多远之前，先验尺子。
 
 **[P2 · 0:45–1:43] 46,507 matches, three traps**
 

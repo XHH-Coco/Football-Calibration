@@ -68,8 +68,8 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 
 | 页 | title | type | role | layout | visual | density | anti_pattern |
 |---|---|---|---|---|---|---|---|
-| 1 | The market as a measuring instrument | cover | hero | 标题 + 双 RQ 卡 + 成员条 | 无图，矢量 | 约 120 字 / 0 图 / 留白 35% | 禁止等宽四卡横排；禁止抽象粒子背景 |
-| 2 | 46,507 matches, three traps | content | supporting | 顶部三格 KPI 条 + 左 22 季时间轴 + 右「三个决定」卡 | 矢量时间轴（9 无赔率 / 5 有赔率未入选 / 8 评估窗） | 约 150 字 / 1 图 / 留白 8% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI |
+| 1 | Do football betting markets know more than a model can learn? | cover | hero | 标题 + 双 RQ 卡 + 成员条 | 无图，矢量 | 约 120 字 / 0 图 / 留白 35% | 禁止等宽四卡横排；禁止抽象粒子背景；**主标题必须与 `report.md` 逐字一致**（副标可用封面上更具体的展开版） |
+| 2 | 46,507 matches, three traps | content | supporting | 顶部三格 KPI 条 + 左 22 季时间轴 + 右「三个决定」卡 + 底部数据源行 | 矢量时间轴（9 无赔率 / 5 有赔率未入选 / 8 评估窗） | 约 165 字 / 1 图 / 留白 5% | 禁止贴覆盖率热图；禁止把 48 与 16,733 并列成同权 KPI；禁止删掉底部数据源行（名称 + 网址 + 132 个文件，缺一项即不足以复现） |
 | 3 | A ladder, not a leaderboard | content | supporting | 九块阶梯 + 两次单因素标注 + 双 C 卡 | 矢量阶梯 | 约 150 字 / 1 图 / 留白 12% | 禁止九块等距不留标注；禁止给所有块同一强调色；**禁止在此页写 C1/C2 的数值**（数值属于 P4） |
 | 4 | Scoring: log loss, and a margin of 0.02 nats | content | hero | 上双卡（分数 / 边际）+ 图注定性行 + 全宽区间图 + 判定条 | `fig04.png` | 约 160 字 / 1 图 / 留白 4% | 禁止把 C1 写成「B5a 更好」；禁止只报点估计不报区间；禁止用 accuracy；**禁止删掉图上方那行定性**（`this is the ruler's first use, not a finding`）或把措辞换成 finding / result / we find——删掉之后本页会被读成结果页，页序就退回「结论 → 方法 → 假设 → 结论」 |
 | 5 | 48 blocks, not 16,733 matches | content | supporting | 左 rolling-origin 示意 + 右三行口径 | 矢量流程 | 约 140 字 / 1 图 / 留白 12% | 禁止把比赛数当独立样本；禁止只写 deff 不写换算 |
@@ -89,6 +89,10 @@ P3 的阶梯图 `fig01` 黑底块上文字对比度不足，改为矢量重绘�
 5. 关键数字只出现在 P4（C1/C2）、P7（H1 斜率）、P8（H2 gap / H3 系数）、P9（H4 / 逐类斜率）；P2 只有数据规模与缺陷计数。
 6. 出镜：**M1 P1–P2 / M4 P3–P4 / M2 P5–P6 / M3 P7–P8 / M5 P9–P10**；时长合计 7:50，四个切点
    1:43 / 3:25 / 5:01 / 6:32。英文讲稿 `../script_en.md`。
+7. **数据源必须在 P2 写明**：名称（football-data.co.uk）+ 网址（https://www.football-data.co.uk）+ 文件数
+   （132）。三项缺一即不足复现，且本报告全部论证都建立在「这批文件原样如此」之上，不标来源等于把最
+   容易被追问的一环留空。取回日期（2026-10-26）只写进 `products/report/references.md`，不上屏——
+   上了会让中英两版的数字集合不一致（英文抽出 `26`，中文抽出 `2026`/`10`/`26`），`deck_parity_check` 直接 FAIL。
 
 ## 4. 中文版（`Market-Audit-CN.pptx`）
 

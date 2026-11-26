@@ -1,6 +1,6 @@
 # §5.3 H2 — how far the model trails
 
-**One-sentence conclusion.** Every one of the seven transparent arms trails the de-vigged market by more than the equivalence margin, with a 90% lower bound above +0.02 in all seven cases; the pre-registered arm B4 trails by **0.0317** nats per match (90% CI 0.0278–0.0359; 95% CI 0.0271–0.0366) and the best transparent arm B2 by **0.0270** (0.0241–0.0298).
+**One-sentence conclusion.** Every one of the seven model arms trails the de-vigged market by more than the equivalence margin, with a 90% lower bound above +0.02 in all seven cases; the pre-registered arm B4 trails by **0.0317** nats per match (90% CI 0.0278–0.0359; 95% CI 0.0271–0.0366) and the best transparent arm B2 by **0.0270** (0.0241–0.0298).
 
 ### 5.3.1 The gap for every arm under every de-vigging method
 
